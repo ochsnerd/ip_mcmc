@@ -1,0 +1,39 @@
+#+TITLE: Markov Chain Monte Carlo for Inverse Problems
+
+* TODO Meta
+** TODO Insert latex preamble
+** TODO Can I get code execution to work here for the results? (-> DIY jupyter I guess)
+** TODO Create/Link to bibtex file
+** TODO Write down what I've done so far
+** TODO Code BB Stuart Example 2.1
+** TODO Code BB Stuart Example 2.2
+** TODO Read Geophysics example
+
+* Theory
+** Papers
+*** Diaconis 1988
+    Bayesian Numerical Analysis (?)
+*** Stuart et al: Inverse Problems: A Bayesian Perspective
+    Theoretical Background
+*** Cotter et al: MCMC for functions
+    Implementation, MCMC in infinite dimensions
+*** Schneider et al: Earth System Modeling 2.0
+    Example for MCMC on ODE
+** Small results
+*** Bayes' Theorem & Radon-Nikodym Derivative
+*** Acceptance Probabilities for different MCMC Proposers
+*** Different formulations of multivariate Gaussians
+
+* Implementation
+** Framework/Package Structure
+*** Densities
+*** Accepters
+*** Proposers
+*** Sampler
+** Results
+*** Analytic sampling from a bimodal Gaussian
+*** Bayesian inverse problem for G(u) = <g,u>
+*** Bayesian inverse problem for G(u) = g (u + \beta u^3)
+*** Geophysics example
+
+

@@ -1,0 +1,97 @@
+% Created 2020-04-23 Do 14:21
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\author{David Ochsner}
+\date{\today}
+\title{Markov Chain Monte Carlo for Inverse Problems}
+\hypersetup{
+ pdfauthor={David Ochsner},
+ pdftitle={Markov Chain Monte Carlo for Inverse Problems},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 26.3 (Org mode 9.1.9)}, 
+ pdflang={English}}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+
+\section{{\bfseries\sffamily TODO} Meta}
+\label{sec:org753637a}
+\subsection{{\bfseries\sffamily TODO} Insert latex preamble}
+\label{sec:orgfce5fd3}
+\subsection{{\bfseries\sffamily TODO} Can I get code execution to work here for the results? (-> DIY jupyter I guess)}
+\label{sec:orgb3b46b3}
+\subsection{{\bfseries\sffamily TODO} Create/Link to bibtex file}
+\label{sec:orgd0ab57f}
+\subsection{{\bfseries\sffamily TODO} Write down what I've done so far}
+\label{sec:org551c124}
+\subsection{{\bfseries\sffamily TODO} Code BB Stuart Example 2.1}
+\label{sec:orgfc82dbc}
+\subsection{{\bfseries\sffamily TODO} Code BB Stuart Example 2.2}
+\label{sec:org51ad662}
+\subsection{{\bfseries\sffamily TODO} Read Geophysics example}
+\label{sec:org28e050a}
+
+\section{Theory}
+\label{sec:orgfb52bf4}
+\subsection{Papers}
+\label{sec:org7bbc79c}
+\subsubsection{Diaconis 1988}
+\label{sec:orgeb4af76}
+Bayesian Numerical Analysis (?)
+\subsubsection{Stuart et al: Inverse Problems: A Bayesian Perspective}
+\label{sec:org4f69e19}
+Theoretical Background
+\subsubsection{Cotter et al: MCMC for functions}
+\label{sec:orge58ad79}
+Implementation, MCMC in infinite dimensions
+\subsubsection{Schneider et al: Earth System Modeling 2.0}
+\label{sec:orgda949c8}
+Example for MCMC on ODE
+\subsection{Small results}
+\label{sec:org880b1b0}
+\subsubsection{Bayes' Theorem \& Radon-Nikodym Derivative}
+\label{sec:orga5d8e8b}
+\subsubsection{Acceptance Probabilities for different MCMC Proposers}
+\label{sec:orge6b77b3}
+\subsubsection{Different formulations of multivariate Gaussians}
+\label{sec:orgb3d2150}
+
+\section{Implementation}
+\label{sec:org40e421e}
+\subsection{Framework/Package Structure}
+\label{sec:orgf5bf7e8}
+\subsubsection{Densities}
+\label{sec:orgf091d03}
+\subsubsection{Accepters}
+\label{sec:org4b97d50}
+\subsubsection{Proposers}
+\label{sec:org2167606}
+\subsubsection{Sampler}
+\label{sec:org5d27ded}
+\subsection{Results}
+\label{sec:org638e047}
+\subsubsection{Analytic sampling from a bimodal Gaussian}
+\label{sec:org33fe173}
+\subsubsection{Bayesian inverse problem for G(u) = <g,u>}
+\label{sec:orgfcf4257}
+\subsubsection{Bayesian inverse problem for G(u) = g (u + \(\beta\) u\(^{\text{3}}\))}
+\label{sec:org1e96fea}
+\subsubsection{Geophysics example}
+\label{sec:org4e443d5}
+\end{document}
