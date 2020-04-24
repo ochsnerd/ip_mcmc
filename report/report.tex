@@ -1,4 +1,4 @@
-% Created 2020-04-23 Do 14:21
+% Created 2020-04-24 Fr 10:08
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -14,6 +14,8 @@
 \usepackage{amssymb}
 \usepackage{capt-of}
 \usepackage{hyperref}
+\usepackage{physics}
+\newcommand{\G}[1]{{\mathcal{G} \left( #1 \right)}}
 \author{David Ochsner}
 \date{\today}
 \title{Markov Chain Monte Carlo for Inverse Problems}
@@ -30,68 +32,55 @@
 \tableofcontents
 
 
-\section{{\bfseries\sffamily TODO} Meta}
-\label{sec:org753637a}
-\subsection{{\bfseries\sffamily TODO} Insert latex preamble}
-\label{sec:orgfce5fd3}
-\subsection{{\bfseries\sffamily TODO} Can I get code execution to work here for the results? (-> DIY jupyter I guess)}
-\label{sec:orgb3b46b3}
-\subsection{{\bfseries\sffamily TODO} Create/Link to bibtex file}
-\label{sec:orgd0ab57f}
-\subsection{{\bfseries\sffamily TODO} Write down what I've done so far}
-\label{sec:org551c124}
-\subsection{{\bfseries\sffamily TODO} Code BB Stuart Example 2.1}
-\label{sec:orgfc82dbc}
-\subsection{{\bfseries\sffamily TODO} Code BB Stuart Example 2.2}
-\label{sec:org51ad662}
-\subsection{{\bfseries\sffamily TODO} Read Geophysics example}
-\label{sec:org28e050a}
-
 \section{Theory}
-\label{sec:orgfb52bf4}
+\label{sec:org8cba167}
 \subsection{Papers}
-\label{sec:org7bbc79c}
-\subsubsection{Diaconis 1988}
-\label{sec:orgeb4af76}
-Bayesian Numerical Analysis (?)
-\subsubsection{Stuart et al: Inverse Problems: A Bayesian Perspective}
-\label{sec:org4f69e19}
+\label{sec:org91168a8}
+\subsubsection{Stuart et al: Inverse Problems: A Bayesian Perspective \cite{stuart_inverse_2010}}
+\label{sec:org0db9e4f}
 Theoretical Background
-\subsubsection{Cotter et al: MCMC for functions}
-\label{sec:orge58ad79}
+\subsubsection{Cotter et al: MCMC for functions \cite{cotter_mcmc_2013}}
+\label{sec:org3d4e875}
 Implementation, MCMC in infinite dimensions
-\subsubsection{Schneider et al: Earth System Modeling 2.0}
-\label{sec:orgda949c8}
+\subsubsection{Schneider et al: Earth System Modeling 2.0  \cite{schneider_earth_2017}}
+\label{sec:org11ad06f}
 Example for MCMC on ODE
 \subsection{Small results}
-\label{sec:org880b1b0}
+\label{sec:orge2e3c93}
 \subsubsection{Bayes' Theorem \& Radon-Nikodym Derivative}
-\label{sec:orga5d8e8b}
+\label{sec:orgd3a9d34}
 \subsubsection{Acceptance Probabilities for different MCMC Proposers}
-\label{sec:orge6b77b3}
+\label{sec:org3df3b26}
 \subsubsection{Different formulations of multivariate Gaussians}
-\label{sec:orgb3d2150}
+\label{sec:org3bdfb72}
 
 \section{Implementation}
-\label{sec:org40e421e}
+\label{sec:org68a0038}
 \subsection{Framework/Package Structure}
-\label{sec:orgf5bf7e8}
+\label{sec:org969ba4c}
 \subsubsection{Densities}
-\label{sec:orgf091d03}
+\label{sec:org93b86ad}
 \subsubsection{Accepters}
-\label{sec:org4b97d50}
+\label{sec:org8d9fdf3}
 \subsubsection{Proposers}
-\label{sec:org2167606}
+\label{sec:orga5ced13}
 \subsubsection{Sampler}
-\label{sec:org5d27ded}
+\label{sec:org2e96f24}
 \subsection{Results}
-\label{sec:org638e047}
+\label{sec:orgb7d32b4}
 \subsubsection{Analytic sampling from a bimodal Gaussian}
-\label{sec:org33fe173}
-\subsubsection{Bayesian inverse problem for G(u) = <g,u>}
-\label{sec:orgfcf4257}
-\subsubsection{Bayesian inverse problem for G(u) = g (u + \(\beta\) u\(^{\text{3}}\))}
-\label{sec:org1e96fea}
+\label{sec:orga0cb869}
+\subsubsection{Bayesian inverse problem for \(\G{u} = \langle g,u \rangle\)}
+\label{sec:org2ceb4e5}
+\subsubsection{Bayesian inverse problem for \(\G{u} = g (u + \beta u^3)\)}
+\label{sec:orge8cc32f}
 \subsubsection{Geophysics example}
-\label{sec:org4e443d5}
+\label{sec:org86457d4}
+
+
+
+
+
+\bibliographystyle{plain}
+\bibliography{../papers/inverse_problems}
 \end{document}
