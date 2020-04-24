@@ -1,12 +1,20 @@
 #+TITLE: Markov Chain Monte Carlo for Inverse Problems
 
+
+#+LATEX_HEADER: \usepackage{physics}
+#+LATEX_HEADER: \newcommand{\C}{{\mathcal{C}}}
+#+LATEX_HEADER: \newcommand{\I}{{\mathcal{I}}}
+#+LATEX_HEADER: \newcommand{\G}[1]{{\mathcal{G} \left( #1 \right)}}
+#+LATEX_HEADER: \newcommand{\N}[2]{\mathcal{N}\left(#1,#2\right)}
+
 * TODO Meta                                                        :noexport:
 ** TODO Can I get code execution to work here for the results? (-> DIY jupyter I guess)
-** TODO Create/Link to bibtex file
+** DONE Create/Link to bibtex file
 ** TODO Write down what I've done so far
 ** TODO Code BB Stuart Example 2.1
 ** TODO Code BB Stuart Example 2.2
 ** TODO Read Geophysics example
+
 
 * Theory
 ** Papers
@@ -17,16 +25,241 @@
 *** Schneider et al: Earth System Modeling 2.0  [[cite:schneider_earth_2017]]
     Example for MCMC on ODE
 ** Small results
-*** Bayes' Theorem & Radon-Nikodym Derivative
+*** Bayes' Formula & Radon-Nikodym Derivative
+    Bayes' Formula is stated using the Radon-Nikodym Derivative in both [[cite:cotter_mcmc_2013]] and [[cite:stuart_inverse_2010]]:
+    $$\dv{\mu}{\mu_0} \propto \text{L}(u),$$
+    where $\text{L}(u)$ is the likelihood.
+
+    Write the measures as $\dd \mu = \rho(u)\dd u$ and $\dd \mu_0 = \rho_0(u)\dd u$ with respect
+    to the standard Lesbesgue measure. Then we have
+    $$
+    \int f(u) \rho(u) \dd u =
+    \int f(u) \dd \mu(u) =
+    \int f(u) \dv{\mu(u)}{\mu_0(u)} \dd \mu_0 =
+    \int f(u) \dv{\mu(u)}{\mu_0(u)} \rho_0(u) \dd u,
+    $$
+    provided that $\dd \mu$, $\dd \mu_0$ and $f$ are nice enough (which they are since we're working
+    with Gaussians). This holds for all test functions $f$, so it must hold pointwise:
+    $$ \dv{\mu(u)}{\mu_0(u)} = \frac{\rho(u)}{\rho_o(u)}.$$
+
+    Using this we recover the more familiar formulation of Bayes' formula:
+    $$\frac{\rho(u)}{\rho_o(u)} \propto \text{L}(u).$$
+
+*** Acceptance Probability for Metropolis-Hastings
+    A Markov process with transition probabilities $t(y|x)$ has a stationary distribution $\pi(x)$.
+    - The _existence_ of $\pi(x)$ follows from /detailed balance/:
+      $$\pi(x)t(y|x) = \pi(y)t(x|y).$$
+      Detailed balance is sufficient but not necessary for the existence of a stationary distribution.
+    - _Uniqueness_ of $\pi(x)$ follows from the Ergodicity of the Markov process. For a Markov
+      processto be Ergodic it has to:
+      - not return to the same state in a fixed interval
+      - reach every state from every other state in finite time
+    
+    The Metropolis-Hastings algorithm constructs transition probabilities $t(y|x)$ such that the
+    two conditions above are satisfied and that $\pi(x) = P(x)$, where $P(x)$ is the distribution
+    we want to sample from.
+
+    Rewrite detailed balance as
+    $$\frac{t(y|x)}{t(x|y)} = \frac{P(y)}{P(x)}.$$
+    Split up the transition probability into proposal $g(y|x)$ and acceptance $a(y,x)$. Then detailed
+    balance requires
+    $$\frac{a(y,x)}{a(x,y)} = \frac{P(y)g(x|y)}{P(x)g(y|x)}.$$
+    Choose
+    $$a(y,x) = \min\left\{1, \frac{P(y)g(x|y)}{P(x)g(y|x)}\right\}$$
+    to ensure that detailed balance is always satisfied. Choose $g(y|x)$ such that ergodicity
+    is fulfilled.
+
+    If the proposal is symmetric ($g(y|x) = g(x|y)$), then the acceptance takes the simpler form
+    $$a(y,x) = \min\left\{1, \frac{P(y)}{P(x)}\right\}.$$
+
+    Since the target distribution $P(x)$ only appears as a ratio, normalizing factors can be ignored.
 *** Acceptance Probabilities for different MCMC Proposers
+    Start from Bayes' formula and rewrite the likelyhood $\text{L}(u)$ as $\exp(-\Phi(u))$ for
+    a positive scalar function $\Phi$ called the potential:
+    $$\frac{\rho(u)}{\rho_o(u)} \propto \exp(\Phi(u)).$$
+    Assuming our prior to be a Gaussian ($\mu_0 \sim \N{0}{\C}$).
+
+    (IS WRITING $\rho_0(u) \propto \exp(-\frac{1}{2} u^TC^{-1}u)$ ASSUMING FINITE DIMENSIONS? WHAT
+    ABOUT $\rho_0(u) \propto \exp(-\frac{1}{2} \norm{C^{-1/2}u}^2)$? I assume the former is not,
+    for $C$ to be a proper covariance operator it should be invertible. But taking the square root
+    is probably not always well defined for infinite dimensions (so the latter one is problematic))
+
+    Then $$\rho(u) \propto \exp\left( -\Phi(u) + \frac{1}{2} \norm{C^{-1/2}u}^2 \right),$$
+    since $u^T C^{-1} u = (C^{-1/2} u)^T(C^{-1/2} u) = \langle C^{-1/2}u, C^{-1/2}u \rangle = \norm{C^{-1/2} u}^2$,
+    where in the first equality we used $C$ being symmetric.
+
+    This is formula (1.2) in [[cite:cotter_mcmc_2013]] and is used in the acceptance probability for
+    the standard random walk (see also [[Acceptance Probability for Metropolis-Hastings][Acceptance Probability for Metropolis-Hastings]])
+
+    $\C^{-1/2}u$ makes problems in infinite dimensions.
+
+    Todo: Why exactly is the second term (from the prior) cancelled when doing pCN?
 *** Different formulations of multivariate Gaussians
+    THIS WHOLE SECTION ASSUMES FINITE DIMENSIONS
+
+    Is an RV $\xi \sim \N{0}{C}$ distributed the same as $C^{1/2}\xi_0$, with $\xi_0 \sim \N(0, \I)$?
+
+    Is $C^{1/2}\exp(\frac{1}{2} x^Tx) = \exp(\frac{1}{2} x^T C^{-1} x)$ ?
+
+    From wikipedia: Affine transformation $Y = c + BX$ for $X \sim \N{\mu}{\Sigma}$ is also a Gaussian
+    $Y \sim \N{c + B\mu}{B\Sigma B^T}$. In our case $X \sim \N{0}{I}$, so $Y \sim \N{0}{C^{1/2}\I {C^{1/2}}^{T}} = \N{0}{C}$,
+    since the covariance matrix is positive definite, which means it's square root is also positive definite
+    and thus symmetric.
 
 * Implementation
 ** Framework/Package Structure
-*** Densities
-*** Accepters
+   The framework is designed to support an easy use case:
+   #+BEGIN_SRC python
+   proposer = StandardRWProposer(beta=0.25, dims=1)
+   accepter = AnalyticAccepter(my_distribution)
+   rng = np.random.default_rng(42)
+   sampler = MCMCSampler(rw_proposer, accepter, rng)
+
+   samples = sampler.run(x_0=0, n_samples=1000)
+   #+END_SRC
+
+   There is only one source of randomness, shared among all classes and supplied by the user.
+   This facilitates reproducability.
+
+   Tests are done with ~pytest~.
+*** Distributions
+    A class for implementing probability distributions.
+    #+BEGIN_SRC python
+    class DistributionBase(ABC):
+        @abstractmethod
+        def sample(self, rng):
+            """Return a point sampled from this distribution"""
+            ...
+    #+END_SRC
+    
+    The most important realisation is the ~GaussianDistribution~, used
+    in the proposers.
+
+    #+BEGIN_SRC python    
+    class GaussianDistribution(DistributionBase):
+        def __init__(self, mean=0, covariance=1):
+            ...
+
+        def sample(self, rng):
+            ...
+
+        def apply_covariance(self, x):
+            ...
+
+        def apply_sqrt_covariance(self, x):
+            ...
+
+        def apply_precision(self, x):
+            ...
+
+        def apply_sqrt_precision(self, x):
+            ...
+    #+END_SRC
+
+    The design of this class is based on the implementation in [[http://muq.mit.edu/master-muq2-docs/CrankNicolson_8py_source.html][muq2]]. The ~precision~ / ~sqrt_precision~
+    is implemented through a Cholesky decomposition, computed in the constructor. This makes
+    applying them pretty fast ($\mathcal{O}(n^2)$).
+
+    At the moment the there is one class for both scalar and multivariate Gaussians. This
+    introduces some overhead as it has to work with both ~float~ and ~np.array~. Maybe two
+    seperate classes would be better.
 *** Proposers
+
+    Propose a new state $v$ based on the current one $u$.
+
+    #+BEGIN_SRC python
+    class ProposerBase(ABC):
+        @abstractmethod
+        def __call__(self, u, rng):
+            ...
+    #+END_SRC
+
+**** StandardRWProposer
+
+     Propose a new state as
+     $$v = u + \sqrt{2\delta} \xi,$$
+     with either $\xi \sim \N{0}{\I}$ or $\xi \sim \N{0}{\C}$ (see section 4.2 in [[cite:cotter_mcmc_2013]]).
+
+     This leads to a well-defined algorithm in finite dimensions.
+     This is not the case when working on functions (as described in section 6.3 in [[cite:cotter_mcmc_2013]])
+
+**** pCNProposer
+
+     Propose a new state as
+     $$v = \sqrt{1-\beta^2} u + \beta \xi,$$
+     with $\xi \sim \N{0}{\C}$ and $\beta = \frac{8\delta}{(2+\delta)^2} \in [0,1]$
+     (see formula (4.8) in [[cite:cotter_mcmc_2013]]).
+
+     This approach leads to an improved algorithm (quicker decorrelation in finite dimensions,
+     nicer properties for infinite dimensions)(see sections 6.2 + 6.3 in [[cite:cotter_mcmc_2013]]).
+
+     The wikipedia-article on the Cholesky-factorization mentions the use-case of obtaining a
+     correlated sample from an uncorrelated one by the Cholesky-factor. This is not implemented here.
+*** Accepters
+
+    Given a current state $u$ and a proposed state $v$, decide if the new state is accepted or rejected.
+
+    For sampling from a distribution $P(x)$, the acceptance probability for a symmetric proposal is
+    $a = \text{min}\{1, \frac{P(v)}{P(u)}\}$
+    (see [[Acceptance Probability for Metropolis-Hastings]])
+
+    #+BEGIN_SRC python
+    class ProbabilisticAccepter(AccepterBase):
+        def __call__(self, u, v, rng):
+            """Return True if v is accepted"""
+            a = self.accept_probability(u, v)
+            return a > rng.random()
+
+        @abstractmethod
+        def accept_probability(self, u, v):
+            ...
+    #+END_SRC
+
+**** AnalyticAccepter
+
+     Used when there is an analytic expression of the desired distribution.
+
+    #+BEGIN_SRC python
+    class AnalyticAccepter(ProbabilisticAccepter):
+        def accept_probability(self, u, v):
+            return self.rho(v) / self.rho(u)
+    #+END_SRC
+
+**** StandardRWAccepter
+
+     Based on formula (1.2) in [[cite:cotter_mcmc_2013]]:
+     $$a = \text{min}\{1, \exp(I(u) - I(v))\},$$ with
+     $$I(u) = \Phi(u) + \frac{1}{2}\norm{\C^{-1/2}u}^2$$.
+
+     See also [[Acceptance Probabilities for different MCMC Proposers]].
+
+**** pCNAccepter
+
+     Works together with the [[pCNProposer][pCNProposer]] to achieve the simpler expression for the acceptance
+     $$a = \text{min}\{1, \exp(\Phi(u) - \Phi(v))\}.$$
+
+**** CountedAccepter
+
+     Stores and forwards calls to an "actual" accepter. Counts calls and accepts and is used for
+     calculating the acceptance ratio.
+    
 *** Sampler
+
+    The structure of the sampler is quite simple, since it can rely heavily on the functionality
+    provided by the Proposers and Accepters.
+
+    #+BEGIN_SRC python
+    class MCMCSampler:
+        def __init__(self, proposal, acceptance, rng):
+            ...
+
+        def run(self, u_0, n_samples, burn_in=1000, sample_interval=200):
+            ...
+
+        def _step(self, u, rng):
+            ...
+    #+END_SRC
+
 ** Results
 *** Analytic sampling from a bimodal Gaussian
 *** Bayesian inverse problem for $\G{u} = \langle g,u \rangle$
@@ -34,11 +267,4 @@
 *** Geophysics example
 
 
-
-
-
 #+BIBLIOGRAPHY: ../papers/inverse_problems plain
-
-#+LATEX_HEADER: \usepackage{physics}
-
-#+LATEX_HEADER: \newcommand{\G}[1]{{\mathcal{G} \left( #1 \right)}}
