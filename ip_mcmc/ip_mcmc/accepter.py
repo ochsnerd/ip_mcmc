@@ -78,11 +78,11 @@ class StandardRWAccepter(ProbabilisticAccepter):
         return np.exp(Iu - Iv)
 
     def _I(self, w):
-        regularizer = .5 * np.linalg.norm(self.prior.apply_sqrt_precision(w)) ** 2
+        regularizer = .5 * np.linalg.norm(self.prior.apply_sqrt_covariance(w)) ** 2
         return self.theta(w) + regularizer
 
 
-class CNAccepter(ProbabilisticAccepter):
+class pCNAccepter(ProbabilisticAccepter):
     """Accept a move from u to v with probability
     a(u,v) = min{1, exp(Theta(u) - Theta(v))}
 
