@@ -2,11 +2,18 @@ import numpy as np
 import scipy.linalg as la
 
 from abc import ABC, abstractmethod
+from scipy.stats import multivariate_normal
 
 
 class DistributionBase(ABC):
     @abstractmethod
     def sample(self, rng):
+        """Return a point sampled from this distribution"""
+        ...
+
+    @abstractmethod
+    def __call__(self, x):
+        """Return the value of the distribution at x"""
         ...
 
 
@@ -14,16 +21,25 @@ class GaussianDistribution(DistributionBase):
     def __init__(self, mean=0, covariance=1):
         mean = self._ensure_array(mean, ndim=1)
         covariance = self._ensure_array(covariance, ndim=2)
+        self.k = mean.shape[0]
 
-        assert covariance.shape == (mean.shape[0], mean.shape[0]), (
+        assert covariance.shape == (self.k, self.k), (
             "dimension error")
 
         self.mean = mean
         self.covariance = covariance
         self.L, _ = la.cho_factor(covariance, lower=True)
 
+        self.dist = multivariate_normal(mean=self.mean, cov=self.covariance)
+
+    def __call__(self, x):
+        return self.dist.pdf(x)
+
     def sample(self, rng):
-        return rng.normal(loc=self.mean, scale=self.covariance)
+        # this is actually the function that scipy.stats.multivariate_normal
+        # calls to generate its realizations
+        return rng.multivariate_normal(mean=self.mean,
+                                       cov=self.covariance)
 
     def apply_covariance(self, x):
         x = self._ensure_array(x)
