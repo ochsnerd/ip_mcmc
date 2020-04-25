@@ -25,8 +25,8 @@ def test_StandardRWAccepter():
 
     a = StandardRWAccepter(potential, d)
 
-    assert np.isclose(a._I(1), 1 + 0.25), ""
-    assert np.isclose(a._I(5), 5 + 25 / 4), ""
+    assert np.isclose(a._I(1), 1 + 1), ""
+    assert np.isclose(a._I(5), 5 + 25), ""
 
     assert a(0, 0, rng), ""
     assert not a(0, np.sqrt(2), rng), ""
