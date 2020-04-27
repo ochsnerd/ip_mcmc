@@ -70,9 +70,38 @@
     is fulfilled.
 
     If the proposal is symmetric ($g(y|x) = g(x|y)$), then the acceptance takes the simpler form
-    $$a(y,x) = \min\left\{1, \frac{P(y)}{P(x)}\right\}.$$
+    #+NAME: eqn:acceptance_simple
+    \begin{equation}
+    a(y,x) = \min\left\{1, \frac{P(y)}{P(x)}\right\}.
+    \end{equation}
 
     Since the target distribution $P(x)$ only appears as a ratio, normalizing factors can be ignored.
+
+*** Potential for Bayes'-MCMC when sampling from analytic distributions
+    How can we use formulations of Metropolis-Hastings-MCMC algorithms designed to sample from
+    posteriors when want to sample from probability distribution with an easy analytical expression?
+
+    Algorithms for sampling from a posterior sample from
+    $$\rho(u) \propto \rho_0(u) \exp(-\Phi(u)),$$
+    where $\rho_0$ is the prior and $\exp(-\Phi(u))$ is the likelihood. Normally, we have an
+    efficient way to compute the likelihood.
+
+    When we have an efficient way to compute the posterior $\rho$ and we want to sample from it,
+    the potential to do that is:
+    $$\Phi(u) = \ln(\rho_0(u)) - \ln(\rho(u)),$$
+    where an additive constant from the normalization was omitted since only potential differences
+    are relevant.
+
+    When working with a Gaussian prior $\N{0}{\C}$, the potential takes the form
+    $$\Phi(u) = -\ln{\rho(u)} - \frac{1}{2} \norm{\C^{-1/2}u}^2.$$
+
+    When inserting this into the acceptance probability for the standard random walk MCMC given
+    in formula (1.2) in [[cite:cotter_mcmc_2013]], the two Gaussian-expressions cancel, as do the
+    logarithm and the exponentiation, leaving the simple acceptance described in [[eqn:acceptance_simple]].
+
+    This cancellation does not happen when using the pCN-Acceptance probablity. This could
+    explain the poorer performance of pCN when directly sampling a probablity distribution.
+
 *** Acceptance Probabilities for different MCMC Proposers
     Start from Bayes' formula and rewrite the likelyhood $\text{L}(u)$ as $\exp(-\Phi(u))$ for
     a positive scalar function $\Phi$ called the potential:
