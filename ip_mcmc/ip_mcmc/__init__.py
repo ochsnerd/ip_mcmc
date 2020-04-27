@@ -1,4 +1,4 @@
 from .sampler import MCMCSampler
-from .proposer import StandardRWProposer
-from .accepter import AnalyticAccepter, StandardRWAccepter, CountedAccepter
+from .proposer import StandardRWProposer, pCNProposer
+from .accepter import AnalyticAccepter, StandardRWAccepter, pCNAccepter, CountedAccepter
 from .distribution import GaussianDistribution
