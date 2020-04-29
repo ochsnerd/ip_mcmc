@@ -1,10 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from scipy.stats import norm
+
 from ip_mcmc import (MCMCSampler,
-                     AnalyticAccepter, CountedAccepter,
-                     StandardRWProposer,
+                     AnalyticAccepter, CountedAccepter, StandardRWAccepter, pCNAccepter,
+                     StandardRWProposer, pCNProposer,
                      GaussianDistribution)
+
+from helpers import store_figure
 
 
 class Bimodal():
@@ -17,7 +21,7 @@ class Bimodal():
         if abs(x) > self.l:
             return 0
 
-        # since we cut the tails, the normalisation is perfect
+        # since we cut the tails, the normalisation is not perfect
         return .5 * (self.left(x) + self.right(x))
 
 
@@ -25,10 +29,52 @@ def normal(x):
     return np.exp(-0.5*x**2) / np.sqrt(2 * np.pi)
 
 
+class Potential():
+    """An artificial potential allowing sampling from
+    a analytical density using Bayes-MCMC.
+
+    Assuming a gaussian prior (scipy.stats.norm)
+    """
+    def __init__(self, rho, prior):
+        self.rho = rho
+        self.prior = prior
+
+    def __call__(self, x):
+        # scipy.stats.norm.logpdf includes the normalisation, but that can be ignored
+        # as only potential differnces matter
+        return -np.log(self.rho(x)) + self.prior.logpdf(x)
+
+
 def create_StandardRWSampler(density):
-    random_walk_proposer = StandardRWProposer(0.25, 1)
-    acceptance = AnalyticAccepter(density)
-    return MCMCSampler(random_walk_proposer, acceptance, np.random.default_rng(1))
+    mean = np.array([0])
+    covariance = np.array([1], ndmin=2)
+    sqrt_covariance = np.array([1], ndmin=2)
+    potential = Potential(rho=density, prior=norm(loc=mean, scale=covariance))
+
+    proposer = StandardRWProposer(delta=0.25,
+                                  dims=1,
+                                  sqrt_covariance=sqrt_covariance)
+    accepter = StandardRWAccepter(potential=potential,
+                                  prior=GaussianDistribution(mean=mean, covariance=covariance))
+    return MCMCSampler(proposer, accepter, np.random.default_rng(1))
+
+
+def create_pCNSampler(density):
+    mean = np.array([0])
+    covariance = np.array([1], ndmin=2)
+    potential = Potential(rho=density, prior=norm(loc=mean, scale=covariance))
+
+    # beta != delta of other proposers, but
+    # it could easily be translated if someone took the 30s to do it
+    proposer = pCNProposer(beta=0.25, covariance=covariance)
+    accepter = pCNAccepter(potential=potential)
+    return MCMCSampler(proposer, accepter, np.random.default_rng(1))
+
+
+def create_AnalyticSampler(density):
+    proposer = StandardRWProposer(0.25, 1)
+    accepter = AnalyticAccepter(density)
+    return MCMCSampler(proposer, accepter, np.random.default_rng(1))
 
 
 def create_density_plot(sampler, density):
@@ -36,11 +82,15 @@ def create_density_plot(sampler, density):
     x_0 = np.array([0])
 
     X = sampler.run(x_0, 500)
-    plt.hist(X, bins=20, density=True)
-    plt.plot(np.linspace(-10, 10), [density(x) for x in np.linspace(-10, 10)])
+    plt.hist(X, bins=20, density=True, label="Sampled")
+    x_analytic = np.linspace(-10, 10, 200)
+    plt.plot(x_analytic,
+             [density(x) for x in x_analytic],
+             label="True")
+    plt.legend()
 
 
-def create_autocorrelation_plot(sampler):
+def create_autocorrelation_plot(sampler, name):
     x_0 = np.array([0])
 
     X = sampler.run(x_0, n_samples=1000, sample_interval=1).flatten()
@@ -48,31 +98,51 @@ def create_autocorrelation_plot(sampler):
     ac = ac[ac.size//2:]
     ac /= ac[0]
 
-    plt.plot(ac)
+    plt.plot(ac, label=name)
+
+
+def plot_sampler_characteristics(sampler_generator, density, name):
+    sampler = sampler_generator(density)
+
+    create_density_plot(sampler, density)
+    plt.title(name + " density sampling")
+    store_figure(name + "_density")
+
+    create_autocorrelation_plot(sampler, name)
+    plt.title("Autocorrelation of sampling from " + name + " density")
+    store_figure(name + "_ac")
+
+
+def plot_autocorrelations(density, sampler_generators, names):
+    for sampler_generator, name in zip(sampler_generators, names):
+        create_autocorrelation_plot(sampler_generator(density), name)
+
+        print(name)
+
+    plt.title("Autocorrelation")
+    plt.legend()
+
+    store_figure("_".join(names))
 
 
 def main():
     bimodal_density = Bimodal(3, 1, 10)
 
-    bimodal_RWSampler = create_StandardRWSampler(bimodal_density)
+    plot_autocorrelations(bimodal_density,
+                          [create_AnalyticSampler, create_StandardRWSampler, create_pCNSampler],
+                          ["analytic", "standard_rw", "pCN"])
 
-    create_density_plot(bimodal_RWSampler, bimodal_density)
-    plt.savefig("../figures/bimodal_density.svg", format='svg')
-    plt.clf()
+    # plot_sampler_characteristics(create_StandardRWSampler, bimodal_density, "standard_bimodal")
 
-    create_autocorrelation_plot(bimodal_RWSampler)
-    plt.savefig("../figures/bimodal_ac.svg", format='svg')
-    plt.clf()
+    # plot_sampler_characteristics(create_StandardRWSampler, normal, "standard_normal")
 
-    normal_RWSampler = create_StandardRWSampler(normal)
+    # plot_sampler_characteristics(create_pCNSampler, bimodal_density, "pCN_bimodal")
 
-    create_density_plot(normal_RWSampler, normal)
-    plt.savefig("../figures/normal_density.svg", format='svg')
-    plt.clf()
+    # plot_sampler_characteristics(create_pCNSampler, normal, "pCN_normal")
 
-    create_autocorrelation_plot(normal_RWSampler)
-    plt.savefig("../figures/normal_ac.svg", format='svg')
-    plt.clf()
+    # plot_sampler_characteristics(create_AnalyticSampler, bimodal_density, "analytic_bimodal")
+
+    # plot_sampler_characteristics(create_AnalyticSampler, normal, "analytic_normal")
 
 
 if __name__ == '__main__':
