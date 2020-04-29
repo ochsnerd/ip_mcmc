@@ -9,8 +9,15 @@
 
 * TODO Meta                                                        :noexport:
 ** TODO Can I get code execution to work here for the results? (-> DIY jupyter I guess)
+** TODO Can I embed svgs?
 ** DONE Create/Link to bibtex file
 ** TODO Write down what I've done so far
+*** TODO What's up with the ac of pCN?
+*** DONE Write up/insert plots
+** TODO Theory: What is an infinite-dimensional Gaussian?
+*** Some definition about random fields blabla in cotter
+*** What about BB stuart?
+*** What about the internet?
 ** TODO Code BB Stuart Example 2.1
 ** TODO Code BB Stuart Example 2.2
 ** TODO Read Geophysics example
