@@ -13,6 +13,7 @@
 ** TODO Can I get code execution to work here for the results? (-> DIY jupyter I guess)
 ** TODO Can I embed svgs?
 ** DONE Create/Link to bibtex file
+** DONE Tests for pCN prop/acc
 ** TODO Write down what I've done so far
 *** TODO What's up with the ac of pCN?
 *** DONE Write up/insert plots

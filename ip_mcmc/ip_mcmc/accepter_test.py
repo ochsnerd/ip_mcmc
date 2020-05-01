@@ -1,6 +1,6 @@
 import numpy as np
 
-from .accepter import AnalyticAccepter, StandardRWAccepter
+from .accepter import AnalyticAccepter, StandardRWAccepter, pCNAccepter
 from .distribution import GaussianDistribution
 from .test_utilities import MockRNG
 
@@ -30,3 +30,13 @@ def test_StandardRWAccepter():
 
     assert a(0, 0, rng), ""
     assert not a(0, np.sqrt(2), rng), ""
+
+
+def test_pCNAccepter():
+    def potential(u):
+        return np.linalg.norm(u)
+
+    a = pCNAccepter(potential)
+
+    assert np.isclose(a.accept_probability(-1, 1), 1), ""
+    assert np.isclose(a.accept_probability(1, 0), np.e), ""
