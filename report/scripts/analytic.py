@@ -6,6 +6,7 @@ from scipy.stats import norm
 from ip_mcmc import (MCMCSampler,
                      AnalyticAccepter, CountedAccepter, StandardRWAccepter, pCNAccepter,
                      StandardRWProposer, pCNProposer,
+                     AnalyticPotential,
                      GaussianDistribution)
 
 from helpers import store_figure
@@ -49,20 +50,23 @@ def create_StandardRWSampler(density):
     mean = np.array([0])
     covariance = np.array([1], ndmin=2)
     sqrt_covariance = np.array([1], ndmin=2)
-    potential = Potential(rho=density, prior=norm(loc=mean, scale=covariance))
+    prior = GaussianDistribution(mean, covariance)
+    potential = AnalyticPotential(posterior=density, prior=prior)
 
     proposer = StandardRWProposer(delta=0.25,
                                   dims=1,
                                   sqrt_covariance=sqrt_covariance)
     accepter = StandardRWAccepter(potential=potential,
-                                  prior=GaussianDistribution(mean=mean, covariance=covariance))
+                                  prior=prior)
     return MCMCSampler(proposer, accepter, np.random.default_rng(1))
 
 
 def create_pCNSampler(density):
     mean = np.array([0])
     covariance = np.array([1], ndmin=2)
-    potential = Potential(rho=density, prior=norm(loc=mean, scale=covariance))
+    prior = GaussianDistribution(mean, covariance)
+    
+    potential = AnalyticPotential(posterior=density, prior=prior)
 
     # beta != delta of other proposers, but
     # it could easily be translated if someone took the 30s to do it
@@ -93,7 +97,7 @@ def create_density_plot(sampler, density):
 def create_autocorrelation_plot(sampler, name):
     x_0 = np.array([0])
 
-    X = sampler.run(x_0, n_samples=1000, sample_interval=1).flatten()
+    X = sampler.run(x_0, n_samples=20000, sample_interval=1).flatten()
     ac = np.correlate(X, X, mode='full')
     ac = ac[ac.size//2:]
     ac /= ac[0]
@@ -117,7 +121,7 @@ def plot_autocorrelations(density, sampler_generators, names):
     for sampler_generator, name in zip(sampler_generators, names):
         create_autocorrelation_plot(sampler_generator(density), name)
 
-        print(name)
+        print(name + "done")
 
     plt.title("Autocorrelation")
     plt.legend()
