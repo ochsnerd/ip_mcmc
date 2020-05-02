@@ -1,6 +1,7 @@
 import numpy as np
 
 from .proposer import StandardRWProposer, pCNProposer
+from .distribution import GaussianDistribution
 from .test_utilities import MockRNG
 
 
@@ -35,9 +36,9 @@ def test_StandardRWProposer_Multivariate():
 def test_pCNProposer_Scalar():
     rng = MockRNG(-np.pi)
     beta = 1 / np.e
-    covariance = np.array([2], ndmin=2)
+    prior = GaussianDistribution(mean=0, covariance=2)
 
-    p = pCNProposer(beta, covariance)
+    p = pCNProposer(beta, prior)
 
     assert np.isclose(p.contraction, np.sqrt(1 - beta**2)), ""
     assert np.isclose(p(-np.pi, rng),
@@ -48,9 +49,10 @@ def test_pCNProposer_Scalar():
 def test_pCNProposer_Scalar():
     rng = MockRNG(np.array([2, -1]))
     beta = 0.5
-    covariance = np.array([[2, 0.5], [0.5, 1]])
+    prior = GaussianDistribution(mean=np.array([0, 0]),
+                                 covariance=np.array([[2, 0.5], [0.5, 1]]))
 
-    p = pCNProposer(beta, covariance)
+    p = pCNProposer(beta, prior)
 
     u = np.array([1, 1])
     assert np.isclose(p(u, rng),

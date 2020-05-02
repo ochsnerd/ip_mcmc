@@ -52,7 +52,7 @@ def create_pCNSampler(density):
 
     # beta != delta of other proposers, but
     # it could easily be translated if someone took the 30s to do it
-    proposer = pCNProposer(beta=0.25, covariance=covariance)
+    proposer = pCNProposer(beta=0.25, prior=prior)
     accepter = pCNAccepter(potential=potential)
     return MCMCSampler(proposer, accepter, np.random.default_rng(1))
 

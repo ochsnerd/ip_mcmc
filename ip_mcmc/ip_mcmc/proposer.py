@@ -41,12 +41,15 @@ class pCNProposer(ProposerBase):
 
     (4.8) in MCMCMF
     """
-    def __init__(self, beta, covariance):
+    def __init__(self, beta, prior):
+        """
+        beta: float
+        prior: GaussianDistribution
+        """
         assert 0 <= beta <= 1, "beta has to be in [0,1]"
         self.beta = beta
         self.contraction = np.sqrt(1 - beta ** 2)
-        self.w = GaussianDistribution(mean=np.zeros(covariance.shape[0]),
-                                      covariance=covariance)
+        self.w = prior
 
     def __call__(self, u, rng):
         return self.contraction * u + self.beta * self.w.sample(rng)
