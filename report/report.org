@@ -396,7 +396,56 @@
      
 
 *** Bayesian inverse problem for $\G{u} = \langle g,u \rangle$
+    For $\G{u} = \langle g,u \rangle$ the resulting posterior under a Gaussian prior
+    is again a Gaussian. The model equation is
+    $$y = \G{u} + \eta$$
+    with:
+    - $y \in \R$
+    - $u \in \R^n$
+    - $\eta \sim \N{0}{\gamma^2}$ for $\gamma \in \R$
+
+    A concrete realization with scalar $u$:
+    - $u = 2$
+    - $g = 3$
+    - $\gamma = 0.5$
+    - $y=6.172$
+    - prior $\N{0}{\Sigma_0=1}$
+    leads to a posterior with mean
+    $\mu = \frac{(\Sigma_0g)y}{\gamma^2 + \langle g, \Sigma_0g \rangle} \approx 2$,
+    which is what we see when we plot the result [[fig:stuart_21_density]].
+    The pCN-Sampler with $\beta = 0.25$ had an acceptance rate of 0.567.
+    
+    #+CAPTION: $N=5000, \mu \approx 2$
+    #+NAME: fig:stuart_21_density
+    [[./figures/stuart_example_21_n=1_N=5000.png]]
+
+    For $n>2$, the resulting posterior can not be plotted anymore. However, it is still Gaussian
+    with given mean & covariance. Can just compare the analytical values to the sample values.
+    Verify that the error decays like $\frac{1}{\sqrt{N}}$.
 *** Bayesian inverse problem for $\G{u} = g (u + \beta u^3)$
+    Since the observation operator is not linear anymore, the resulting posterior is not
+    Gaussian in general. However, since the dimension of the input $u$ is 1, it can
+    still be plotted.
+
+    The concrete realization with:
+    - $g = [3, 1]$
+    - $u = 0.5$
+    - $\beta = 0$
+    - $y= [1.672, 0.91]$
+    - $\gamma = 0.5$
+    - $\eta \sim \N{0}{\gamma^2 I}$
+    - prior $\N{0}{\Sigma_0=1}$
+    however leads to a Gaussian thanks to $\beta = 0$. The mean is
+    $\mu = \frac{\langle g,y \rangle}{\gamma^2 + |g|^2} \approx 0.58$. Plot: [[fig:stuart_22_density]]
+
+    The pCN-Sampler with $\beta = 0.25$ (different beta) had an acceptance rate of 0.576.
+
+    #+CAPTION: $N=5000, \mu \approx 0.58$
+    #+NAME: fig:stuart_22_density
+    [[./figures/stuart_example_22_q=2_N=5000.png]]
+
+    For $\beta \neq 0$, the resulting posterior is not a Gaussian. Still $n=1$, so it can be
+    plotted. Just numerically normalize the analytical expression of the posterior?
 *** Geophysics example
 
 
