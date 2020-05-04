@@ -42,16 +42,16 @@ class AnalyticPotential(PotentialBase):
 class EvolutionPotential(PotentialBase):
     """
     Potential resulting from a model equation
-    y = model(u) + eta,
+    data = observation_operator(u) + eta,
     where the noise-term eta ~ noise_distribution
     """
-    def __init__(self, model, observations, noise_distribution):
-        self.model = model
-        self.observations = observations
+    def __init__(self, observation_operator, data, noise_distribution):
+        self.G = observation_operator
+        self.y = data
         self.rho = noise_distribution
 
     def __call__(self, u):
         return -np.log(self.exp_minus_potential(u))
 
     def exp_minus_potential(self, u):
-        return self.rho(self.observations - self.model(u))
+        return self.rho(self.y - self.G(u))
