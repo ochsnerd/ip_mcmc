@@ -6,6 +6,7 @@
 
 #+LATEX_HEADER: \newcommand{\C}{{\mathcal{C}}}
 #+LATEX_HEADER: \newcommand{\I}{{\mathcal{I}}}
+#+LATEX_HEADER: \newcommand{\R}{{\mathbb{R}}}
 #+LATEX_HEADER: \newcommand{\G}[1]{{\mathcal{G} \left( #1 \right)}}
 #+LATEX_HEADER: \newcommand{\N}[2]{\mathcal{N}\left(#1,#2\right)}
 
@@ -30,6 +31,14 @@
 ** Papers
 *** Stuart et al: Inverse Problems: A Bayesian Perspective [[cite:stuart_inverse_2010]]
     Theoretical Background
+**** Notation
+     Central equation:
+     $$y = \G{u} + \eta$$
+     with:
+     - $y \in \R^q$: data
+     - $u \in \R^n$: IC ("input to mathematical model")
+     - $\G{\cdot} :\R^n \to \R^q$: observation operator
+     - $\eta$: mean zero RV, observational noise (a.s. $\eta \sim \N{0}{\C}$)
 *** Cotter et al: MCMC for functions [[cite:cotter_mcmc_2013]]
     Implementation, MCMC in infinite dimensions
 *** Schneider et al: Earth System Modeling 2.0  [[cite:schneider_earth_2017]]
