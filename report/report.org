@@ -44,6 +44,28 @@
 *** Schneider et al: Earth System Modeling 2.0  [[cite:schneider_earth_2017]]
     Example for MCMC on ODE
 ** Small results
+*** Gaussian in infinite dimensions
+    Wiki-definition of Gaussian measure: uses Lesbesgue-Measure
+
+    However, the Lesbesgue-Measure is not defined in an infinite-dimensional space ([[https://en.wikipedia.org/wiki/Infinite-dimensional_Lebesgue_measure][wiki]]).
+
+    Can still define a measure to be Gaussian if we demand all push-forward measures via a
+    linear functional onto a finite dimensional space to be Gaussian. (What about the star (E^*, L_*)
+    in the wiki-article? Are they dual-spaces?)
+
+    How does this fit with the description in [[cite:cotter_mcmc_2013]]? -> Karhunenen-Loéve
+
+    The problem is not actually in $\exp(-1/2x^T\C^{-1}x)$. What about $\exp(-1/2\norm{\C^{-1/2}x})$?
+
+    What about the terminology in [[cite:cotter_mcmc_2013]]? Absolutely continuous w.r.t a measure for
+    example?
+
+    How is the square root of an operator defined? For matrices, there seems to be a freedom in
+    choosing whether $A = BB$ or $A = BB^T$ for $B = A^{1/2}$. The latter definition seems to
+    be more useful when working with Cholesky factorizations (cf. https://math.stackexchange.com/questions/2767873/why-is-the-square-root-of-cholesky-decomposition-equal-to-the-lower-triangular-m),
+    but for example in the wiki-article about the matrix (operator) square root (https://en.wikipedia.org/wiki/Square_root_of_a_matrix):
+    "The Cholesky factorization provides another particular example of square root, which should not be confused with the unique non-negative square root."
+
 *** Bayes' Formula & Radon-Nikodym Derivative
     Bayes' Formula is stated using the Radon-Nikodym Derivative in both [[cite:cotter_mcmc_2013]] and [[cite:stuart_inverse_2010]]:
     $$\dv{\mu}{\mu_0} \propto \text{L}(u),$$
@@ -127,11 +149,6 @@
     $$\frac{\rho(u)}{\rho_o(u)} \propto \exp(\Phi(u)).$$
     Assuming our prior to be a Gaussian ($\mu_0 \sim \N{0}{\C}$).
 
-    (IS WRITING $\rho_0(u) \propto \exp(-\frac{1}{2} u^TC^{-1}u)$ ASSUMING FINITE DIMENSIONS? WHAT
-    ABOUT $\rho_0(u) \propto \exp(-\frac{1}{2} \norm{C^{-1/2}u}^2)$? I assume the former is not,
-    for $C$ to be a proper covariance operator it should be invertible. But taking the square root
-    is probably not always well defined for infinite dimensions (so the latter one is problematic))
-
     Then $$\rho(u) \propto \exp\left( -\Phi(u) + \frac{1}{2} \norm{C^{-1/2}u}^2 \right),$$
     since $u^T C^{-1} u = (C^{-1/2} u)^T(C^{-1/2} u) = \langle C^{-1/2}u, C^{-1/2}u \rangle = \norm{C^{-1/2} u}^2$,
     where in the first equality we used $C$ being symmetric.
@@ -143,16 +160,23 @@
 
     Todo: Why exactly is the second term (from the prior) cancelled when doing pCN?
 *** Different formulations of multivariate Gaussians
-    THIS WHOLE SECTION ASSUMES FINITE DIMENSIONS
-
-    Is an RV $\xi \sim \N{0}{C}$ distributed the same as $C^{1/2}\xi_0$, with $\xi_0 \sim \N(0, \I)$?
-
-    Is $C^{1/2}\exp(\frac{1}{2} x^Tx) = \exp(\frac{1}{2} x^T C^{-1} x)$ ?
+    Is an RV $\xi \sim \N{0}{C}$ distributed the same as $C^{1/2}\xi_0$, with $\xi_0 \sim \N{0}{\I}$?
 
     From wikipedia: Affine transformation $Y = c + BX$ for $X \sim \N{\mu}{\Sigma}$ is also a Gaussian
-    $Y \sim \N{c + B\mu}{B\Sigma B^T}$. In our case $X \sim \N{0}{I}$, so $Y \sim \N{0}{C^{1/2}\I {C^{1/2}}^{T}} = \N{0}{C}$,
+    $Y \sim \N{c + B\mu}{B\Sigma B^T}$. In our case $X \sim \N{0}{\I}$, so $Y \sim \N{0}{C^{1/2}\I {C^{1/2}}^{T}} = \N{0}{C}$,
     since the covariance matrix is positive definite, which means it's square root is also positive definite
     and thus symmetric.
+
+    On second thought, it also follows straight from the definition:
+    $$
+      \mathbf{X} \sim \N{\mu}{\Sigma}
+      \Leftrightarrow
+      \exists \mu \in \R^k, A \in \R^{k \cross l}
+        \text{ s.t. }
+        \mathbf{X} = \mu + A\mathbf{Z}
+        \text{ with } \mathbf{Z}_n \sim \N{0}{1} \text{ i.i.d}
+    $$
+    where $\Sigma = AA^T$.
 
 * Implementation
 ** Framework/Package Structure
