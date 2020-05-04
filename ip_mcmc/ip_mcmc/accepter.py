@@ -18,17 +18,22 @@ class CountedAccepter(AccepterBase):
         self.accepts = 0
 
     def __call__(self, u, v, rng):
-        res = self.accepter(u, v, rng)
+        accepted = self.accepter(u, v, rng)
 
         self.calls += 1
-        if res:
+        if accepted:
             self.accepts += 1
 
-        return res
+        return accepted
 
     def reset(self):
         self.calls = 0
         self.accepts = 0
+
+    def ratio(self):
+        if self.calls == 0:
+            raise ValueError("No samples yet!")
+        return self.accepts / self.calls
 
 
 class ProbabilisticAccepter(AccepterBase):
