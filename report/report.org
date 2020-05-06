@@ -45,15 +45,29 @@
     Example for MCMC on ODE
 ** Small results
 *** Gaussian in infinite dimensions
-    Wiki-definition of Gaussian measure: uses Lesbesgue-Measure
+    This section is quite a mess, maybe you could suggest a not-too-technical introduction
+    to infinite dimensional Gaussian measures?
 
+    Wiki: Definition of Gaussian measure uses Lesbesgue measure.
     However, the Lesbesgue-Measure is not defined in an infinite-dimensional space ([[https://en.wikipedia.org/wiki/Infinite-dimensional_Lebesgue_measure][wiki]]).
 
     Can still define a measure to be Gaussian if we demand all push-forward measures via a
-    linear functional onto a finite dimensional space to be Gaussian. (What about the star (E^*, L_*)
-    in the wiki-article? Are they dual-spaces?)
+    linear functional onto $\R$ to be a Gaussian. (What about the star (E^*, L_*)
+    in the wiki-article? Are they dual-spaces?) (What would be an example of that? An example
+    for a linear functional on an inf-dims space given on wikipedia is integration.
+    What do we integrate? How does this lead to a Gaussian?)
 
     How does this fit with the description in [[cite:cotter_mcmc_2013]]? -> Karhunenen-Loéve
+    
+    What would be an example of a covariance operator in infinite dimensions?
+    The Laplace-Operator operates on functions, the eigenfunctions would be $sin$, $cos$ (I think?
+    This might not actually be so easy, see [[https://en.wikipedia.org/wiki/Dirichlet_eigenvalue][Dirichlet Eigenvalues]]). Are the eigenvalues
+    square-summable?
+    
+    Anyway, when a inf-dim Gaussian is given as a KL-Expansion, an  example of a linear functional
+    given as $f(u) = \langle \phi_i, u \rangle$ for $\phi_i$ an eigenfunction of $\C$, then I can see
+    the push-forward definition of inf-dim Gaussians satisfied. ( $\C$ spd, so $\phi_i$ s are
+    orthogonal, so we just end up with one of the KH-"components" which is given to be $\N{0}{1})$.
 
     The problem is not actually in $\exp(-1/2x^T\C^{-1}x)$. What about $\exp(-1/2\norm{\C^{-1/2}x})$?
 
