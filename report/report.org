@@ -249,6 +249,46 @@
     At the moment the there is one class for both scalar and multivariate Gaussians. This
     introduces some overhead as it has to work with both ~float~ and ~np.array~. Maybe two
     seperate classes would be better.
+
+    Also, maybe there is a need to implement a Gaussian using the Karhunen-Loéve-Expansion?
+*** Potentials
+    A class for implementing the potential resulting from rewriting the likelihood as
+    $$\text{L}(u) = \exp(- \Phi(u)).$$
+   
+    #+BEGIN_SRC python
+    class PotentialBase(ABC):
+    """
+        Potential used to express the likelihood;
+        d mu(u; y) / d mu_0(u) \propto L(u; y)
+        Write L(u; y) as exp(-potential(u; y))
+        """
+        @abstractmethod
+        def __call__(self, u):
+            ...
+
+        @abstractmethod
+        def exp_minus_potential(self, u):
+            ...
+    #+END_SRC
+
+    The two functions return $\Phi(u)$ and $\exp(-\Phi(u))$ respectively. Depending on the
+    concrete potential, one or the other is easier to compute.
+
+    Potentials are used in the accepters to decide the relative weight of different configurations.
+    There, the ~PotentialBase.exp_minus_potential~ is used.
+**** AnalyticPotential
+
+     This potential is used when sampling from an analytically computable probability distribution,
+     i.e. a known posterior. In this case
+     $$\exp(-\Phi(u)) = \frac{\rho(u)}{\rho_0(u)},$$
+     see [[Potential for Bayes'-MCMC when sampling from analytic distributions]]
+**** EvolutionPotential
+
+     This potential results when sampling from the model-equation
+     $$y = \G{u} + \eta,$$
+     with $\eta \sim \rho$. The resulting potential can be computed as
+     $$\exp(-\Phi(u)) = \rho(y - \G{u}).$$
+
 *** Proposers
 
     Propose a new state $v$ based on the current one $u$.
