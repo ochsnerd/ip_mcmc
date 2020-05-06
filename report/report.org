@@ -500,7 +500,51 @@
 
     For $\beta \neq 0$, the resulting posterior is not a Gaussian. Still $n=1$, so it can be
     plotted. Just numerically normalize the analytical expression of the posterior?
-*** Geophysics example
+*** Geophysics example: Lorenz-96 model
+**** Based on:
+
+     Lorenz, E. N. (1996). Predictability—A problem partly solved. In Reprinted in T. N. Palmer & R. Hagedorn (Eds.), Proceedings Seminar on
+     Predictability, Predictability of Weather and Climate, Cambridge UP (2006) (Vol. 1, pp. 1–18). Reading, Berkshire, UK: ECMWF.
+**** Equation
+
+     A system of ODEs, representing the coupling between slow variables $X$ and fast, subgrid
+     variables $Y$.
+
+     $$ \dv{X_k}{t} =                 - X_{k-1}(X_{k-2} - X_{k+1}) - X_k + F - hc \bar{Y}_k $$
+     $$ \frac{1}{c} \dv{Y_{j,k}}{t} = -bY_{j+1,k}(Y_{j-2,k} - Y_{j+1, k}) - Y_{j,k} + \frac{h}{J}X_k$$
+
+     - $X = [X_0, ..., X_{K-1}] \in \R^K$
+     - $Y = [Y_{j, 0} | ... | Y_{j, K-1}] \in \R^{J \cross K}$ \\
+       $Y_{j,k} = [Y_{0,k}, ..., Y_{J-1,k}] \in  \R^J$
+     - $\bar{Y}_k = \frac{1}{J}\sum_j Y_{j,k}$
+     - periodic: $X_K = X_0$, $Y_{J,k} = Y_{0,k}$
+     - Parameters $\Theta = [F, h, c, b]$
+     - $h$: coupling strength
+     - $c$: relative damping
+     - $F$: external forcing of the slow variables (large scale forcing)
+     - $b$: scale of non-linear interaction of fast variables
+     - $t = 1 \Leftrightarrow 1$ day (simulation duration is given in days)
+
+**** Properties
+
+     - For $K=36$, $J=10$ and $\Theta = [F, h, c, b] = [10, 1, 10, 10]$ there is chaotic behaviour.
+
+     - The nonlinearities conserve the energies within a subsystem: (show!)
+       - $E_X = \sum_k X_k^2$
+       - $E_{Y_k} = \sum_j Y_{j,k}^2$
+
+     - The interaction conserves the total energy: (show!)
+       - $E_{T} = \sum_k (X_k^2 + \sum_j Y_{j,k}^2)$
+
+     - In the statistical steady state, the external forcing $F$ (as long as its positive) balances
+       the dampling of the linear terms.
+
+     - Averaged quantities
+       - $\expval{\phi} = \frac{1}{T} \int_{t_0}^{t_0 + T} \phi(t) \dd{t}$ (or a sum over discrete values)
+       - Long-term time-mean in the statistical steady state: $\expval{\cdot}_{\infty}$
+       - $\expval{X^2}_\infty = F \expval{X}_{\infty} - hc \expval{X\bar{Y}}_\infty$ $\forall k$ \\
+         (multiply $X$ -equation by $X$, all $X_k$ s are statistically equivalent, $\dv{X}{t} = 0$ in steady state)
+       - $\expval{\bar{Y^2}}_{\infty} = \frac{h}{J} \expval{X \bar{Y}}_{\infty}$
 
 
-#+BIBLIOGRAPHY: ../papers/inverse_problems plain
+ #+BIBLIOGRAPHY: ../papers/inverse_problems plain
