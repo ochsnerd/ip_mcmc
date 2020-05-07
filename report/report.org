@@ -1,5 +1,7 @@
 #+TITLE: Markov Chain Monte Carlo for Inverse Problems
 
+#+OPTIONS: H:4
+
 #+INCLUDE: latex_header.org
 
 #+INCLUDE: theory.org
