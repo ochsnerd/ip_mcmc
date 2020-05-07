@@ -1,0 +1,192 @@
+* Framework/Package Structure
+  The framework is designed to support an easy use case:
+  #+BEGIN_SRC python
+  proposer = StandardRWProposer(beta=0.25, dims=1)
+  accepter = AnalyticAccepter(my_distribution)
+  rng = np.random.default_rng(42)
+  sampler = MCMCSampler(rw_proposer, accepter, rng)
+
+  samples = sampler.run(x_0=0, n_samples=1000)
+  #+END_SRC
+
+  There is only one source of randomness, shared among all classes and supplied by the user.
+  This facilitates reproducability.
+
+  Tests are done with ~pytest~.
+** Distributions
+   A class for implementing probability distributions.
+   #+BEGIN_SRC python
+   class DistributionBase(ABC):
+       @abstractmethod
+       def sample(self, rng):
+           """Return a point sampled from this distribution"""
+           ...
+   #+END_SRC
+    
+   The most important realisation is the ~GaussianDistribution~, used
+   in the proposers.
+
+   #+BEGIN_SRC python    
+   class GaussianDistribution(DistributionBase):
+       def __init__(self, mean=0, covariance=1):
+           ...
+
+       def sample(self, rng):
+           ...
+
+       def apply_covariance(self, x):
+           ...
+
+       def apply_sqrt_covariance(self, x):
+           ...
+
+       def apply_precision(self, x):
+           ...
+
+       def apply_sqrt_precision(self, x):
+           ...
+   #+END_SRC
+
+   The design of this class is based on the implementation in [[http://muq.mit.edu/master-muq2-docs/CrankNicolson_8py_source.html][muq2]]. The ~precision~ / ~sqrt_precision~
+   is implemented through a Cholesky decomposition, computed in the constructor. This makes
+   applying them pretty fast ($\mathcal{O}(n^2)$).
+
+   At the moment the there is one class for both scalar and multivariate Gaussians. This
+   introduces some overhead as it has to work with both ~float~ and ~np.array~. Maybe two
+   seperate classes would be better.
+
+   Also, maybe there is a need to implement a Gaussian using the Karhunen-Loéve-Expansion?
+** Potentials
+   A class for implementing the potential resulting from rewriting the likelihood as
+   $$\text{L}(u) = \exp(- \Phi(u)).$$
+   
+   #+BEGIN_SRC python
+   class PotentialBase(ABC):
+   """
+       Potential used to express the likelihood;
+       d mu(u; y) / d mu_0(u) \propto L(u; y)
+       Write L(u; y) as exp(-potential(u; y))
+       """
+       @abstractmethod
+       def __call__(self, u):
+           ...
+
+       @abstractmethod
+       def exp_minus_potential(self, u):
+           ...
+   #+END_SRC
+
+   The two functions return $\Phi(u)$ and $\exp(-\Phi(u))$ respectively. Depending on the
+   concrete potential, one or the other is easier to compute.
+
+   Potentials are used in the accepters to decide the relative weight of different configurations.
+   There, the ~PotentialBase.exp_minus_potential~ is used.
+*** AnalyticPotential
+
+    This potential is used when sampling from an analytically computable probability distribution,
+    i.e. a known posterior. In this case
+    $$\exp(-\Phi(u)) = \frac{\rho(u)}{\rho_0(u)},$$
+    see [[file:theory.org::Potential for Bayes'-MCMC when sampling from analytic distributions]]
+*** EvolutionPotential
+
+    This potential results when sampling from the model-equation
+    $$y = \G{u} + \eta,$$
+    with $\eta \sim \rho$. The resulting potential can be computed as
+    $$\exp(-\Phi(u)) = \rho(y - \G{u}).$$
+
+** Proposers
+
+   Propose a new state $v$ based on the current one $u$.
+
+   #+BEGIN_SRC python
+   class ProposerBase(ABC):
+       @abstractmethod
+       def __call__(self, u, rng):
+           ...
+   #+END_SRC
+
+*** StandardRWProposer
+
+    Propose a new state as
+    $$v = u + \sqrt{2\delta} \xi,$$
+    with either $\xi \sim \N{0}{\I}$ or $\xi \sim \N{0}{\C}$ (see section 4.2 in [[cite:cotter_mcmc_2013]]).
+
+    This leads to a well-defined algorithm in finite dimensions.
+    This is not the case when working on functions (as described in section 6.3 in [[cite:cotter_mcmc_2013]])
+
+*** pCNProposer
+
+    Propose a new state as
+    $$v = \sqrt{1-\beta^2} u + \beta \xi,$$
+    with $\xi \sim \N{0}{\C}$ and $\beta = \frac{8\delta}{(2+\delta)^2} \in [0,1]$
+    (see formula (4.8) in [[cite:cotter_mcmc_2013]]).
+
+    This approach leads to an improved algorithm (quicker decorrelation in finite dimensions,
+    nicer properties for infinite dimensions)(see sections 6.2 + 6.3 in [[cite:cotter_mcmc_2013]]).
+
+    The wikipedia-article on the Cholesky-factorization mentions the use-case of obtaining a
+    correlated sample from an uncorrelated one by the Cholesky-factor. This is not implemented here.
+** Accepters
+
+   Given a current state $u$ and a proposed state $v$, decide if the new state is accepted or rejected.
+
+   For sampling from a distribution $P(x)$, the acceptance probability for a symmetric proposal is
+   $a = \text{min}\{1, \frac{P(v)}{P(u)}\}$
+   (see [[file:theory.org::Acceptance Probability for Metropolis-Hastings]])
+
+   #+BEGIN_SRC python
+   class ProbabilisticAccepter(AccepterBase):
+       def __call__(self, u, v, rng):
+           """Return True if v is accepted"""
+           a = self.accept_probability(u, v)
+           return a > rng.random()
+
+       @abstractmethod
+       def accept_probability(self, u, v):
+           ...
+   #+END_SRC
+
+*** AnalyticAccepter
+
+    Used when there is an analytic expression of the desired distribution.
+
+   #+BEGIN_SRC python
+   class AnalyticAccepter(ProbabilisticAccepter):
+       def accept_probability(self, u, v):
+           return self.rho(v) / self.rho(u)
+   #+END_SRC
+
+*** StandardRWAccepter
+
+    Based on formula (1.2) in [[cite:cotter_mcmc_2013]]:
+    $$a = \text{min}\{1, \exp(I(u) - I(v))\},$$ with
+    $$I(u) = \Phi(u) + \frac{1}{2}\norm{\C^{-1/2}u}^2$$.
+
+    See also [[file:theory.org::Acceptance Probabilities for different MCMC Proposers]].
+
+*** pCNAccepter
+
+    Works together with the [[pCNProposer][pCNProposer]] to achieve the simpler expression for the acceptance
+    $$a = \text{min}\{1, \exp(\Phi(u) - \Phi(v))\}.$$
+
+*** CountedAccepter
+
+    Stores and forwards calls to an "actual" accepter. Counts calls and accepts and is used for
+    calculating the acceptance ratio.
+    
+** Sampler
+
+   The structure of the sampler is quite simple, since it can rely heavily on the functionality
+   provided by the Proposers and Accepters.
+
+   #+BEGIN_SRC python
+   class MCMCSampler:
+       def __init__(self, proposal, acceptance, rng):
+           ...
+
+       def run(self, u_0, n_samples, burn_in=1000, sample_interval=200):
+           ...
+
+       def _step(self, u, rng):
+           ...
+   #+END_SRC

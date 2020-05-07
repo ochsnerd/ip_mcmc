@@ -1,0 +1,8 @@
+#+LATEX_HEADER: \usepackage{physics}
+#+LATEX_HEADER: \usepackage{dsfont}
+
+#+LATEX_HEADER: \newcommand{\C}{{\mathcal{C}}}
+#+LATEX_HEADER: \newcommand{\I}{{\mathcal{I}}}
+#+LATEX_HEADER: \newcommand{\R}{{\mathbb{R}}}
+#+LATEX_HEADER: \newcommand{\G}[1]{{\mathcal{G} \left( #1 \right)}}
+#+LATEX_HEADER: \newcommand{\N}[2]{\mathcal{N}\left(#1,#2\right)}

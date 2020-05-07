@@ -1,0 +1,164 @@
+* Theory
+** Papers
+*** Stuart et al: Inverse Problems: A Bayesian Perspective [[cite:stuart_inverse_2010]]
+    Theoretical Background
+**** Notation
+     Central equation:
+     $$y = \G{u} + \eta$$
+     with:
+     - $y \in \R^q$: data
+     - $u \in \R^n$: IC ("input to mathematical model")
+     - $\G{\cdot} :\R^n \to \R^q$: observation operator
+     - $\eta$: mean zero RV, observational noise (a.s. $\eta \sim \N{0}{\C}$)
+*** Cotter et al: MCMC for functions [[cite:cotter_mcmc_2013]]
+    Implementation, MCMC in infinite dimensions
+*** Schneider et al: Earth System Modeling 2.0  [[cite:schneider_earth_2017]]
+    Example for MCMC on ODE
+** Small results
+*** Gaussian in infinite dimensions
+    This section is quite a mess, maybe you could suggest a not-too-technical introduction
+    to infinite dimensional Gaussian measures?
+
+    Wiki: Definition of Gaussian measure uses Lesbesgue measure.
+    However, the Lesbesgue-Measure is not defined in an infinite-dimensional space ([[https://en.wikipedia.org/wiki/Infinite-dimensional_Lebesgue_measure][wiki]]).
+
+    Can still define a measure to be Gaussian if we demand all push-forward measures via a
+    linear functional onto $\R$ to be a Gaussian. (What about the star (E^*, L_*)
+    in the wiki-article? Are they dual-spaces?) (What would be an example of that? An example
+    for a linear functional on an inf-dims space given on wikipedia is integration.
+    What do we integrate? How does this lead to a Gaussian?)
+
+    How does this fit with the description in [[cite:cotter_mcmc_2013]]? -> Karhunenen-Loéve
+    
+    What would be an example of a covariance operator in infinite dimensions?
+    The Laplace-Operator operates on functions, the eigenfunctions would be $sin$, $cos$ (I think?
+    This might not actually be so easy, see [[https://en.wikipedia.org/wiki/Dirichlet_eigenvalue][Dirichlet Eigenvalues]]). Are the eigenvalues
+    square-summable?
+    
+    Anyway, when a inf-dim Gaussian is given as a KL-Expansion, an  example of a linear functional
+    given as $f(u) = \langle \phi_i, u \rangle$ for $\phi_i$ an eigenfunction of $\C$, then I can see
+    the push-forward definition of inf-dim Gaussians satisfied. ( $\C$ spd, so $\phi_i$ s are
+    orthogonal, so we just end up with one of the KH-"components" which is given to be $\N{0}{1})$.
+
+    The problem is not actually in $\exp(-1/2x^T\C^{-1}x)$. What about $\exp(-1/2\norm{\C^{-1/2}x})$?
+
+    What about the terminology in [[cite:cotter_mcmc_2013]]? Absolutely continuous w.r.t a measure for
+    example?
+
+    How is the square root of an operator defined? For matrices, there seems to be a freedom in
+    choosing whether $A = BB$ or $A = BB^T$ for $B = A^{1/2}$. The latter definition seems to
+    be more useful when working with Cholesky factorizations (cf. https://math.stackexchange.com/questions/2767873/why-is-the-square-root-of-cholesky-decomposition-equal-to-the-lower-triangular-m),
+    but for example in the wiki-article about the matrix (operator) square root (https://en.wikipedia.org/wiki/Square_root_of_a_matrix):
+    "The Cholesky factorization provides another particular example of square root, which should not be confused with the unique non-negative square root."
+
+*** Bayes' Formula & Radon-Nikodym Derivative
+    Bayes' Formula is stated using the Radon-Nikodym Derivative in both [[cite:cotter_mcmc_2013]] and [[cite:stuart_inverse_2010]]:
+    $$\dv{\mu}{\mu_0} \propto \text{L}(u),$$
+    where $\text{L}(u)$ is the likelihood.
+
+    Write the measures as $\dd \mu = \rho(u)\dd u$ and $\dd \mu_0 = \rho_0(u)\dd u$ with respect
+    to the standard Lesbesgue measure. Then we have
+    $$
+    \int f(u) \rho(u) \dd u =
+    \int f(u) \dd \mu(u) =
+    \int f(u) \dv{\mu(u)}{\mu_0(u)} \dd \mu_0 =
+    \int f(u) \dv{\mu(u)}{\mu_0(u)} \rho_0(u) \dd u,
+    $$
+    provided that $\dd \mu$, $\dd \mu_0$ and $f$ are nice enough (which they are since we're working
+    with Gaussians). This holds for all test functions $f$, so it must hold pointwise:
+    $$ \dv{\mu(u)}{\mu_0(u)} = \frac{\rho(u)}{\rho_o(u)}.$$
+
+    Using this we recover the more familiar formulation of Bayes' formula:
+    $$\frac{\rho(u)}{\rho_o(u)} \propto \text{L}(u).$$
+
+*** Acceptance Probability for Metropolis-Hastings
+    A Markov process with transition probabilities $t(y|x)$ has a stationary distribution $\pi(x)$.
+    - The _existence_ of $\pi(x)$ follows from /detailed balance/:
+      $$\pi(x)t(y|x) = \pi(y)t(x|y).$$
+      Detailed balance is sufficient but not necessary for the existence of a stationary distribution.
+    - _Uniqueness_ of $\pi(x)$ follows from the Ergodicity of the Markov process. For a Markov
+      processto be Ergodic it has to:
+      - not return to the same state in a fixed interval
+      - reach every state from every other state in finite time
+    
+    The Metropolis-Hastings algorithm constructs transition probabilities $t(y|x)$ such that the
+    two conditions above are satisfied and that $\pi(x) = P(x)$, where $P(x)$ is the distribution
+    we want to sample from.
+
+    Rewrite detailed balance as
+    $$\frac{t(y|x)}{t(x|y)} = \frac{P(y)}{P(x)}.$$
+    Split up the transition probability into proposal $g(y|x)$ and acceptance $a(y,x)$. Then detailed
+    balance requires
+    $$\frac{a(y,x)}{a(x,y)} = \frac{P(y)g(x|y)}{P(x)g(y|x)}.$$
+    Choose
+    $$a(y,x) = \min\left\{1, \frac{P(y)g(x|y)}{P(x)g(y|x)}\right\}$$
+    to ensure that detailed balance is always satisfied. Choose $g(y|x)$ such that ergodicity
+    is fulfilled.
+
+    If the proposal is symmetric ($g(y|x) = g(x|y)$), then the acceptance takes the simpler form
+    #+NAME: eqn:acceptance_simple
+    \begin{equation}
+    a(y,x) = \min\left\{1, \frac{P(y)}{P(x)}\right\}.
+    \end{equation}
+
+    Since the target distribution $P(x)$ only appears as a ratio, normalizing factors can be ignored.
+
+*** Potential for Bayes'-MCMC when sampling from analytic distributions
+    How can we use formulations of Metropolis-Hastings-MCMC algorithms designed to sample from
+    posteriors when want to sample from probability distribution with an easy analytical expression?
+
+    Algorithms for sampling from a posterior sample from
+    $$\rho(u) \propto \rho_0(u) \exp(-\Phi(u)),$$
+    where $\rho_0$ is the prior and $\exp(-\Phi(u))$ is the likelihood. Normally, we have an
+    efficient way to compute the likelihood.
+
+    When we have an efficient way to compute the posterior $\rho$ and we want to sample from it,
+    the potential to do that is:
+    $$\Phi(u) = \ln(\rho_0(u)) - \ln(\rho(u)),$$
+    where an additive constant from the normalization was omitted since only potential differences
+    are relevant.
+
+    When working with a Gaussian prior $\N{0}{\C}$, the potential takes the form
+    $$\Phi(u) = -\ln{\rho(u)} - \frac{1}{2} \norm{\C^{-1/2}u}^2.$$
+
+    When inserting this into the acceptance probability for the standard random walk MCMC given
+    in formula (1.2) in [[cite:cotter_mcmc_2013]], the two Gaussian-expressions cancel, as do the
+    logarithm and the exponentiation, leaving the simple acceptance described in [[eqn:acceptance_simple]].
+
+    This cancellation does not happen when using the pCN-Acceptance probablity. This could
+    explain the poorer performance of pCN when directly sampling a probablity distribution.
+
+*** Acceptance Probabilities for different MCMC Proposers
+    Start from Bayes' formula and rewrite the likelyhood $\text{L}(u)$ as $\exp(-\Phi(u))$ for
+    a positive scalar function $\Phi$ called the potential:
+    $$\frac{\rho(u)}{\rho_o(u)} \propto \exp(\Phi(u)).$$
+    Assuming our prior to be a Gaussian ($\mu_0 \sim \N{0}{\C}$).
+
+    Then $$\rho(u) \propto \exp\left( -\Phi(u) + \frac{1}{2} \norm{C^{-1/2}u}^2 \right),$$
+    since $u^T C^{-1} u = (C^{-1/2} u)^T(C^{-1/2} u) = \langle C^{-1/2}u, C^{-1/2}u \rangle = \norm{C^{-1/2} u}^2$,
+    where in the first equality we used $C$ being symmetric.
+
+    This is formula (1.2) in [[cite:cotter_mcmc_2013]] and is used in the acceptance probability for
+    the standard random walk (see also [[Acceptance Probability for Metropolis-Hastings][Acceptance Probability for Metropolis-Hastings]])
+
+    $\C^{-1/2}u$ makes problems in infinite dimensions.
+
+    Todo: Why exactly is the second term (from the prior) cancelled when doing pCN?
+*** Different formulations of multivariate Gaussians
+    Is an RV $\xi \sim \N{0}{C}$ distributed the same as $C^{1/2}\xi_0$, with $\xi_0 \sim \N{0}{\I}$?
+
+    From wikipedia: Affine transformation $Y = c + BX$ for $X \sim \N{\mu}{\Sigma}$ is also a Gaussian
+    $Y \sim \N{c + B\mu}{B\Sigma B^T}$. In our case $X \sim \N{0}{\I}$, so $Y \sim \N{0}{C^{1/2}\I {C^{1/2}}^{T}} = \N{0}{C}$,
+    since the covariance matrix is positive definite, which means it's square root is also positive definite
+    and thus symmetric.
+
+    On second thought, it also follows straight from the definition:
+    $$
+      \mathbf{X} \sim \N{\mu}{\Sigma}
+      \Leftrightarrow
+      \exists \mu \in \R^k, A \in \R^{k \cross l}
+        \text{ s.t. }
+        \mathbf{X} = \mu + A\mathbf{Z}
+        \text{ with } \mathbf{Z}_n \sim \N{0}{1} \text{ i.i.d}
+    $$
+    where $\Sigma = AA^T$.
