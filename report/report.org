@@ -6,7 +6,9 @@
 
 #+INCLUDE: theory.org
 
-#+INCLUDE: implementation.org
+#+INCLUDE: code.org
+
+#+INCLUDE: results.org
 
 #+BIBLIOGRAPHY: ../papers/inverse_problems plain
 

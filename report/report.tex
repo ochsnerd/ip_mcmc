@@ -1,4 +1,4 @@
-% Created 2020-05-06 Mi 15:17
+% Created 2020-05-07 Do 16:57
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -39,15 +39,16 @@
 
 
 \section{Theory}
-\label{sec:org6ba558b}
+\label{sec:orgdb715b8}
 \subsection{Papers}
-\label{sec:org8cf75e3}
+\label{sec:org9d1b150}
 \subsubsection{Stuart et al: Inverse Problems: A Bayesian Perspective \cite{stuart_inverse_2010}}
-\label{sec:org5813d62}
-Theoretical Background
-\begin{enumerate}
-\item Notation
-\label{sec:orgd8c2298}
+\label{sec:org0647d2c}
+Theoretical Background \footnote{this is a test footnote}
+
+\paragraph{Notation}
+\label{sec:org2dd8ded}
+
 Central equation:
 $$y = \G{u} + \eta$$
 with:
@@ -57,17 +58,16 @@ with:
 \item \(\G{\cdot} :\R^n \to \R^q\): observation operator
 \item \(\eta\): mean zero RV, observational noise (a.s. \(\eta \sim \N{0}{\C}\))
 \end{itemize}
-\end{enumerate}
 \subsubsection{Cotter et al: MCMC for functions \cite{cotter_mcmc_2013}}
-\label{sec:orgc504d56}
+\label{sec:org6ca6c7b}
 Implementation, MCMC in infinite dimensions
 \subsubsection{Schneider et al: Earth System Modeling 2.0  \cite{schneider_earth_2017}}
-\label{sec:orgb458727}
+\label{sec:org5e0d2ef}
 Example for MCMC on ODE
 \subsection{Small results}
-\label{sec:org7491bfd}
+\label{sec:org062c3f6}
 \subsubsection{Gaussian in infinite dimensions}
-\label{sec:orgcdbeba2}
+\label{sec:org1f4434d}
 This section is quite a mess, maybe you could suggest a not-too-technical introduction
 to infinite dimensional Gaussian measures?
 
@@ -104,7 +104,7 @@ but for example in the wiki-article about the matrix (operator) square root (\ur
 "The Cholesky factorization provides another particular example of square root, which should not be confused with the unique non-negative square root."
 
 \subsubsection{Bayes' Formula \& Radon-Nikodym Derivative}
-\label{sec:orgba04573}
+\label{sec:org3628093}
 Bayes' Formula is stated using the Radon-Nikodym Derivative in both \cite{cotter_mcmc_2013} and \cite{stuart_inverse_2010}:
 $$\dv{\mu}{\mu_0} \propto \text{L}(u),$$
 where \(\text{L}(u)\) is the likelihood.
@@ -125,7 +125,7 @@ Using this we recover the more familiar formulation of Bayes' formula:
 $$\frac{\rho(u)}{\rho_o(u)} \propto \text{L}(u).$$
 
 \subsubsection{Acceptance Probability for Metropolis-Hastings}
-\label{sec:org608c9e3}
+\label{sec:orgc9cd7d7}
 A Markov process with transition probabilities \(t(y|x)\) has a stationary distribution \(\pi(x)\).
 \begin{itemize}
 \item The \uline{existence} of \(\pi(x)\) follows from \emph{detailed balance}:
@@ -162,7 +162,7 @@ a(y,x) = \min\left\{1, \frac{P(y)}{P(x)}\right\}.
 Since the target distribution \(P(x)\) only appears as a ratio, normalizing factors can be ignored.
 
 \subsubsection{Potential for Bayes'-MCMC when sampling from analytic distributions}
-\label{sec:org408c7b6}
+\label{sec:org2d9eda3}
 How can we use formulations of Metropolis-Hastings-MCMC algorithms designed to sample from
 posteriors when want to sample from probability distribution with an easy analytical expression?
 
@@ -188,7 +188,7 @@ This cancellation does not happen when using the pCN-Acceptance probablity. This
 explain the poorer performance of pCN when directly sampling a probablity distribution.
 
 \subsubsection{Acceptance Probabilities for different MCMC Proposers}
-\label{sec:org820473e}
+\label{sec:orgdcbc6ba}
 Start from Bayes' formula and rewrite the likelyhood \(\text{L}(u)\) as \(\exp(-\Phi(u))\) for
 a positive scalar function \(\Phi\) called the potential:
 $$\frac{\rho(u)}{\rho_o(u)} \propto \exp(\Phi(u)).$$
@@ -199,13 +199,13 @@ since \(u^T C^{-1} u = (C^{-1/2} u)^T(C^{-1/2} u) = \langle C^{-1/2}u, C^{-1/2}u
 where in the first equality we used \(C\) being symmetric.
 
 This is formula (1.2) in \cite{cotter_mcmc_2013} and is used in the acceptance probability for
-the standard random walk (see also \hyperref[sec:org608c9e3]{Acceptance Probability for Metropolis-Hastings})
+the standard random walk (see also \hyperref[sec:orgc9cd7d7]{Acceptance Probability for Metropolis-Hastings})
 
 \(\C^{-1/2}u\) makes problems in infinite dimensions.
 
 Todo: Why exactly is the second term (from the prior) cancelled when doing pCN?
 \subsubsection{Different formulations of multivariate Gaussians}
-\label{sec:org86c5106}
+\label{sec:org5e042d2}
 Is an RV \(\xi \sim \N{0}{C}\) distributed the same as \(C^{1/2}\xi_0\), with \(\xi_0 \sim \N{0}{\I}\)?
 
 From wikipedia: Affine transformation \(Y = c + BX\) for \(X \sim \N{\mu}{\Sigma}\) is also a Gaussian
@@ -224,10 +224,8 @@ $$
     $$
 where \(\Sigma = AA^T\).
 
-\section{Implementation}
-\label{sec:org7f9437a}
-\subsection{Framework/Package Structure}
-\label{sec:org15d1f7b}
+\section{Framework/Package Structure}
+\label{sec:org241795e}
 The framework is designed to support an easy use case:
 \begin{minted}[]{python}
 proposer = StandardRWProposer(beta=0.25, dims=1)
@@ -242,8 +240,8 @@ There is only one source of randomness, shared among all classes and supplied by
 This facilitates reproducability.
 
 Tests are done with \texttt{pytest}.
-\subsubsection{Distributions}
-\label{sec:org8cead10}
+\subsection{Distributions}
+\label{sec:org104b749}
 A class for implementing probability distributions.
 \begin{minted}[]{python}
 class DistributionBase(ABC):
@@ -286,8 +284,8 @@ introduces some overhead as it has to work with both \texttt{float} and \texttt{
 seperate classes would be better.
 
 Also, maybe there is a need to implement a Gaussian using the Karhunen-Loéve-Expansion?
-\subsubsection{Potentials}
-\label{sec:orgd74e4ac}
+\subsection{Potentials}
+\label{sec:org3712adb}
 A class for implementing the potential resulting from rewriting the likelihood as
 $$\text{L}(u) = \exp(- \Phi(u)).$$
 
@@ -312,25 +310,23 @@ concrete potential, one or the other is easier to compute.
 
 Potentials are used in the accepters to decide the relative weight of different configurations.
 There, the \texttt{PotentialBase.exp\_minus\_potential} is used.
-\begin{enumerate}
-\item AnalyticPotential
-\label{sec:org7250a12}
+\subsubsection{AnalyticPotential}
+\label{sec:org36c7d0e}
 
 This potential is used when sampling from an analytically computable probability distribution,
 i.e. a known posterior. In this case
 $$\exp(-\Phi(u)) = \frac{\rho(u)}{\rho_0(u)},$$
-see \ref{sec:org408c7b6}
-\item EvolutionPotential
-\label{sec:orgaa9f823}
+see \url{theory.org}
+\subsubsection{EvolutionPotential}
+\label{sec:orge8f2c16}
 
 This potential results when sampling from the model-equation
 $$y = \G{u} + \eta,$$
 with \(\eta \sim \rho\). The resulting potential can be computed as
 $$\exp(-\Phi(u)) = \rho(y - \G{u}).$$
-\end{enumerate}
 
-\subsubsection{Proposers}
-\label{sec:org0a49119}
+\subsection{Proposers}
+\label{sec:orgf8647b5}
 
 Propose a new state \(v\) based on the current one \(u\).
 
@@ -341,9 +337,8 @@ class ProposerBase(ABC):
         ...
 \end{minted}
 
-\begin{enumerate}
-\item StandardRWProposer
-\label{sec:org1ff7505}
+\subsubsection{StandardRWProposer}
+\label{sec:org037df9b}
 
 Propose a new state as
 $$v = u + \sqrt{2\delta} \xi,$$
@@ -352,8 +347,8 @@ with either \(\xi \sim \N{0}{\I}\) or \(\xi \sim \N{0}{\C}\) (see section 4.2 in
 This leads to a well-defined algorithm in finite dimensions.
 This is not the case when working on functions (as described in section 6.3 in \cite{cotter_mcmc_2013})
 
-\item pCNProposer
-\label{sec:org8526656}
+\subsubsection{pCNProposer}
+\label{sec:orgcfd532b}
 
 Propose a new state as
 $$v = \sqrt{1-\beta^2} u + \beta \xi,$$
@@ -365,15 +360,14 @@ nicer properties for infinite dimensions)(see sections 6.2 + 6.3 in \cite{cotter
 
 The wikipedia-article on the Cholesky-factorization mentions the use-case of obtaining a
 correlated sample from an uncorrelated one by the Cholesky-factor. This is not implemented here.
-\end{enumerate}
-\subsubsection{Accepters}
-\label{sec:org9e5857c}
+\subsection{Accepters}
+\label{sec:orgc26b409}
 
 Given a current state \(u\) and a proposed state \(v\), decide if the new state is accepted or rejected.
 
 For sampling from a distribution \(P(x)\), the acceptance probability for a symmetric proposal is
 \(a = \text{min}\{1, \frac{P(v)}{P(u)}\}\)
-(see \ref{sec:org608c9e3})
+(see \url{theory.org})
 
 \begin{minted}[]{python}
 class ProbabilisticAccepter(AccepterBase):
@@ -387,9 +381,8 @@ class ProbabilisticAccepter(AccepterBase):
         ...
 \end{minted}
 
-\begin{enumerate}
-\item AnalyticAccepter
-\label{sec:org356d302}
+\subsubsection{AnalyticAccepter}
+\label{sec:org9c629a0}
 
 Used when there is an analytic expression of the desired distribution.
 
@@ -399,30 +392,29 @@ class AnalyticAccepter(ProbabilisticAccepter):
         return self.rho(v) / self.rho(u)
 \end{minted}
 
-\item StandardRWAccepter
-\label{sec:org64565e2}
+\subsubsection{StandardRWAccepter}
+\label{sec:org1c28009}
 
 Based on formula (1.2) in \cite{cotter_mcmc_2013}:
 $$a = \text{min}\{1, \exp(I(u) - I(v))\},$$ with
 $$I(u) = \Phi(u) + \frac{1}{2}\norm{\C^{-1/2}u}^2$$.
 
-See also \ref{sec:org820473e}.
+See also \url{theory.org}.
 
-\item pCNAccepter
-\label{sec:org3ce07bd}
+\subsubsection{pCNAccepter}
+\label{sec:org5d9cea2}
 
-Works together with the \hyperref[sec:org8526656]{pCNProposer} to achieve the simpler expression for the acceptance
+Works together with the \hyperref[sec:orgcfd532b]{pCNProposer} to achieve the simpler expression for the acceptance
 $$a = \text{min}\{1, \exp(\Phi(u) - \Phi(v))\}.$$
 
-\item CountedAccepter
-\label{sec:org43c52ea}
+\subsubsection{CountedAccepter}
+\label{sec:org36d9265}
 
 Stores and forwards calls to an "actual" accepter. Counts calls and accepts and is used for
 calculating the acceptance ratio.
-\end{enumerate}
 
-\subsubsection{Sampler}
-\label{sec:org1bd9683}
+\subsection{Sampler}
+\label{sec:org43db2a4}
 
 The structure of the sampler is quite simple, since it can rely heavily on the functionality
 provided by the Proposers and Accepters.
@@ -439,13 +431,12 @@ class MCMCSampler:
         ...
 \end{minted}
 
-\subsection{Results}
-\label{sec:org222a46d}
-\subsubsection{Analytic sampling from a bimodal Gaussian}
-\label{sec:org122b94e}
-\begin{enumerate}
-\item Setup
-\label{sec:org3bc8385}
+\section{Results}
+\label{sec:org0acdd21}
+\subsection{Analytic sampling from a bimodal Gaussian}
+\label{sec:org19629ec}
+\subsubsection{Setup}
+\label{sec:orgdffb610}
 
 Attempting to recreate the "Computational Illustration" from \cite{cotter_mcmc_2013}. They use,
 among other algorithms, pCN to sample from a 1-D bimodal Gaussian
@@ -459,18 +450,18 @@ sense to me in the 1-D setting (how do I sum infinite eigenfunctions of a scalar
 The potential for density estimation described in section is also not clear to me (maybe for
 a similar reason? What is \(u\) in the density estimate case?).
 
-I ended up using a normal \(\N{0}{1}\) as a prior and the potential described \hyperref[sec:org408c7b6]{before}, and
+I ended up using a normal \(\N{0}{1}\) as a prior and the potential described \hyperref[sec:org2d9eda3]{before}, and
 compared the following samplers:
 \begin{itemize}
-\item (1) \hyperref[sec:org1ff7505]{\texttt{StandardRWProposer}} (\(\delta=0.25\)) + \hyperref[sec:org356d302]{\texttt{AnalyticAccepter}}
-\item (2) \hyperref[sec:org1ff7505]{\texttt{StandardRWProposer}} (\(\delta=0.25\)) + \hyperref[sec:org64565e2]{\texttt{StandardRWAccepter}}
-\item (3) \hyperref[sec:org8526656]{\texttt{pCNProposer}} (\(\beta=0.25\)) + \hyperref[sec:org3ce07bd]{\texttt{pCNAccepter}}
+\item (1) \href{code.org}{\texttt{StandardRWProposer}} (\(\delta=0.25\)) + \href{code.org}{\texttt{AnalyticAccepter}}
+\item (2) \href{code.org}{\texttt{StandardRWProposer}} (\(\delta=0.25\)) + \href{code.org}{\texttt{StandardRWAccepter}}
+\item (3) \href{code.org}{\texttt{pCNProposer}} (\(\beta=0.25\)) + \href{code.org}{\texttt{pCNAccepter}}
 \end{itemize}
 
 The code is in \href{scripts/analytic.py}{\texttt{analytic.py}}.
 
-\item Result
-\label{sec:org0627f42}
+\subsubsection{Result}
+\label{sec:orgf29f6e5}
 
 All three samplers are able to reproduce the target density \ref{fig:hist_analytic} \ref{fig:hist_rw} \ref{fig:hist_rw}.
 
@@ -528,11 +519,10 @@ AC of bimodal distribution.}
 \caption{\label{fig:ac_pCN_2000}
 AC of bimodal distribution.}
 \end{figure}
-\end{enumerate}
 
 
-\subsubsection{Bayesian inverse problem for \(\G{u} = \langle g,u \rangle\)}
-\label{sec:orge8fdfc7}
+\subsection{Bayesian inverse problem for \(\G{u} = \langle g,u \rangle\)}
+\label{sec:org86ca9de}
 For \(\G{u} = \langle g,u \rangle\) the resulting posterior under a Gaussian prior
 is again a Gaussian. The model equation is
 $$y = \G{u} + \eta$$
@@ -566,8 +556,8 @@ The pCN-Sampler with \(\beta = 0.25\) had an acceptance rate of 0.567.
 For \(n>2\), the resulting posterior can not be plotted anymore. However, it is still Gaussian
 with given mean \& covariance. Can just compare the analytical values to the sample values.
 Verify that the error decays like \(\frac{1}{\sqrt{N}}\).
-\subsubsection{Bayesian inverse problem for \(\G{u} = g (u + \beta u^3)\)}
-\label{sec:org51598b6}
+\subsection{Bayesian inverse problem for \(\G{u} = g (u + \beta u^3)\)}
+\label{sec:org40660ee}
 Since the observation operator is not linear anymore, the resulting posterior is not
 Gaussian in general. However, since the dimension of the input \(u\) is 1, it can
 still be plotted.
@@ -596,16 +586,17 @@ The pCN-Sampler with \(\beta = 0.25\) (different beta) had an acceptance rate of
 
 For \(\beta \neq 0\), the resulting posterior is not a Gaussian. Still \(n=1\), so it can be
 plotted. Just numerically normalize the analytical expression of the posterior?
-\subsubsection{Geophysics example: Lorenz-96 model}
-\label{sec:org3956c22}
-\begin{enumerate}
-\item Based on:
-\label{sec:orgf32f426}
+\subsection{Geophysics example: Lorenz-96 model}
+\label{sec:org2efb943}
+
+\subsubsection{Based on:}
+\label{sec:org4bcae6d}
 
 Lorenz, E. N. (1996). Predictability—A problem partly solved. In Reprinted in T. N. Palmer \& R. Hagedorn (Eds.), Proceedings Seminar on
 Predictability, Predictability of Weather and Climate, Cambridge UP (2006) (Vol. 1, pp. 1–18). Reading, Berkshire, UK: ECMWF.
-\item Equation
-\label{sec:org4b7f95d}
+
+\subsubsection{Equation}
+\label{sec:org8448dd5}
 
 A system of ODEs, representing the coupling between slow variables \(X\) and fast, subgrid
 variables \(Y\).
@@ -627,8 +618,8 @@ $$ \frac{1}{c} \dv{Y_{j,k}}{t} = -bY_{j+1,k}(Y_{j-2,k} - Y_{j+1, k}) - Y_{j,k} +
 \item \(t = 1 \Leftrightarrow 1\) day (simulation duration is given in days)
 \end{itemize}
 
-\item Properties
-\label{sec:org302a59d}
+\subsubsection{Properties}
+\label{sec:org9852455}
 
 \begin{itemize}
 \item For \(K=36\), \(J=10\) and \(\Theta = [F, h, c, b] = [10, 1, 10, 10]\) there is chaotic behaviour.
@@ -657,8 +648,6 @@ the dampling of the linear terms.
 \end{itemize}
 \end{itemize}
 
-
 \bibliographystyle{plain}
 \bibliography{../papers/inverse_problems}
-\end{enumerate}
 \end{document}
