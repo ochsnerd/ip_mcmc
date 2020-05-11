@@ -7,7 +7,14 @@ from ip_mcmc import (MCMCSampler,
                      AnalyticPotential,
                      GaussianDistribution)
 
-from helpers import store_figure
+
+def store_figure(name):
+    """
+    Store a figure in the figures directory.
+    Assumes there is an active pyplot-Plot and clears it after
+    """
+    plt.savefig("/home/david/fs20/thesis/code/report/figures/" + name + ".svg", format='svg')
+    plt.clf()
 
 
 class Bimodal():
