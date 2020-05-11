@@ -76,15 +76,21 @@ def create_density_plot(sampler, density):
     plt.legend()
 
 
-def create_autocorrelation_plot(sampler, name):
+def create_autocorrelation_plot(sampler, name, chain_length=1000, nruns=1):
     x_0 = np.array([0])
 
-    X = sampler.run(x_0, n_samples=20000, sample_interval=1).flatten()
-    ac = np.correlate(X, X, mode='full')
-    ac = ac[ac.size//2:]
-    ac /= ac[0]
+    ac_avg = np.zeros((chain_length, ))
 
-    plt.plot(ac, label=name)
+    for i in range(nruns):
+        X = sampler.run(x_0, n_samples=chain_length, sample_interval=1).flatten()
+        ac = np.correlate(X, X, mode='full')
+        ac_avg += ac[-chain_length:]
+
+    # average and normalize
+    ac_avg /= nruns
+    ac_avg /= ac_avg[0]
+
+    plt.plot(ac_avg, label=name)
 
 
 def plot_sampler_characteristics(sampler_generator, density, name):
@@ -101,16 +107,19 @@ def plot_sampler_characteristics(sampler_generator, density, name):
     print(name + " done")
 
 
-def plot_autocorrelations(density, sampler_generators, names):
+def plot_autocorrelations(density, sampler_generators, names, nruns, chain_length):
     for sampler_generator, name in zip(sampler_generators, names):
-        create_autocorrelation_plot(sampler_generator(density), name)
+        create_autocorrelation_plot(sampler_generator(density),
+                                    name,
+                                    chain_length,
+                                    nruns)
 
         print(name + " done")
 
-    plt.title("Autocorrelation")
+    plt.title(f"Autocorrelation averaged over {nruns} runs")
     plt.legend()
 
-    store_figure("_".join(names))
+    store_figure("_".join(names + [str(nruns)]))
 
 
 def main():
@@ -118,13 +127,15 @@ def main():
 
     plot_autocorrelations(bimodal_density,
                           [create_AnalyticSampler, create_StandardRWSampler, create_pCNSampler],
-                          ["analytic", "standard_rw", "pCN"])
+                          ["analytic", "standard_rw", "pCN"],
+                          nruns=50,
+                          chain_length=5000)
 
     # plot_sampler_characteristics(create_StandardRWSampler, bimodal_density, "standard_bimodal")
 
     # plot_sampler_characteristics(create_StandardRWSampler, normal, "standard_normal")
 
-    plot_sampler_characteristics(create_pCNSampler, bimodal_density, "pCN_bimodal")
+    # plot_sampler_characteristics(create_pCNSampler, bimodal_density, "pCN_bimodal")
 
     # plot_sampler_characteristics(create_pCNSampler, normal, "pCN_normal")
 

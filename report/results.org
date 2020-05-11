@@ -24,42 +24,20 @@
 
 *** Result
 
-    All three samplers are able to reproduce the target density [[fig:hist_analytic]] [[fig:hist_rw]] [[fig:hist_rw]].
+    All three samplers are able to reproduce the target density [[fig:hist_bimodal]]
 
-    #+CAPTION: analytic
-    #+NAME: fig:hist_analytic
-    [[./figures/analytic_bimodal_density.png]]
-    #+CAPTION: standard rw
-    #+NAME: fig:hist_rw
-    [[./figures/standard_bimodal_density.png]]
-    #+CAPTION: pCN
-    #+NAME: fig:hist_pCN
-    [[./figures/pCN_bimodal_density.png]]
+    #+CAPTION: Burn-in: 1000, sample-interval: 200, samples: 500
+    #+NAME: fig:hist_bimodal
+    [[./figures/bimodal_density_combined.png]]
 
-    The autocorrelation decays for all samplers: [[fig:ac_normal]], [[fig:ac_bimodal]]. However, the pCN doens't
+    The autocorrelation decays for all samplers: [[fig:ac_bimodal]]. However, the pCN doens't
     do nearly as well as expected. This could be the consequence of the awkward
     formulation of the potential or a bad prior.
 
-    A peculiar thing about the decorrelation of the pCN sampling process is that
-    it somehow is tied to the number of samples, compare [[fig:ac_pCN_1000]] and [[fig:ac_pCN_2000]].
-    Is this a bug or a misunderstanding of the autocorrelation function? 
-
-    #+CAPTION: AC of standard normal. All samplers decorrelate quickly
-    #+NAME: fig:ac_normal
-    [[./figures/analytic_standard_rw_pCN_normal.png]]
-
     #+CAPTION: AC of bimodal distribution. pCN takes forever to decorrelate
     #+NAME: fig:ac_bimodal
-    [[./figures/analytic_standard_rw_pCN_bimodal_20000.png]]
+    [[./figures/analytic_standard_rw_pCN_50_5000.png]]
 
-    #+CAPTION: AC of bimodal distribution.
-    #+NAME: fig:ac_pCN_1000
-    [[./figures/analytic_standard_rw_pCN_bimodal_1000.png]]
-
-    #+CAPTION: AC of bimodal distribution.
-    #+NAME: fig:ac_pCN_2000
-    [[./figures/analytic_standard_rw_pCN_bimodal_2000.png]]
-     
 
 ** Bayesian inverse problem for $\G{u} = \langle g,u \rangle$
    For $\G{u} = \langle g,u \rangle$ the resulting posterior under a Gaussian prior
