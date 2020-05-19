@@ -154,19 +154,42 @@
 
     - For $K=36$, $J=10$ and $\Theta = [F, h, c, b] = [10, 1, 10, 10]$ there is chaotic behaviour.
 
-    - The nonlinearities conserve the energies within a subsystem: (show!)
+    - The nonlinearities conserve the energies within a subsystem:
       - $E_X = \sum_k X_k^2$
+
+        $\frac{1}{2} \dv{(\sum_k X_k^2)}{t} =
+         \sum_k X_k \dv{X_k}{t} =
+         -\sum_k (X_k X_{k-1} X_{k-2} - X_{k-1} X_{k} X_{k+1}) =
+         0$,
+
+        where the last equality follows from telescoping + periodicity
       - $E_{Y_k} = \sum_j Y_{j,k}^2$
 
-    - The interaction conserves the total energy: (show!)
+        which follows analogously to the $X$ -case
+
+    - The interaction conserves the total energy:
       - $E_{T} = \sum_k (X_k^2 + \sum_j Y_{j,k}^2)$
+
+        $\frac{1}{2} \dv{E_{T}}{t} =
+         \sum_k X_k \dv{X_k}{t} + \sum_j Y_{j,k} \dv{Y_j,k}{t} =
+         \sum_k X_k (- \frac{hc}{J} \sum_j Y_{j,k}) + \sum_j Y_{j,k} (\frac{hc}{J} X_k) =
+         \sum_k - \frac{hc}{J} X_k (\sum_j Y_{j,k} + \frac{hc}{J} X_k (\sum_j Y_{j,k})) = 
+         0$
 
     - In the statistical steady state, the external forcing $F$ (as long as its positive) balances
       the dampling of the linear terms.
 
     - Averaged quantities
-      - $\expval{\phi} = \frac{1}{T} \int_{t_0}^{t_0 + T} \phi(t) \dd{t}$ (or a sum over discrete values)
+      - $$\expval{\phi} = \frac{1}{T} \int_{t_0}^{t_0 + T} \phi(t) \dd{t}$$ (or a sum over discrete values)
       - Long-term time-mean in the statistical steady state: $\expval{\cdot}_{\infty}$
-      - $\expval{X^2}_\infty = F \expval{X}_{\infty} - hc \expval{X\bar{Y}}_\infty$ $\forall k$ \\
-        (multiply $X$ -equation by $X$, all $X_k$ s are statistically equivalent, $\dv{X}{t} = 0$ in steady state)
-      - $\expval{\bar{Y^2}}_{\infty} = \frac{h}{J} \expval{X \bar{Y}}_{\infty}$
+      -
+        #+NAME: eqn:equilibrium_X
+        \begin{equation}
+          \expval{X_k^2}_\infty = F \expval{X_k}_{\infty} - hc \expval{X_k\bar{Y_k}}_\infty \forall k
+        \end{equation}
+        (multiply $X$ -equation by $X$, all $X_k$ s are statistically equivalent, $\dv{\expval{X}}{t} = 0$ in steady state)
+      -
+        #+NAME: eqn:equilibrium_Y
+        \begin{equation}
+          \expval{\bar{Y_k^2}}_{\infty} = \frac{h}{J} \expval{X_k \bar{Y_k}}_{\infty} \forall k
+        \end{equation}
