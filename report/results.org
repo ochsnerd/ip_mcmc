@@ -193,3 +193,36 @@
         \begin{equation}
           \expval{\bar{Y_k^2}}_{\infty} = \frac{h}{J} \expval{X_k \bar{Y_k}}_{\infty} \forall k
         \end{equation}
+
+*** Model implementation
+    Implementing the model in python and using a locally 5-th order RK solver yields the following
+    results (inital conditions are just uniformly random numbers in $[0,1)$ since they don't matter
+    for the long-term evolution of the chaotic system):
+
+**** Reproducting the results of the original paper
+     Running the setup with $K=36, J=10, (F, h, c, b) = (10, 1, 10, 10)$ given the following states
+     [[fig:state_lorenz_30]], [[fig:state_lorenz_60]],
+     which qualitatively agree with the results from Lorenz.
+
+    #+CAPTION: System after 30 days
+    #+NAME: fig:state_lorenz_30
+    [[./figures/lorenz96_middle.png]]
+
+    #+CAPTION: System after 60 days
+    #+NAME: fig:state_lorenz_60
+    [[./figures/lorenz96_last.png]]
+
+    The decay of the linear term and the forcing of the slow variables balance out after reaching the
+    steady state, however there is a much bigger fluctuation in the energy than expected [[fig:lorenz_energy]].
+
+    #+CAPTION: Energies in the system. $E_X >> E_{Y_k} > 0$
+    #+NAME: fig:lorenz_energy
+    [[./figures/lorenz96_energies.png]]
+
+**** Equilibrium averages
+     Analysis suggests certain long-term averages to be equal in the equilibrium.
+
+    #+CAPTION: RMSE for long-term averages [[eqn:equilibrium_X]] and [[eqn:equilibrium_Y]]. Averaged over 10 runs
+    #+NAME: fig:lorenz_rmse
+    [[./figures/equilibrium_error_n=10.png]]
+    
