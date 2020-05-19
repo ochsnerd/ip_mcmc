@@ -1,4 +1,4 @@
-% Created 2020-05-11 Mo 16:19
+% Created 2020-05-19 Di 12:09
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -39,15 +39,15 @@
 
 
 \section{Theory}
-\label{sec:org18c1b9f}
+\label{sec:org010c7b4}
 \subsection{Papers}
-\label{sec:orgdb9576a}
+\label{sec:orgb03e070}
 \subsubsection{Stuart et al: Inverse Problems: A Bayesian Perspective \cite{stuart_inverse_2010}}
-\label{sec:org867a087}
+\label{sec:org62d3a00}
 Theoretical Background \footnote{this is a test footnote}
 
 \paragraph{Notation}
-\label{sec:org73a9511}
+\label{sec:orge3e969b}
 
 Central equation:
 $$y = \G{u} + \eta$$
@@ -59,15 +59,15 @@ with:
 \item \(\eta\): mean zero RV, observational noise (a.s. \(\eta \sim \N{0}{\C}\))
 \end{itemize}
 \subsubsection{Cotter et al: MCMC for functions \cite{cotter_mcmc_2013}}
-\label{sec:org66820ec}
+\label{sec:org1e8d743}
 Implementation, MCMC in infinite dimensions
 \subsubsection{Schneider et al: Earth System Modeling 2.0  \cite{schneider_earth_2017}}
-\label{sec:orgc4c756f}
+\label{sec:orgce03e0f}
 Example for MCMC on ODE
 \subsection{Small results}
-\label{sec:orge345ed6}
+\label{sec:org8801cc9}
 \subsubsection{Gaussian in infinite dimensions}
-\label{sec:org3cc6eac}
+\label{sec:org1aeaf62}
 This section is quite a mess, maybe you could suggest a not-too-technical introduction
 to infinite dimensional Gaussian measures?
 
@@ -104,7 +104,7 @@ but for example in the wiki-article about the matrix (operator) square root (\ur
 "The Cholesky factorization provides another particular example of square root, which should not be confused with the unique non-negative square root."
 
 \subsubsection{Bayes' Formula \& Radon-Nikodym Derivative}
-\label{sec:org2ef4b4a}
+\label{sec:org8fd9bf6}
 Bayes' Formula is stated using the Radon-Nikodym Derivative in both \cite{cotter_mcmc_2013} and \cite{stuart_inverse_2010}:
 $$\dv{\mu}{\mu_0} \propto \text{L}(u),$$
 where \(\text{L}(u)\) is the likelihood.
@@ -125,7 +125,7 @@ Using this we recover the more familiar formulation of Bayes' formula:
 $$\frac{\rho(u)}{\rho_o(u)} \propto \text{L}(u).$$
 
 \subsubsection{Acceptance Probability for Metropolis-Hastings}
-\label{sec:org7ee1131}
+\label{sec:org2349635}
 A Markov process with transition probabilities \(t(y|x)\) has a stationary distribution \(\pi(x)\).
 \begin{itemize}
 \item The \uline{existence} of \(\pi(x)\) follows from \emph{detailed balance}:
@@ -162,7 +162,7 @@ a(y,x) = \min\left\{1, \frac{P(y)}{P(x)}\right\}.
 Since the target distribution \(P(x)\) only appears as a ratio, normalizing factors can be ignored.
 
 \subsubsection{Potential for Bayes'-MCMC when sampling from analytic distributions}
-\label{sec:org55f7ed4}
+\label{sec:orgf8b70c5}
 How can we use formulations of Metropolis-Hastings-MCMC algorithms designed to sample from
 posteriors when want to sample from probability distribution with an easy analytical expression?
 
@@ -188,7 +188,7 @@ This cancellation does not happen when using the pCN-Acceptance probablity. This
 explain the poorer performance of pCN when directly sampling a probablity distribution.
 
 \subsubsection{Acceptance Probabilities for different MCMC Proposers}
-\label{sec:org792c1c8}
+\label{sec:org4748f6c}
 Start from Bayes' formula and rewrite the likelyhood \(\text{L}(u)\) as \(\exp(-\Phi(u))\) for
 a positive scalar function \(\Phi\) called the potential:
 $$\frac{\rho(u)}{\rho_o(u)} \propto \exp(\Phi(u)).$$
@@ -199,13 +199,13 @@ since \(u^T C^{-1} u = (C^{-1/2} u)^T(C^{-1/2} u) = \langle C^{-1/2}u, C^{-1/2}u
 where in the first equality we used \(C\) being symmetric.
 
 This is formula (1.2) in \cite{cotter_mcmc_2013} and is used in the acceptance probability for
-the standard random walk (see also \hyperref[sec:org7ee1131]{Acceptance Probability for Metropolis-Hastings})
+the standard random walk (see also \hyperref[sec:org2349635]{Acceptance Probability for Metropolis-Hastings})
 
 \(\C^{-1/2}u\) makes problems in infinite dimensions.
 
 Todo: Why exactly is the second term (from the prior) cancelled when doing pCN?
 \subsubsection{Different formulations of multivariate Gaussians}
-\label{sec:orgb598297}
+\label{sec:org18e9247}
 Is an RV \(\xi \sim \N{0}{C}\) distributed the same as \(C^{1/2}\xi_0\), with \(\xi_0 \sim \N{0}{\I}\)?
 
 From wikipedia: Affine transformation \(Y = c + BX\) for \(X \sim \N{\mu}{\Sigma}\) is also a Gaussian
@@ -225,7 +225,7 @@ $$
 where \(\Sigma = AA^T\).
 
 \section{Framework/Package Structure}
-\label{sec:org5e18dd6}
+\label{sec:org86a74cd}
 The framework is designed to support an easy use case:
 \begin{minted}[]{python}
 proposer = StandardRWProposer(beta=0.25, dims=1)
@@ -241,7 +241,7 @@ This facilitates reproducability.
 
 Tests are done with \texttt{pytest}.
 \subsection{Distributions}
-\label{sec:org0188f75}
+\label{sec:org6ec810e}
 A class for implementing probability distributions.
 \begin{minted}[]{python}
 class DistributionBase(ABC):
@@ -285,7 +285,7 @@ seperate classes would be better.
 
 Also, maybe there is a need to implement a Gaussian using the Karhunen-Loéve-Expansion?
 \subsection{Potentials}
-\label{sec:orge4c9e3e}
+\label{sec:orgb32bfa9}
 A class for implementing the potential resulting from rewriting the likelihood as
 $$\text{L}(u) = \exp(- \Phi(u)).$$
 
@@ -311,14 +311,14 @@ concrete potential, one or the other is easier to compute.
 Potentials are used in the accepters to decide the relative weight of different configurations.
 There, the \texttt{PotentialBase.exp\_minus\_potential} is used.
 \subsubsection{AnalyticPotential}
-\label{sec:org1386fbe}
+\label{sec:org185a9fe}
 
 This potential is used when sampling from an analytically computable probability distribution,
 i.e. a known posterior. In this case
 $$\exp(-\Phi(u)) = \frac{\rho(u)}{\rho_0(u)},$$
 see \url{theory.org}
 \subsubsection{EvolutionPotential}
-\label{sec:orgeba6647}
+\label{sec:orgd64aeb3}
 
 This potential results when sampling from the model-equation
 $$y = \G{u} + \eta,$$
@@ -326,7 +326,7 @@ with \(\eta \sim \rho\). The resulting potential can be computed as
 $$\exp(-\Phi(u)) = \rho(y - \G{u}).$$
 
 \subsection{Proposers}
-\label{sec:org59af9ef}
+\label{sec:org57c9a7a}
 
 Propose a new state \(v\) based on the current one \(u\).
 
@@ -338,7 +338,7 @@ class ProposerBase(ABC):
 \end{minted}
 
 \subsubsection{StandardRWProposer}
-\label{sec:org8ff7bb3}
+\label{sec:org5b55ad1}
 
 Propose a new state as
 $$v = u + \sqrt{2\delta} \xi,$$
@@ -348,7 +348,7 @@ This leads to a well-defined algorithm in finite dimensions.
 This is not the case when working on functions (as described in section 6.3 in \cite{cotter_mcmc_2013})
 
 \subsubsection{pCNProposer}
-\label{sec:orgf1b8e17}
+\label{sec:org1253113}
 
 Propose a new state as
 $$v = \sqrt{1-\beta^2} u + \beta \xi,$$
@@ -361,7 +361,7 @@ nicer properties for infinite dimensions)(see sections 6.2 + 6.3 in \cite{cotter
 The wikipedia-article on the Cholesky-factorization mentions the use-case of obtaining a
 correlated sample from an uncorrelated one by the Cholesky-factor. This is not implemented here.
 \subsection{Accepters}
-\label{sec:orgb758b6c}
+\label{sec:orgd229901}
 
 Given a current state \(u\) and a proposed state \(v\), decide if the new state is accepted or rejected.
 
@@ -382,7 +382,7 @@ class ProbabilisticAccepter(AccepterBase):
 \end{minted}
 
 \subsubsection{AnalyticAccepter}
-\label{sec:org48a0baa}
+\label{sec:org05d74ce}
 
 Used when there is an analytic expression of the desired distribution.
 
@@ -393,7 +393,7 @@ class AnalyticAccepter(ProbabilisticAccepter):
 \end{minted}
 
 \subsubsection{StandardRWAccepter}
-\label{sec:org7fc7b3e}
+\label{sec:orga92bd8d}
 
 Based on formula (1.2) in \cite{cotter_mcmc_2013}:
 $$a = \text{min}\{1, \exp(I(u) - I(v))\},$$ with
@@ -402,19 +402,19 @@ $$I(u) = \Phi(u) + \frac{1}{2}\norm{\C^{-1/2}u}^2$$.
 See also \url{theory.org}.
 
 \subsubsection{pCNAccepter}
-\label{sec:org7e224ad}
+\label{sec:orge50bf67}
 
-Works together with the \hyperref[sec:orgf1b8e17]{pCNProposer} to achieve the simpler expression for the acceptance
+Works together with the \hyperref[sec:org1253113]{pCNProposer} to achieve the simpler expression for the acceptance
 $$a = \text{min}\{1, \exp(\Phi(u) - \Phi(v))\}.$$
 
 \subsubsection{CountedAccepter}
-\label{sec:orgb64412a}
+\label{sec:org938869b}
 
 Stores and forwards calls to an "actual" accepter. Counts calls and accepts and is used for
 calculating the acceptance ratio.
 
 \subsection{Sampler}
-\label{sec:orgf4134cb}
+\label{sec:orgb1900cc}
 
 The structure of the sampler is quite simple, since it can rely heavily on the functionality
 provided by the Proposers and Accepters.
@@ -432,11 +432,11 @@ class MCMCSampler:
 \end{minted}
 
 \section{Results}
-\label{sec:org2c6aa25}
+\label{sec:org1d4dd2d}
 \subsection{Analytic sampling from a bimodal Gaussian}
-\label{sec:orgcb992e2}
+\label{sec:orgfd7badd}
 \subsubsection{Setup}
-\label{sec:org5677c7c}
+\label{sec:org708f212}
 
 Attempting to recreate the "Computational Illustration" from \cite{cotter_mcmc_2013}. They use,
 among other algorithms, pCN to sample from a 1-D bimodal Gaussian
@@ -450,7 +450,7 @@ sense to me in the 1-D setting (how do I sum infinite eigenfunctions of a scalar
 The potential for density estimation described in section is also not clear to me (maybe for
 a similar reason? What is \(u\) in the density estimate case?).
 
-I ended up using a normal \(\N{0}{1}\) as a prior and the potential described \hyperref[sec:org55f7ed4]{before}, and
+I ended up using a normal \(\N{0}{1}\) as a prior and the potential described \hyperref[sec:orgf8b70c5]{before}, and
 compared the following samplers:
 \begin{itemize}
 \item (1) \href{code.org}{\texttt{StandardRWProposer}} (\(\delta=0.25\)) + \href{code.org}{\texttt{AnalyticAccepter}}
@@ -461,7 +461,7 @@ compared the following samplers:
 The code is in \href{scripts/analytic.py}{\texttt{analytic.py}}.
 
 \subsubsection{Result}
-\label{sec:orga6d7362}
+\label{sec:orgb50ef1d}
 
 All three samplers are able to reproduce the target density \ref{fig:hist_bimodal}
 
@@ -485,7 +485,7 @@ AC of bimodal distribution. pCN takes forever to decorrelate}
 
 
 \subsection{Bayesian inverse problem for \(\G{u} = \langle g,u \rangle\)}
-\label{sec:orga62163f}
+\label{sec:org0ed1feb}
 For \(\G{u} = \langle g,u \rangle\) the resulting posterior under a Gaussian prior
 is again a Gaussian. The model equation is
 $$y = \G{u} + \eta$$
@@ -520,7 +520,7 @@ For \(n>2\), the resulting posterior can not be plotted anymore. However, it is 
 with given mean \& covariance. Can just compare the analytical values to the sample values.
 Verify that the error decays like \(\frac{1}{\sqrt{N}}\).
 \subsection{Bayesian inverse problem for \(\G{u} = g (u + \beta u^3)\)}
-\label{sec:orgaa72a48}
+\label{sec:org631c8fd}
 Since the observation operator is not linear anymore, the resulting posterior is not
 Gaussian in general. However, since the dimension of the input \(u\) is 1, it can
 still be plotted.
@@ -550,22 +550,22 @@ The pCN-Sampler with \(\beta = 0.25\) (different beta) had an acceptance rate of
 For \(\beta \neq 0\), the resulting posterior is not a Gaussian. Still \(n=1\), so it can be
 plotted. Just numerically normalize the analytical expression of the posterior?
 \subsection{Geophysics example: Lorenz-96 model}
-\label{sec:orgd1ed577}
+\label{sec:orgec05bfa}
 
 \subsubsection{Based on:}
-\label{sec:orgaa0ae23}
+\label{sec:org0fb0770}
 
 Lorenz, E. N. (1996). Predictability—A problem partly solved. In Reprinted in T. N. Palmer \& R. Hagedorn (Eds.), Proceedings Seminar on
 Predictability, Predictability of Weather and Climate, Cambridge UP (2006) (Vol. 1, pp. 1–18). Reading, Berkshire, UK: ECMWF.
 
 \subsubsection{Equation}
-\label{sec:orgc530e4e}
+\label{sec:org694921b}
 
 A system of ODEs, representing the coupling between slow variables \(X\) and fast, subgrid
 variables \(Y\).
 
 $$ \dv{X_k}{t} =                 - X_{k-1}(X_{k-2} - X_{k+1}) - X_k + F - hc \bar{Y}_k $$
-$$ \frac{1}{c} \dv{Y_{j,k}}{t} = -bY_{j+1,k}(Y_{j-2,k} - Y_{j+1, k}) - Y_{j,k} + \frac{h}{J}X_k$$
+$$ \frac{1}{c} \dv{Y_{j,k}}{t} = -bY_{j+1,k}(Y_{j+2,k} - Y_{j-1, k}) - Y_{j,k} + \frac{h}{J}X_k$$
 
 \begin{itemize}
 \item \(X = [X_0, ..., X_{K-1}] \in \R^K\)
@@ -581,21 +581,98 @@ $$ \frac{1}{c} \dv{Y_{j,k}}{t} = -bY_{j+1,k}(Y_{j-2,k} - Y_{j+1, k}) - Y_{j,k} +
 \item \(t = 1 \Leftrightarrow 1\) day (simulation duration is given in days)
 \end{itemize}
 
+\paragraph{\(b\) or \(J\)?}
+\label{sec:orgdbb37fa}
+In the original paper, the equations are given in a different form, namely all
+explicit occurences of \(J\) above (in the fast-slow interaction) are replaced by
+\(b\). Since in both concrete realizations (1996 \& 2017) are identical and conviniently
+have \(b=J=10\), the difference doesn't lead to different results for that setup.
+
+\paragraph{Where is \(F\)?}
+\label{sec:org54e57f5}
+In the original paper (at least the one I found), the forcing term \(F\) for the
+slow variables is missing in the equation, however it is referenced in the text,
+as well as present in a simpler (only slow variables) setup.
+
+Maybe I have a shitty version of the paper?
+
+\paragraph{"Looking ahead" vs. "Looking back"}
+\label{sec:org83c0325}
+Comparing nonlinearity terms
+$$-X_{k-1}(X_{k-2} - X_{k+1})$$
+$$-bY_{j+1,k}(Y_{j+2,k} - Y_{j-1, k})$$
+for a given \(Y_{k}\), does the "direction" of the \(Z_{k\pm 1}Z_{k\pm 2}\) (\(Z=X,Y\)) matter?
+
+I don't think so, since the interaction with the other variable is only via point-value
+and average, and the nonlinearity is periodic.
+
+A bit more formally:
+The PDE is invariant under "reversing" of the numbering:
+\(Y_{j,k} \rightarrow Y_{J-j,k}\) which is the same as switching \(+ \leftrightarrow -\) in
+the only "asymmetric" term.
+
+Addendum 2 days later: Need to define more clearly what it means for the direction to
+\uline{matter}. In the original paper on page 12, it is described how "active areas [..] propagate
+slowly eastward", while "convective activity tends to propagate westward within the active
+areas" (rephrased from paper). The paper also explicitly mentions the signs of the subscripts
+in that context. So some characteristics of the solution are definitely affected.
+What about the stuff we care about (statistical properties, chaotic behaviour)?
+
+\paragraph{Initial conditions for the MCMC observation operator}
+\label{sec:orgeecad4c}
+In \cite{schneider_earth_2017}, they describe their algorithm as:
+
+"The objective function for each sample is accumulated over T = 100 days, using the end state
+of the previous forward integration as initial condition for the next one, without discarding
+any spin-up after a parameter update."
+
+(Disregarding the fact that for this chaotic ODE and such a long simulation time the initial
+conditions are virtually irrelevant)
+
+From a theoretical stand-point, should the observation operator \(\G{u}\) not depend \uline{only} on
+\(u\), the parameters we try to estimate in the algorithm? And should it not be deterministic,
+all the (stochastic) observational noise encoded in the error term \(\eta\)?
+
+Does this changing of the IC every iteration not pose a problem for the convergence of the
+algorithm?\\
+
+Also does the spin-up they mention refer to discarding the first part of the simulation
+when computing steady-state averages? It somehow doesn't make sense to talk about a
+Markov-spin-up in the context of a single ODE-simulation, but ALSO it doens't make sense
+to talk about averages since from my understanding the MCMC-algorithm doesn't have to
+compute averages, it just looks at the final state?
+
+
 \subsubsection{Properties}
-\label{sec:orga9aa480}
+\label{sec:org9bd91e9}
 
 \begin{itemize}
 \item For \(K=36\), \(J=10\) and \(\Theta = [F, h, c, b] = [10, 1, 10, 10]\) there is chaotic behaviour.
 
-\item The nonlinearities conserve the energies within a subsystem: (show!)
+\item The nonlinearities conserve the energies within a subsystem:
 \begin{itemize}
 \item \(E_X = \sum_k X_k^2\)
+
+\(\frac{1}{2} \dv{(\sum_k X_k^2)}{t} =
+         \sum_k X_k \dv{X_k}{t} =
+         -\sum_k (X_k X_{k-1} X_{k-2} - X_{k-1} X_{k} X_{k+1}) =
+         0\),
+
+where the last equality follows from telescoping + periodicity
 \item \(E_{Y_k} = \sum_j Y_{j,k}^2\)
+
+which follows analogously to the \(X\) -case
 \end{itemize}
 
-\item The interaction conserves the total energy: (show!)
+\item The interaction conserves the total energy:
 \begin{itemize}
 \item \(E_{T} = \sum_k (X_k^2 + \sum_j Y_{j,k}^2)\)
+
+\(\frac{1}{2} \dv{E_{T}}{t} =
+         \sum_k X_k \dv{X_k}{t} + \sum_j Y_{j,k} \dv{Y_j,k}{t} =
+         \sum_k X_k (- \frac{hc}{J} \sum_j Y_{j,k}) + \sum_j Y_{j,k} (\frac{hc}{J} X_k) =
+         \sum_k - \frac{hc}{J} X_k (\sum_j Y_{j,k} + \frac{hc}{J} X_k (\sum_j Y_{j,k})) = 
+         0\)
 \end{itemize}
 
 \item In the statistical steady state, the external forcing \(F\) (as long as its positive) balances
@@ -603,13 +680,66 @@ the dampling of the linear terms.
 
 \item Averaged quantities
 \begin{itemize}
-\item \(\expval{\phi} = \frac{1}{T} \int_{t_0}^{t_0 + T} \phi(t) \dd{t}\) (or a sum over discrete values)
+\item $$\expval{\phi} = \frac{1}{T} \int_{t_0}^{t_0 + T} \phi(t) \dd{t}$$ (or a sum over discrete values)
 \item Long-term time-mean in the statistical steady state: \(\expval{\cdot}_{\infty}\)
-\item \(\expval{X^2}_\infty = F \expval{X}_{\infty} - hc \expval{X\bar{Y}}_\infty\) \(\forall k\) \\
-(multiply \(X\) -equation by \(X\), all \(X_k\) s are statistically equivalent, \(\dv{X}{t} = 0\) in steady state)
-\item \(\expval{\bar{Y^2}}_{\infty} = \frac{h}{J} \expval{X \bar{Y}}_{\infty}\)
+\item \begin{equation}
+\label{eqn:equilibrium_X}
+  \expval{X_k^2}_\infty = F \expval{X_k}_{\infty} - hc \expval{X_k\bar{Y_k}}_\infty \forall k
+\end{equation}
+(multiply \(X\) -equation by \(X\), all \(X_k\) s are statistically equivalent, \(\dv{\expval{X}}{t} = 0\) in steady state)
+\item \begin{equation}
+\label{eqn:equilibrium_Y}
+  \expval{\bar{Y_k^2}}_{\infty} = \frac{h}{J} \expval{X_k \bar{Y_k}}_{\infty} \forall k
+\end{equation}
 \end{itemize}
 \end{itemize}
+
+\subsubsection{Model implementation}
+\label{sec:org7a7f065}
+Implementing the model in python and using a locally 5-th order RK solver yields the following
+results (inital conditions are just uniformly random numbers in \([0,1)\) since they don't matter
+for the long-term evolution of the chaotic system):
+
+\paragraph{Reproducting the results of the original paper}
+\label{sec:orgf3652d8}
+Running the setup with \(K=36, J=10, (F, h, c, b) = (10, 1, 10, 10)\) given the following states
+\ref{fig:state_lorenz_30}, \ref{fig:state_lorenz_60},
+which qualitatively agree with the results from Lorenz.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.9\linewidth]{./figures/lorenz96_middle.png}
+\caption{\label{fig:state_lorenz_30}
+System after 30 days}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.9\linewidth]{./figures/lorenz96_last.png}
+\caption{\label{fig:state_lorenz_60}
+System after 60 days}
+\end{figure}
+
+The decay of the linear term and the forcing of the slow variables balance out after reaching the
+steady state, however there is a much bigger fluctuation in the energy than expected \ref{fig:lorenz_energy}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.9\linewidth]{./figures/lorenz96_energies.png}
+\caption{\label{fig:lorenz_energy}
+Energies in the system. \(E_X >> E_{Y_k} > 0\)}
+\end{figure}
+
+\paragraph{Equilibrium averages}
+\label{sec:org098e01c}
+Analysis suggests certain long-term averages to be equal in the equilibrium.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.9\linewidth]{./figures/equilibrium_error_n=10.png}
+\caption{\label{fig:lorenz_rmse}
+RMSE for long-term averages \ref{eqn:equilibrium_X} and \ref{eqn:equilibrium_Y}. Averaged over 10 runs}
+\end{figure}
 
 \bibliographystyle{plain}
 \bibliography{../papers/inverse_problems}
