@@ -24,6 +24,11 @@
 *** Some definition about random fields blabla in cotter
 *** What about BB stuart?
 *** What about the internet?
-** TODO Code BB Stuart Example 2.1
-** TODO Code BB Stuart Example 2.2
-** TODO Read Geophysics example
+** DONE Code BB Stuart Example 2.1
+** DONE Code BB Stuart Example 2.2
+** DONE Read Lorenz96
+** DONE Implement Lorenz96
+** DONE Report on Lorenz96 model
+** TODO Do MCMC on Lorenz96
+** TODO Report on LorenzMCMC
+
