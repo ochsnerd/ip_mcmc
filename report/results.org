@@ -103,7 +103,7 @@
     variables $Y$.
 
     $$ \dv{X_k}{t} =                 - X_{k-1}(X_{k-2} - X_{k+1}) - X_k + F - hc \bar{Y}_k $$
-    $$ \frac{1}{c} \dv{Y_{j,k}}{t} = -bY_{j+1,k}(Y_{j-2,k} - Y_{j+1, k}) - Y_{j,k} + \frac{h}{J}X_k$$
+    $$ \frac{1}{c} \dv{Y_{j,k}}{t} = -bY_{j+1,k}(Y_{j+2,k} - Y_{j-1, k}) - Y_{j,k} + \frac{h}{J}X_k$$
 
     - $X = [X_0, ..., X_{K-1}] \in \R^K$
     - $Y = [Y_{j, 0} | ... | Y_{j, K-1}] \in \R^{J \cross K}$ \\
