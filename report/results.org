@@ -150,6 +150,31 @@
      areas" (rephrased from paper). The paper also explicitly mentions the signs of the subscripts
      in that context. So some characteristics of the solution are definitely affected.
      What about the stuff we care about (statistical properties, chaotic behaviour)?
+
+**** Initial conditions for the MCMC observation operator
+     In [[cite:schneider_earth_2017]], they describe their algorithm as:
+
+     "The objective function for each sample is accumulated over T = 100 days, using the end state
+     of the previous forward integration as initial condition for the next one, without discarding
+     any spin-up after a parameter update."
+
+     (Disregarding the fact that for this chaotic ODE and such a long simulation time the initial
+     conditions are virtually irrelevant)
+     
+     From a theoretical stand-point, should the observation operator $\G{u}$ not depend _only_ on
+     $u$, the parameters we try to estimate in the algorithm? And should it not be deterministic,
+     all the (stochastic) observational noise encoded in the error term $\eta$?
+
+     Does this changing of the IC every iteration not pose a problem for the convergence of the
+     algorithm?\\
+
+     Also does the spin-up they mention refer to discarding the first part of the simulation
+     when computing steady-state averages? It somehow doesn't make sense to talk about a
+     Markov-spin-up in the context of a single ODE-simulation, but ALSO it doens't make sense
+     to talk about averages since from my understanding the MCMC-algorithm doesn't have to
+     compute averages, it just looks at the final state?
+
+     
 *** Properties
 
     - For $K=36$, $J=10$ and $\Theta = [F, h, c, b] = [10, 1, 10, 10]$ there is chaotic behaviour.
