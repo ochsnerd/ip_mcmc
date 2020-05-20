@@ -214,6 +214,7 @@ def equilibrium_requirements(y_equilibrium, model):
 
     return np.mean(X_errors), np.mean(Y_errors)
 
+
 def solve_ODE(y_0, f, tspan):
     result = solve_ivp(fun=f,
                        t_span=tspan,
@@ -222,13 +223,14 @@ def solve_ODE(y_0, f, tspan):
 
     return result.t, result.y
 
-def show_lorenz96(K, J, F, h, c, b, t_final):
+
+def show_lorenz96(K, J, F, h, c, b, T):
 
     l = Lorenz96(K, J, F, h, c, b)
 
     IC = np.random.random(K * (J + 1))
 
-    t, y = solve_ODE(IC, l, (0, t_final))
+    t, y = solve_ODE(IC, l, (0, T))
 
     n_t = len(t)
     print(f"steps: {n_t}")
@@ -261,6 +263,10 @@ def show_lorenz96(K, J, F, h, c, b, t_final):
     mean_x_error,  mean_y_error = equilibrium_requirements(y[:, len(t) // 4:], l)
 
     print(f"{mean_x_error=}, {mean_y_error=}")
+
+    filename = f"l96_{K=}_{J=}_{T=}"
+    np.save(filename, y)
+    print(f"Simulation output stored as {filename}")
 
 
 def equilibrium_requirements_analysis():
@@ -301,7 +307,7 @@ def equilibrium_requirements_analysis():
 
 def main():
     test_Lorenz96()
-    show_lorenz96(K=36, J=10, F=10, h=1, c=10, b=10, t_final=60)
+    show_lorenz96(K=36, J=10, F=10, h=1, c=10, b=10, T=60)
     equilibrium_requirements_analysis()
 
 
