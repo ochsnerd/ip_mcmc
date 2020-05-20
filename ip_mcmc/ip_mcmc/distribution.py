@@ -2,10 +2,14 @@ import numpy as np
 import scipy.linalg as la
 
 from abc import ABC, abstractmethod
-from scipy.stats import multivariate_normal
+from scipy.stats import multivariate_normal, lognorm
 
 
 class DistributionBase(ABC):
+    # Classes deriving from this are expected to define a
+    # attribute k for the dimension of the distribution.
+    # This would be propertly implemented in python
+    # by using the property attribute.
     @abstractmethod
     def sample(self, rng):
         """Return a point sampled from this distribution"""
@@ -17,8 +21,69 @@ class DistributionBase(ABC):
         ...
 
 
+class IndependentDistributions(DistributionBase):
+    """
+    Multiple (possibly different) distributions
+    (could for example build a multivariate normal with
+    block-diagonal covaraince matrix by combining multiple
+    GaussianDistribution instances)
+    """
+    def __init__(self, distributions):
+        self.distributions = distributions
+
+        self.k = sum(dist.k for dist in distributions)
+
+    def __call__(self, x):
+        a = 1
+        k = 0
+        for dist in self.distributions:
+            a *= dist(x[k:k+dist.k])
+            k += dist.k
+        return a
+
+    def sample(self, rng):
+        # Convert scalars to arrays before concatenation
+        return np.concatenate([np.array(dist.sample(rng), ndmin=1) for dist in self.distributions])
+
+
+class LogNormalDistribution(DistributionBase):
+    """
+    1D lognormal distribution
+    """
+    def __init__(self, mu, sigma):
+        """
+        Cosntruct distribution of Y st.
+        Y ~ lognormal with Y = exp(X), where X ~ N(mu, sigma^2)
+        """
+        # parameters of the underlying normal
+        self.mu = mu
+        self.s = sigma
+
+        self.dist = lognorm(scale=np.exp(self.mu), s=self.s)
+
+        # Scalar distribution
+        self.k = 1
+
+    def __call__(self, x):
+        return self.dist.pdf(x)
+
+    def sample(self, rng):
+        return rng.lognormal(mean=self.mu, sigma=self.s)
+
+
 class GaussianDistribution(DistributionBase):
+    # This really needs to be reworked
+    # - Seperate multivariate and scalar case
+    # - maybe even throw in a scalar baseclass
     def __init__(self, mean=0, covariance=1):
+        """
+        Careful:
+        For 1D:  covariance (function argument) == standard deviation (= sqrt(variance))
+        For 2+D: covariance (function argument) == covariance matrix (with (standard deviation)**2 as diagonal entries for uncorrelated)
+
+        This inconsistency is a consequence of the inconsistency of numpys
+        multivariate_normal / normal functions
+        """
         mean = self._ensure_array(mean, ndim=1)
         covariance = self._ensure_array(covariance, ndim=2)
         self.k = mean.shape[0]
