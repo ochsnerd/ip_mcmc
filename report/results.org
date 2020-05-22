@@ -102,8 +102,15 @@
     A system of ODEs, representing the coupling between slow variables $X$ and fast, subgrid
     variables $Y$.
 
-    $$ \dv{X_k}{t} =                 - X_{k-1}(X_{k-2} - X_{k+1}) - X_k + F - hc \bar{Y}_k $$
-    $$ \frac{1}{c} \dv{Y_{j,k}}{t} = -bY_{j+1,k}(Y_{j+2,k} - Y_{j-1, k}) - Y_{j,k} + \frac{h}{J}X_k$$
+    #+NAME: eqn:lorenz_X
+    \begin{equation}
+      \dv{X_k}{t} =                 - X_{k-1}(X_{k-2} - X_{k+1}) - X_k + F - hc \bar{Y}_k
+    \end{equation}
+
+    #+NAME: eqn:lorenz_Y
+    \begin{equation}
+      \frac{1}{c} \dv{Y_{j,k}}{t} = -bY_{j+1,k}(Y_{j+2,k} - Y_{j-1, k}) - Y_{j,k} + \frac{h}{J}X_k
+    \end{equation}
 
     - $X = [X_0, ..., X_{K-1}] \in \R^K$
     - $Y = [Y_{j, 0} | ... | Y_{j, K-1}] \in \R^{J \cross K}$ \\
