@@ -44,11 +44,14 @@ class LorenzObservationOperator:
     """
     Observation operator for MCMC based on Lorenz96
     """
-    def __init__(self, K, J, T, IC):
+    def __init__(self, K, J, T, IC, noise_variances, true_moments):
         self.K = K
         self.J = J
         self.IC = IC
         self.T = T
+
+        self.sqrt_Sigma = np.sqrt(noise_variances)
+        self.f_infty = true_moments
 
     def __call__(self, u):
         """
@@ -61,10 +64,20 @@ class LorenzObservationOperator:
         """
         y = self._solve_ODE(Lorenz96(self.K, self.J, *u))
         self.IC = y[:, -1]
-        return np.mean(moment_function(y, self.K, self.J), axis=1)
+
+        print(f"{u=}")
+        print(f"J={self._objective_function(y)}")
+        return self._objective_function(y)
 
     def _solve_ODE(self, l):
         return solve_ivp(fun=l, t_span=(0, self.T), y0=self.IC, method='RK45').y
+
+    def _objective_function(self, y):
+        """
+        (16) in Schneider
+        """
+        z = np.mean(moment_function(y, self.K, self.J), axis=1) - self.f_infty
+        return .5 * np.linalg.norm(self.sqrt_Sigma * z)
 
 
 def run_lorenz96(K, J, theta, T):
