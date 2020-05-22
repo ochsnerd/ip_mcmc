@@ -94,10 +94,11 @@ def main():
 
     # Parameters of simulation
     K, J = 6, 4
-    sim_length = 2
+    sim_length = 3
 
     # True Theta
-    theta = [10, 10, 1, 10]  # F, h, c, b
+    theta = np.array([10, 10, 1, 10])  # F, h, c, b
+    r = 0.5  # noise level
 
     # Characteristics of system
     T = 100
@@ -112,11 +113,13 @@ def main():
     print(f"{Y.shape=}")
     data = moment_function(Y[:, -1].reshape((J + 1) * K, 1), K, J).flatten()
     print(f"{data.shape=}")
-    moment_function_variances = np.var(moment_function(Y, K, J), axis=1)
+    moment_function_values = moment_function(Y, K, J)
+    moment_function_means = np.mean(moment_function_values, axis=1)
+    moment_function_variances = np.var(moment_function_values, axis=1)
     print(f"{moment_function_variances.shape=}")
 
     noise = GaussianDistribution(mean=np.zeros_like(moment_function_variances),
-                                 covariance=np.diag(moment_function_variances))
+                                 covariance=r**2 * np.diag(moment_function_variances))
 
     F_prior = GaussianDistribution(10, np.sqrt(10))
     h_prior = GaussianDistribution(0, np.sqrt(1))
@@ -125,7 +128,12 @@ def main():
 
     prior = IndependentDistributions((F_prior, h_prior, c_prior, b_prior))
 
-    potential = EvolutionPotential(LorenzObservationOperator(K, J, sim_length, Y[:, -1]),
+    observation_operator = LorenzObservationOperator(K, J, sim_length,
+                                                     Y[:, -1],
+                                                     r**2 * moment_function_variances,
+                                                     moment_function_means)
+
+    potential = EvolutionPotential(observation_operator,
                                    data,
                                    noise)
 
@@ -137,16 +145,18 @@ def main():
 
     sampler = MCMCSampler(proposer, accepter, rng)
 
+    u_0 = theta + np.array([0.2, -0.2, 0.1, 0.2])  # start close to true theta
+    n_samples = 50
     try:
-        samples = np.load(data_dir + f"S_{K=}_{J=}_T={sim_length}.npy")
+        samples = np.load(data_dir + f"S_{K=}_{J=}_T={sim_length}_{r=}_{n_samples=}.npy")
         print("Loaded existing sampling results")
     except FileNotFoundError:
         print("Generating samples")
-        samples = sampler.run(u_0=np.zeros((4,)),
-                              n_samples=100,
-                              burn_in=10,
+        samples = sampler.run(u_0=u_0,
+                              n_samples=n_samples,
+                              burn_in=100,
                               sample_interval=2)
-        np.save(data_dir + f"S_{K=}_{J=}_T={sim_length}", samples)
+        np.save(data_dir + f"S_{K=}_{J=}_T={sim_length}_{r=}_{n_samples=}", samples)
 
     print(f"{samples.shape=}")
 
