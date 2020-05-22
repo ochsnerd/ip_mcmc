@@ -258,3 +258,66 @@
     #+NAME: fig:lorenz_rmse
     [[./figures/equilibrium_error_n=10.png]]
     
+
+------------------- added Fri 22.05 -----------------------
+*** MCMC
+**** Setup
+     Denote the Lorenz-96 system [[eqn:lorenz_X]], [[eqn:lorenz_Y]] with parameters $u = [F, h, c, b]$ as
+     $\mathcal{M}[u]$. It acts on the initial condition $z_0 = [X_0, Y_0] \in \R^{K(J+1)}$ to evolve
+     the system for $N_t$ timesteps to generate the ? (find a good name for the "history"  of the
+     system)
+     $Z = \left[ \smash{{}^{X_1}_{Y_1}} | \cdots | \smash{{}^{X_{N_t}}_{Y_{N_t}}}  \right] \in \R^{K(J+1) \cross N_t}$:
+     $$Z = \mathcal{M}[u] z_0$$
+
+     The "moment function" $f(z): \R^{K(J+1)} \to \R^{5K}$ (why can't we just use the state of
+     the system directly?):
+
+     \begin{align}
+       f(z) &=
+       \begin{bmatrix}
+         X \\
+         \bar{Y} \\
+         X^2 \\
+         X \bar{Y} \\
+         \overline{Y^2}
+       \end{bmatrix}
+     \end{align}
+
+     Defining a potential energy for a simulation with duration $T$
+
+     #+LABEL: eqn_lorenz_J
+     \begin{equation}
+       J(Z) = \frac{1}{2} \norm{\expval{f(z)}_T - \expval{f(\tilde{z})}_\infty}_\Sigma,
+     \end{equation}
+     where $\tilde{z}$ is the output of a simulation with the true parameters $\tilde{u} = \Theta$ and
+     $\expval{\cdot}_\infty$ is approximated by an average over time $\tilde{T} >> T$. $\Sigma$ is
+     the covariance matrix of the noise.
+
+     Putting it all together yields the following equation for the MCMC:
+
+     $$y = J(\mathcal{M}[u] z_0) + \eta$$
+     with:
+     - $y \in \R^{5K}$: _moment function of last state or mean of moment function_?
+     - $u \in \R^4$: Parameter vector
+     - $J(\mathcal{M}[\cdot] z_0) : \R^4 \to \R^?$: Observational operator
+     - $\eta \sim \N{0}{\Sigma}$, where $\Sigma = r^2 [\text{var}(f(\tilde{z}))]$,
+       where $r \in \R$ is the "noise level"
+
+**** What is actually going on?
+     They describe the noise with a covariance matrix $\Sigma \in \R^{5K \cross 5K}$, implying
+     that $\G{u} \in \R^{5K}$. However, in the description of the MCMC-algorithm they talk about
+     computing the objective function, which I understand as meaning that $\G{u} \in \R$?
+     Also the scariest thing is that python doesn't complain either way, there is some shady
+     broadcasting going on in numpy.
+
+**** Independently of the correctness of the simulation, there is a serious feasibility challenge
+     As it stands now, doing a small run ($K=6, J=4, T=10$) takes 14 seconds. This means a MCMC
+     sampling takes approximately \infty.
+
+     The most time ($1/3$ of the total time) is spend calculating the nonlinear terms. They already
+     use [[https://numpy.org/doc/1.18/reference/generated/numpy.roll.html?highlight=roll#numpy.roll][~np.roll~]] and no explicit loops, so I'm not confident that they can be sped up significantly.
+     Maybe trying out something like http://numba.pydata.org/ could give some speedup, I have no
+     firsthand experience however.
+
+     Since the sampling is (approximately) embarassingly parallel, I think I could get a speedup
+     of $\mathcal{O}(4)$ on my laptop.
