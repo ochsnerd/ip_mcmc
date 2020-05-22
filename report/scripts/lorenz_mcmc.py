@@ -165,10 +165,33 @@ def main():
     # but then I break older scripts
     samples = samples.T
 
-    plt.hist(samples[0, :], density=True)
-    x_range = np.linspace(0, 20)
-    plt.plot(x_range, [F_prior(x) for x in x_range])
-    plt.show()
+    priors = [F_prior, h_prior, c_prior, b_prior]
+    intervals = [(0, 20), (-1, 2), (0, 25), (-5, 20)]
+    names = ["F", "h", "c", "b"]
+
+    plot_info = zip(priors,
+                    intervals,
+                    theta,
+                    names)
+
+    for i, (prior, interval, true_val, name) in enumerate(plot_info):
+        plt.hist(samples[i, :], density=True)
+        x_range = np.linspace(*interval)
+        plt.plot(x_range, [prior(x) for x in x_range])
+        plt.axvline(true_val, c='r')
+        plt.title(f"Prior and posterior for {name}")
+        plt.xlabel(name)
+        plt.ylabel("Probability")
+        store_figure(f"{name}_{K=}_{J=}_T={sim_length}_{r=}")
+
+
+def store_figure(name):
+    """
+    Store a figure in the figures directory.
+    Assumes there is an active pyplot-Plot and clears it after
+    """
+    plt.savefig("/home/david/fs20/thesis/code/report/figures/" + name + ".svg", format='svg')
+    plt.clf()
 
 
 if __name__ == '__main__':
