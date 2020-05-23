@@ -16,7 +16,7 @@ from lorenz import Lorenz96
 
 def moment_function(y, K, J):
     """
-    Average the moment function over the values given in y
+    Time-average the moment function over the values given in y
 
     y.shape = ((J+1)*K, n_timesteps)
     """
@@ -44,14 +44,11 @@ class LorenzObservationOperator:
     """
     Observation operator for MCMC based on Lorenz96
     """
-    def __init__(self, K, J, T, IC, noise_variances, true_moments):
+    def __init__(self, K, J, T, IC):
         self.K = K
         self.J = J
         self.IC = IC
         self.T = T
-
-        self.sqrt_Sigma = np.sqrt(noise_variances)
-        self.f_infty = true_moments
 
     def __call__(self, u):
         """
@@ -65,19 +62,10 @@ class LorenzObservationOperator:
         y = self._solve_ODE(Lorenz96(self.K, self.J, *u))
         self.IC = y[:, -1]
 
-        print(f"{u=}")
-        print(f"J={self._objective_function(y)}")
-        return self._objective_function(y)
+        return np.mean(moment_function(y, K,J), axis=1)
 
     def _solve_ODE(self, l):
         return solve_ivp(fun=l, t_span=(0, self.T), y0=self.IC, method='RK45').y
-
-    def _objective_function(self, y):
-        """
-        (16) in Schneider
-        """
-        z = np.mean(moment_function(y, self.K, self.J), axis=1) - self.f_infty
-        return .5 * np.linalg.norm(self.sqrt_Sigma * z)
 
 
 def run_lorenz96(K, J, theta, T):
@@ -111,8 +99,7 @@ def main():
         np.save(data_dir + f"Y_{K=}_{J=}_{T=}", Y)
 
     print(f"{Y.shape=}")
-    data = moment_function(Y[:, -1].reshape((J + 1) * K, 1), K, J).flatten()
-    print(f"{data.shape=}")
+
     moment_function_values = moment_function(Y, K, J)
     moment_function_means = np.mean(moment_function_values, axis=1)
     moment_function_variances = np.var(moment_function_values, axis=1)
@@ -128,13 +115,10 @@ def main():
 
     prior = IndependentDistributions((F_prior, h_prior, c_prior, b_prior))
 
-    observation_operator = LorenzObservationOperator(K, J, sim_length,
-                                                     Y[:, -1],
-                                                     r**2 * moment_function_variances,
-                                                     moment_function_means)
+    observation_operator = LorenzObservationOperator(K, J, sim_length, Y[:, -1])
 
     potential = EvolutionPotential(observation_operator,
-                                   data,
+                                   moment_function_means,
                                    noise)
 
     # don't need huge array anymore
