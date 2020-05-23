@@ -20,6 +20,11 @@ class DistributionBase(ABC):
         """Return the value of the distribution at x"""
         ...
 
+    @abstractmethod
+    def logpdf(self, x):
+        """Return the log of value of the distribution at x"""
+        ...
+
 
 class IndependentDistributions(DistributionBase):
     """
@@ -38,6 +43,14 @@ class IndependentDistributions(DistributionBase):
         k = 0
         for dist in self.distributions:
             a *= dist(x[k:k+dist.k])
+            k += dist.k
+        return a
+
+    def logpdf(self, x):
+        a = 1
+        k = 0
+        for dist in self.distributions:
+            a *= dist.logpdf(x[k:k+dist.k])
             k += dist.k
         return a
 
@@ -66,6 +79,9 @@ class LogNormalDistribution(DistributionBase):
 
     def __call__(self, x):
         return self.dist.pdf(x)
+
+    def logpdf(self, x):
+        return self.dist.logpdf(x)
 
     def sample(self, rng):
         return rng.lognormal(mean=self.mu, sigma=self.s)
@@ -99,6 +115,9 @@ class GaussianDistribution(DistributionBase):
 
     def __call__(self, x):
         return self.dist.pdf(x)
+
+    def logpdf(self, x):
+        return self.dist.logpdf(x)
 
     def sample(self, rng):
         # this is actually the function that scipy.stats.multivariate_normal

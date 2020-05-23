@@ -38,5 +38,5 @@ def test_pCNAccepter():
 
     a = pCNAccepter(potential)
 
-    assert np.isclose(a.accept_probability(-1, 1), -1), ""
+    assert np.isclose(a.accept_probability(1, 1), 1), ""
     assert np.isclose(a.accept_probability(1, 2), 2), ""

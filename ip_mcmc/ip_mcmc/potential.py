@@ -51,7 +51,7 @@ class EvolutionPotential(PotentialBase):
         self.rho = noise_distribution
 
     def __call__(self, u):
-        return -np.log(self.exp_minus_potential(u))
+        return -self.rho.logpdf(self.y - self.G(u))
 
     def exp_minus_potential(self, u):
         return self.rho(self.y - self.G(u))

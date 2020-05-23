@@ -100,4 +100,4 @@ class pCNAccepter(ProbabilisticAccepter):
         self.theta = potential
 
     def accept_probability(self, u, v):
-        return self.theta.exp_minus_potential(v) / self.theta.exp_minus_potential(u)
+        return np.exp(self.theta(u) - self.theta(v))
