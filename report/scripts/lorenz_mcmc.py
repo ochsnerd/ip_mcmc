@@ -44,25 +44,27 @@ class LorenzObservationOperator:
     """
     Observation operator for MCMC based on Lorenz96
     """
-    def __init__(self, K, J, T, IC):
+    def __init__(self, K, J, T, c, IC):
         self.K = K
         self.J = J
-        self.IC = IC
         self.T = T
+        self.c = c
+        self.IC = IC
 
     def __call__(self, u):
         """
         u: np.array(dtype=float)
-             parameter vector, u = [F, h, c, b]
+             parameter vector, u = [F, h, b]
 
         evolve a Lorenz96-ODE with self.K, self.J and the parameters
         given in u from the initial conditions of the last
         run over time [0, self.T)
         """
-        y = self._solve_ODE(Lorenz96(self.K, self.J, *u))
+        F, h, b = u
+        y = self._solve_ODE(Lorenz96(self.K, self.J, F, h, self.c, b))
         self.IC = y[:, -1]
 
-        return np.mean(moment_function(y, K,J), axis=1)
+        return np.mean(moment_function(y, self.K, self.J), axis=1)
 
     def _solve_ODE(self, l):
         return solve_ivp(fun=l, t_span=(0, self.T), y0=self.IC, method='RK45').y
@@ -108,28 +110,29 @@ def main():
     noise = GaussianDistribution(mean=np.zeros_like(moment_function_variances),
                                  covariance=r**2 * np.diag(moment_function_variances))
 
-    F_prior = GaussianDistribution(10, np.sqrt(10))
-    h_prior = GaussianDistribution(0, np.sqrt(1))
-    c_prior = LogNormalDistribution(2, np.sqrt(.1))
-    b_prior = GaussianDistribution(5, np.sqrt(10))
+    observation_operator = LorenzObservationOperator(K, J,
+                                                     sim_length,
+                                                     theta[2],
+                                                     Y[:, -1])
 
-    prior = IndependentDistributions((F_prior, h_prior, c_prior, b_prior))
-
-    observation_operator = LorenzObservationOperator(K, J, sim_length, Y[:, -1])
+    # don't need huge array anymore
+    del Y
 
     potential = EvolutionPotential(observation_operator,
                                    moment_function_means,
                                    noise)
 
-    # don't need huge array anymore
-    del Y
+    prior_means = np.array([10, 0, 5])
+    prior_covariance = np.diag([10, 1, 10])
+
+    prior = GaussianDistribution(prior_means, prior_covariance)
 
     proposer = pCNProposer(beta=0.25, prior=prior)
     accepter = CountedAccepter(pCNAccepter(potential=potential))
 
     sampler = MCMCSampler(proposer, accepter, rng)
 
-    u_0 = theta + np.array([0.2, -0.2, 0.1, 0.2])  # start close to true theta
+    u_0 = np.array([10.1, 9.9, 10.1])  # start close to true theta
     n_samples = 50
     try:
         samples = np.load(data_dir + f"S_{K=}_{J=}_T={sim_length}_{r=}_{n_samples=}.npy")
@@ -149,13 +152,14 @@ def main():
     # but then I break older scripts
     samples = samples.T
 
-    priors = [F_prior, h_prior, c_prior, b_prior]
-    intervals = [(0, 20), (-1, 2), (0, 25), (-5, 20)]
-    names = ["F", "h", "c", "b"]
+    priors = [GaussianDistribution(mu, np.sqrt(sigma_sq))
+              for mu, sigma_sq in zip(prior_means, np.diag(prior_covariance))]
+    intervals = [(0, 20), (-1, 2), (-5, 20)]
+    names = ["F", "h", "b"]
 
     plot_info = zip(priors,
                     intervals,
-                    theta,
+                    [theta[0], theta[1], theta[3]],
                     names)
 
     for i, (prior, interval, true_val, name) in enumerate(plot_info):
