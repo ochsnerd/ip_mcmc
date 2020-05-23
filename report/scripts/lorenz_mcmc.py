@@ -44,11 +44,12 @@ class LorenzObservationOperator:
     """
     Observation operator for MCMC based on Lorenz96
     """
-    def __init__(self, K, J, T, c, IC):
+    def __init__(self, K, J, T, c, prior_means, IC):
         self.K = K
         self.J = J
         self.T = T
         self.c = c
+        self.prior_means = prior_means
         self.IC = IC
 
     def __call__(self, u):
@@ -60,7 +61,7 @@ class LorenzObservationOperator:
         given in u from the initial conditions of the last
         run over time [0, self.T)
         """
-        F, h, b = u
+        F, h, b = self.prior_means + u
         y = self._solve_ODE(Lorenz96(self.K, self.J, F, h, self.c, b))
         self.IC = y[:, -1]
 
@@ -110,9 +111,17 @@ def main():
     noise = GaussianDistribution(mean=np.zeros_like(moment_function_variances),
                                  covariance=r**2 * np.diag(moment_function_variances))
 
+    prior_means = np.array([10, 0, 5])
+    prior_covariance = np.diag([10, 1, 10])
+
+    # From theory: prior is always assumed to be centered,
+    # so I do MCMC over pertubations from given prior means
+    prior = GaussianDistribution(np.zeros_like(prior_means), prior_covariance)
+
     observation_operator = LorenzObservationOperator(K, J,
                                                      sim_length,
                                                      theta[2],
+                                                     prior_means,
                                                      Y[:, -1])
 
     # don't need huge array anymore
@@ -121,11 +130,6 @@ def main():
     potential = EvolutionPotential(observation_operator,
                                    moment_function_means,
                                    noise)
-
-    prior_means = np.array([10, 0, 5])
-    prior_covariance = np.diag([10, 1, 10])
-
-    prior = GaussianDistribution(prior_means, prior_covariance)
 
     proposer = pCNProposer(beta=0.25, prior=prior)
     accepter = CountedAccepter(pCNAccepter(potential=potential))
@@ -151,6 +155,8 @@ def main():
     # solve_ivp. Might be worthwile to change it in the sampler,
     # but then I break older scripts
     samples = samples.T
+    for i in range(len(samples[0, :])):
+        samples[:, i] += prior_means
 
     priors = [GaussianDistribution(mu, np.sqrt(sigma_sq))
               for mu, sigma_sq in zip(prior_means, np.diag(prior_covariance))]
