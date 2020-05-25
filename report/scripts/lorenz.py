@@ -38,8 +38,8 @@ class Lorenz96:
         self.c = c
         self.b = b
 
-        self.fast_slow_fact = self.h * self.c
-        self.slow_fast_fact = self.h / self.J
+        if self.J:
+            self.fast_slow_fact = self.h * self.c
 
     def __call__(self, _, in_state):
         """
@@ -62,10 +62,11 @@ class Lorenz96:
         X_out[:] = self._slow_variables(X_in, Y_in)
 
         # fast variables
-        for k in range(K):
-            beg = k * J
-            end = (k + 1) * J
-            Y_out[k, :] = self._fast_variables(Y_in[k, :], X_in[k])
+        if self.J:
+            for k in range(K):
+                beg = k * J
+                end = (k + 1) * J
+                Y_out[k, :] = self._fast_variables(Y_in[k, :], X_in[k])
 
         return out_state
 
@@ -80,8 +81,9 @@ class Lorenz96:
         X_out += self.F
 
         # fast-slow interaction
-        for k in range(self.K):
-            X_out[k] -= self.fast_slow_fact * np.average(Y_in[k, :])
+        if self.J:
+            for k in range(self.K):
+                X_out[k] -= self.fast_slow_fact * np.average(Y_in[k, :])
 
         return X_out
 
@@ -235,19 +237,19 @@ def show_lorenz96(K, J, F, h, c, b, T):
     n_t = len(t)
     print(f"steps: {n_t}")
 
-    plt.plot(np.repeat(y[:K, 0], J), label="slow")
+    plt.plot(np.repeat(y[:K, 0], max(J,1)), label="slow")
     plt.plot(y[K:, 0], label="fast")
     plt.title("Inital conditions timestep")
     plt.legend()
     store_figure("lorenz96_IC")
 
-    plt.plot(np.repeat(y[:K, n_t // 2], J), label="slow")
+    plt.plot(np.repeat(y[:K, n_t // 2], max(J,1)), label="slow")
     plt.plot(y[K:,n_t // 2], label="fast")
     plt.title("Middle timestep")
     plt.legend()
     store_figure("lorenz96_middle")
 
-    plt.plot(np.repeat(y[:K, -1], J), label="slow")
+    plt.plot(np.repeat(y[:K, -1], max(J,1)), label="slow")
     plt.plot(y[K:,-1], label="fast")
     plt.title("Last timestep")
     plt.legend()
@@ -259,6 +261,10 @@ def show_lorenz96(K, J, F, h, c, b, T):
     plt.title("Energy")
     plt.legend()
     store_figure("lorenz96_energies")
+
+    if not J:
+        # didn't do fast variables
+        return
 
     mean_x_error,  mean_y_error = equilibrium_requirements(y[:, len(t) // 4:], l)
 
@@ -307,8 +313,8 @@ def equilibrium_requirements_analysis():
 
 def main():
     test_Lorenz96()
-    show_lorenz96(K=36, J=10, F=10, h=1, c=10, b=10, T=60)
-    equilibrium_requirements_analysis()
+    show_lorenz96(K=36, J=0, F=10, h=1, c=10, b=10, T=60)
+    # equilibrium_requirements_analysis()
 
 
 if __name__ == '__main__':
