@@ -85,14 +85,14 @@ def main():
 
     # Parameters of simulation
     K, J = 6, 4
-    sim_length = 3
+    sim_length = 20
 
     # True Theta
     theta = np.array([10, 10, 1, 10])  # F, h, c, b
     r = 0.5  # noise level
 
     # Characteristics of system
-    T = 100
+    T = 500
     try:
         Y = np.load(data_dir + f"Y_{K=}_{J=}_{T=}.npy")
         print("Loaded existing simulation results")
