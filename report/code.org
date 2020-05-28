@@ -81,9 +81,9 @@
 
    Potentials are used in the accepters to decide the relative weight of different configurations.
    They use the ~__call__~-method to do that. Especially for high-dimensional error-terms, the
-   pdf of the error term can become very small, so it is important to implement this computing the
-   logpdf directly instead of manually exponentiating and running into issues with floating point
-   limitations.
+   value of the pdf of the error term can become very small, so it is important to implement this
+   computing the logpdf directly instead of manually exponentiating and running into issues with
+   floating point number limitations.
 
 *** AnalyticPotential
 
