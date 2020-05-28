@@ -80,7 +80,11 @@
    concrete potential, one or the other is easier to compute.
 
    Potentials are used in the accepters to decide the relative weight of different configurations.
-   There, the ~PotentialBase.exp_minus_potential~ is used.
+   They use the ~__call__~-method to do that. Especially for high-dimensional error-terms, the
+   pdf of the error term can become very small, so it is important to implement this computing the
+   logpdf directly instead of manually exponentiating and running into issues with floating point
+   limitations.
+
 *** AnalyticPotential
 
     This potential is used when sampling from an analytically computable probability distribution,
