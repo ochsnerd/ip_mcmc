@@ -1,6 +1,6 @@
 #+TITLE: Markov Chain Monte Carlo for Inverse Problems
 
-#+OPTIONS: H:4
+#+OPTIONS: H:5
 
 #+INCLUDE: latex_header.org
 
@@ -30,5 +30,25 @@
 ** DONE Implement Lorenz96
 ** DONE Report on Lorenz96 model
 ** TODO Do MCMC on Lorenz96
-** TODO Report on LorenzMCMC
+*** DONE dont make c uncertain
+*** DONE nicer priors
+*** maybe even make the system even smaller (J=1 (0?) -> no fast dynamics)
+*** TODO AC plot to prove that MCMC works
+** DONE Report on LorenzMCMC
+*** DONE Write about how the "ergodic properties" of the Lorenz system actually help you
+    Time average over long simulation = ensemble average
+    Get a lot of information about the system in a single run
+    The intitial condititions of the evolution operator are meaningless
+*** Combine plots
+    Probably easier to do with matplotlib
+**** DONE 3 lorenz states
+**** DONE 3 density plots F, h, b
+*** DONE Correct model setup
+*** DONE Time-averages are just np.mean, but the RK-integrator does non-uniform timesteps
+    
+** Report: Lessons learned
+   - Distributions was a good idea to make class,
+     however it evolved more into a wrapper for scipy.stats pdf
+     -> so what's the lesson learned?
+   - logpdf is very important (conjectured)
 
