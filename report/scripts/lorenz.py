@@ -237,23 +237,31 @@ def show_lorenz96(K, J, F, h, c, b, T):
     n_t = len(t)
     print(f"steps: {n_t}")
 
-    plt.plot(np.repeat(y[:K, 0], max(J,1)), label="slow")
-    plt.plot(y[K:, 0], label="fast")
-    plt.title("Inital conditions timestep")
-    plt.legend()
-    store_figure("lorenz96_IC")
+    def find_nearest(array, value):
+        return (np.abs(array - value)).argmin()
 
-    plt.plot(np.repeat(y[:K, n_t // 2], max(J,1)), label="slow")
-    plt.plot(y[K:,n_t // 2], label="fast")
-    plt.title("Middle timestep")
-    plt.legend()
-    store_figure("lorenz96_middle")
+    id_1 = find_nearest(t, 19)
+    id_2 = find_nearest(t, 20)
+    id_3 = find_nearest(t, 21)
 
-    plt.plot(np.repeat(y[:K, -1], max(J,1)), label="slow")
-    plt.plot(y[K:,-1], label="fast")
-    plt.title("Last timestep")
-    plt.legend()
-    store_figure("lorenz96_last")
+    print(f"{t[id_1]=}, {t[id_2]=}, {t[id_3]=}")
+
+    fig, (ax1, ax2, ax3) = plt.subplots(1,3, figsize=(20,10))
+
+    ax1.plot(np.repeat(y[:K, id_1], max(J,1)), label="slow")
+    ax1.plot(y[K:, id_1], label="fast")
+    ax1.legend()
+    ax1.set_title("T = 19")
+
+    ax2.plot(np.repeat(y[:K, id_2], max(J,1)), label="slow")
+    ax2.plot(y[K:, id_2], label="fast")
+    ax2.set_title("T = 20")
+
+    ax3.plot(np.repeat(y[:K, id_3], max(J,1)), label="slow")
+    ax3.plot(y[K:, id_3], label="fast")
+    ax3.set_title("T = 21")
+    fig.suptitle("Lorenz96 at different T")
+    store_figure("lorenz96_combined")
 
     plt.plot(t[:], [(l.slow_energy(y[:, i])) for i in range(len(t))], label="slow")
     plt.plot(t[:], [(l.total_energy(y[:, i])) for i in range(len(t))], label="total")
@@ -313,7 +321,7 @@ def equilibrium_requirements_analysis():
 
 def main():
     test_Lorenz96()
-    show_lorenz96(K=36, J=0, F=10, h=1, c=10, b=10, T=60)
+    show_lorenz96(K=36, J=10, F=10, h=1, c=10, b=10, T=21)
     # equilibrium_requirements_analysis()
 
 
