@@ -111,7 +111,7 @@ def main():
     noise = GaussianDistribution(mean=np.zeros_like(moment_function_variances),
                                  covariance=r**2 * np.diag(moment_function_variances))
 
-    prior_means = np.array([10, 0, 5])
+    prior_means = np.array([12, 8, 9])  # F, h, b
     prior_covariance = np.diag([10, 1, 10])
 
     # From theory: prior is always assumed to be centered,
@@ -136,8 +136,8 @@ def main():
 
     sampler = MCMCSampler(proposer, accepter, rng)
 
-    u_0 = np.array([10.1, 9.9, 10.1])  # start close to true theta
-    n_samples = 50
+    u_0 = np.array([-1.9, 1.9, 0.9])  # start close to true theta
+    n_samples = 5000
     try:
         samples = np.load(data_dir + f"S_{K=}_{J=}_T={sim_length}_{r=}_{n_samples=}.npy")
         print("Loaded existing sampling results")
@@ -146,7 +146,7 @@ def main():
         samples = sampler.run(u_0=u_0,
                               n_samples=n_samples,
                               burn_in=100,
-                              sample_interval=2)
+                              sample_interval=1)
         np.save(data_dir + f"S_{K=}_{J=}_T={sim_length}_{r=}_{n_samples=}", samples)
 
     print(f"{samples.shape=}")
@@ -155,28 +155,44 @@ def main():
     # solve_ivp. Might be worthwile to change it in the sampler,
     # but then I break older scripts
     samples = samples.T
+
+    # Add pertubations to means
     for i in range(len(samples[0, :])):
         samples[:, i] += prior_means
 
+    # Plot densities
     priors = [GaussianDistribution(mu, np.sqrt(sigma_sq))
               for mu, sigma_sq in zip(prior_means, np.diag(prior_covariance))]
-    intervals = [(0, 20), (-1, 2), (-5, 20)]
+    intervals = [(-5, 25)] * 3
     names = ["F", "h", "b"]
+
+    fig, plts = plt.subplots(1, 3, figsize=(20,10))
 
     plot_info = zip(priors,
                     intervals,
                     [theta[0], theta[1], theta[3]],
-                    names)
+                    names,
+                    plts)
 
-    for i, (prior, interval, true_val, name) in enumerate(plot_info):
-        plt.hist(samples[i, :], density=True)
+    for i, (prior, interval, true_val, name, ax) in enumerate(plot_info):
+        ax.hist(samples[i, :], density=True)
         x_range = np.linspace(*interval)
-        plt.plot(x_range, [prior(x) for x in x_range])
-        plt.axvline(true_val, c='r')
-        plt.title(f"Prior and posterior for {name}")
-        plt.xlabel(name)
-        plt.ylabel("Probability")
-        store_figure(f"{name}_{K=}_{J=}_T={sim_length}_{r=}")
+        ax.plot(x_range, [prior(x) for x in x_range])
+        ax.axvline(true_val, c='r')
+        ax.set_title(f"Prior and posterior for {name}")
+        ax.set(xlabel=name, ylabel="Probability")
+
+    fig.suptitle("Posteriors and priors")
+    store_figure(f"combined_{K=}_{J=}_T={sim_length}_{r=}")
+
+    # Plot autocorrelation of F
+    ac = np.correlate(samples[0, :], samples[0, :], mode='full')
+    ac = ac[-len(samples[0, :]):]
+    ac /= ac[0]
+    plt.plot(ac)
+    plt.ylabel("ACF")
+    plt.title("Autocorrelation of F")
+    store_figure(f"acF_{K=}_{J=}_T={sim_length}_{r=}")
 
 
 def store_figure(name):
