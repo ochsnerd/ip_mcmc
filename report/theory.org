@@ -162,3 +162,81 @@
         \text{ with } \mathbf{Z}_n \sim \N{0}{1} \text{ i.i.d}
     $$
     where $\Sigma = AA^T$.
+*** Autocorrelation of non-centered distributions
+
+    A common definition of the autocorrelation function of a series $\{X_t\}$ is (cite something here?)
+    
+    #+LABEL: eqn:def_ac
+    \begin{equation}
+    R(\tau) = \E{X_t X_{t+\tau}^*},
+    \end{equation}
+
+    which can be normalized by $\tilde{R}(\tau) = R(\tau) / R(0)$ [fn:complex].
+
+    For calculating $R$ of a finite series $\{X_t\}_{t=1}^{T}$, the series can either be
+    zero-padded or the summation limits adjusted accordingly:
+
+    \begin{equation}
+    R(\tau) = \sum_{t=1}^{T-\tau} X_t X_{t+\tau} \text{  for } \tau < T
+    \end{equation}
+
+    This seems to be the definition that is used in the function [[https://numpy.org/doc/1.18/reference/generated/numpy.correlate.html][~np.correlate~]]:
+    ~c_{av}[k] = sum_n a[n+k] * conj(v[n])~ (where we get autocorrelation for ~a=v=x~).
+
+    This gives the expected result for uniformly random noise in $[-1, 1]$. However, when shifting
+    the same distribution by a constant factor to get uniformly random noise in $[0, 2]$, the
+    autocorrelation decays approximately linearly: [[fig:ac_uni]].
+
+    #+CAPTION: Autocorrelation function of the same signal $\{X_t \sim \mathcal{U}([0,2])\}$, once computed with ~np.correlate~ on the original series (uncentered), and once for $\{X_t - 1\}$ (centered).
+    #+LABEL: fig:ac_uni
+    [[./figures/ac_theory.png]]
+
+    To see why this happens, split up the signal into its mean plus a mean-zero pertubation:
+    $X_t = \overline{X} + \tilde{X}_t$, where $\overline{X} = \E{X}$ and $\E{\tilde{X}} = 0$.
+    The normalized autocorrelation is then:
+
+    \begin{align}
+    \tilde{R}(\tau) =& \frac{\sum_{t=1}^{T-\tau} X_t X_{t+\tau}}
+                            {\sum_{t=1}^{T} X_t^2} \\
+                    =& \frac{\sum_{t=1}^{T-\tau} (\overline{X} + \tilde{X}_t) (\overline{X} + \tilde{X}_{t+\tau})}
+                            {\sum_{t=1}^{T} (\overline{X} + \tilde{X}_t)^2} \\
+                    =& \frac{(T-\tau) \overline{X}^2 + \overline{X} \sum_{t=1}^{T-\tau} (\tilde{X}_t + \tilde{X}_{t+\tau}) + \sum_{t=1}^{T-\tau}\tilde{X}_t \tilde{X}_{t+\tau}}
+                            {T \overline{X}^2 + 2 \overline{X} \sum_{t=1}^T \tilde{X}_t + \sum_{t=1}^T \tilde{X}_t^2} \\
+                    =& \frac{(T-\tau) \overline{X}^2}
+                            {T(\overline{X}^2 + \text{var}(X))},
+    \end{align}
+
+    where the last equality holds because
+    - $\lvert\sum_{t=1}^{T-\tau} (\tilde{X}_t + \tilde{X}_{t+\tau})\rvert < \epsilon$ and $\lvert\sum_{t=1}^T \tilde{X}_t \rvert < \epsilon$
+      when $T >> \tau$ by the weak law of large numbers
+    - $\sum_{t=1}^{T-\tau}\tilde{X}_t \tilde{X}_{t+\tau} = R(\tau) = 0$ for $\tau \neq 0$ and X "uncorrelated"
+    - $\sum_{t=1}^T \tilde{X}_t^2 = T \cdot \text{var}(\tilde{X}) = T \cdot\text{var}(X)$
+
+    This is a linear function in $\tau$, which is what we see in the plots (plus quite some noise).
+
+    For $\overline{X} >> \text{var}(X)$, we get $\tilde{R}(\tau) = 1 - \tau / T$, which explains nicely
+    why in the "uncentered" autocorrelation always linearly decays to 0, independently of the signal length $T$.
+
+    Considering these points, the python-function that computes the autocorrelation we're actually interested
+    in [fn:autocov] looks like this:
+
+    #+BEGIN_SRC python    
+    def autocorr(x):
+        x_centered = x - np.mean(x)
+        result = np.correlate(x_centered, x_centered, mode='full')
+        # numpy computes the correlation from -\infty to +\infty
+        result = result[-len(x):]
+        # normalize the result
+        return result / result[0]
+    #+END_SRC
+      
+    Much of this hassle could be avoided when the expectation value in the definition of the autocorrelation
+    [[eqn:def_ac]] would be computed correctly (not just "a posteriori" in the normalizing step with
+    a much too large factor for bigger values of $\tau$). However, this is not possible while still taking
+    advantage of the huge speedup of doing the convolution operation in Fourier space.
+
+
+[fn:complex] Since we're only working with real numbers, the complex conjugate in the definition will
+be dropped from now on.
+
+[fn:autocov] The function I'm describing here is called auto-covariance function $K_{XX} = \E{(X_t - \mu) (X_{t+\tau} - \mu)^*}$.
