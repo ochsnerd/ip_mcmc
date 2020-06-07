@@ -29,11 +29,11 @@
 ** DONE Read Lorenz96
 ** DONE Implement Lorenz96
 ** DONE Report on Lorenz96 model
-** TODO Do MCMC on Lorenz96
+** DONE Do MCMC on Lorenz96
 *** DONE dont make c uncertain
 *** DONE nicer priors
 *** maybe even make the system even smaller (J=1 (0?) -> no fast dynamics)
-*** TODO AC plot to prove that MCMC works
+*** DONE AC plot to prove that MCMC works
 ** DONE Report on LorenzMCMC
 *** DONE Write about how the "ergodic properties" of the Lorenz system actually help you
     Time average over long simulation = ensemble average
@@ -45,7 +45,9 @@
 **** DONE 3 density plots F, h, b
 *** DONE Correct model setup
 *** DONE Time-averages are just np.mean, but the RK-integrator does non-uniform timesteps
-    
+** DONE AC Section
+*** DONE Side-by-side plot: [0,2] vs [-1, 1] vs [0, 2] - mean
+** TODO Burgers
 ** Report: Lessons learned
    - Distributions was a good idea to make class,
      however it evolved more into a wrapper for scipy.stats pdf

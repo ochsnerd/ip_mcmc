@@ -1,4 +1,4 @@
-% Created 2020-05-28 Do 14:01
+% Created 2020-06-07 So 14:43
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -20,7 +20,9 @@
 \newcommand{\C}{{\mathcal{C}}}
 \newcommand{\I}{{\mathcal{I}}}
 \newcommand{\R}{{\mathbb{R}}}
+\newcommand{\NN}{{\mathbb{N}}}
 \newcommand{\G}[1]{{\mathcal{G} \left( #1 \right)}}
+\newcommand{\E}[1]{{\mathop{\mathbb{E}}\left[ #1 \right]}}
 \newcommand{\N}[2]{\mathcal{N}\left(#1,#2\right)}
 \author{David Ochsner}
 \date{\today}
@@ -39,14 +41,14 @@
 
 
 \section{Theory}
-\label{sec:org6d2d1d2}
+\label{sec:orgc12d9bc}
 \subsection{Papers}
-\label{sec:org099bc24}
+\label{sec:org78173ac}
 \subsubsection{Stuart et al: Inverse Problems: A Bayesian Perspective \cite{stuart_inverse_2010}}
-\label{sec:org39fb8b6}
+\label{sec:orge5721c4}
 Theoretical Background
 \paragraph{Notation}
-\label{sec:org15022ae}
+\label{sec:orgdbfe2f6}
 Central equation:
 $$y = \G{u} + \eta$$
 with:
@@ -57,15 +59,15 @@ with:
 \item \(\eta\): mean zero RV, observational noise (a.s. \(\eta \sim \N{0}{\C}\))
 \end{itemize}
 \subsubsection{Cotter et al: MCMC for functions \cite{cotter_mcmc_2013}}
-\label{sec:org09afebf}
+\label{sec:org098696e}
 Implementation, MCMC in infinite dimensions
 \subsubsection{Schneider et al: Earth System Modeling 2.0  \cite{schneider_earth_2017}}
-\label{sec:orga9e9689}
+\label{sec:org2be6662}
 Example for MCMC on ODE
 \subsection{Small results}
-\label{sec:org89b5aae}
+\label{sec:org715b1a8}
 \subsubsection{Gaussian in infinite dimensions}
-\label{sec:orgacc41f4}
+\label{sec:orgdeee79e}
 This section is quite a mess, maybe you could suggest a not-too-technical introduction
 to infinite dimensional Gaussian measures?
 
@@ -102,7 +104,7 @@ but for example in the wiki-article about the matrix (operator) square root (\ur
 "The Cholesky factorization provides another particular example of square root, which should not be confused with the unique non-negative square root."
 
 \subsubsection{Bayes' Formula \& Radon-Nikodym Derivative}
-\label{sec:org2f8632d}
+\label{sec:org7bdd49f}
 Bayes' Formula is stated using the Radon-Nikodym Derivative in both \cite{cotter_mcmc_2013} and \cite{stuart_inverse_2010}:
 $$\dv{\mu}{\mu_0} \propto \text{L}(u),$$
 where \(\text{L}(u)\) is the likelihood.
@@ -123,7 +125,7 @@ Using this we recover the more familiar formulation of Bayes' formula:
 $$\frac{\rho(u)}{\rho_o(u)} \propto \text{L}(u).$$
 
 \subsubsection{Acceptance Probability for Metropolis-Hastings}
-\label{sec:org7e4a39f}
+\label{sec:org61a17e0}
 A Markov process with transition probabilities \(t(y|x)\) has a stationary distribution \(\pi(x)\).
 \begin{itemize}
 \item The \uline{existence} of \(\pi(x)\) follows from \emph{detailed balance}:
@@ -160,7 +162,7 @@ a(y,x) = \min\left\{1, \frac{P(y)}{P(x)}\right\}.
 Since the target distribution \(P(x)\) only appears as a ratio, normalizing factors can be ignored.
 
 \subsubsection{Potential for Bayes'-MCMC when sampling from analytic distributions}
-\label{sec:org949f2a6}
+\label{sec:org0f2cf51}
 How can we use formulations of Metropolis-Hastings-MCMC algorithms designed to sample from
 posteriors when want to sample from probability distribution with an easy analytical expression?
 
@@ -186,7 +188,7 @@ This cancellation does not happen when using the pCN-Acceptance probablity. This
 explain the poorer performance of pCN when directly sampling a probablity distribution.
 
 \subsubsection{Acceptance Probabilities for different MCMC Proposers}
-\label{sec:orge232c7c}
+\label{sec:orgd0b3666}
 Start from Bayes' formula and rewrite the likelyhood \(\text{L}(u)\) as \(\exp(-\Phi(u))\) for
 a positive scalar function \(\Phi\) called the potential:
 $$\frac{\rho(u)}{\rho_o(u)} \propto \exp(\Phi(u)).$$
@@ -197,13 +199,13 @@ since \(u^T C^{-1} u = (C^{-1/2} u)^T(C^{-1/2} u) = \langle C^{-1/2}u, C^{-1/2}u
 where in the first equality we used \(C\) being symmetric.
 
 This is formula (1.2) in \cite{cotter_mcmc_2013} and is used in the acceptance probability for
-the standard random walk (see also \hyperref[sec:org7e4a39f]{Acceptance Probability for Metropolis-Hastings})
+the standard random walk (see also \hyperref[sec:org61a17e0]{Acceptance Probability for Metropolis-Hastings})
 
 \(\C^{-1/2}u\) makes problems in infinite dimensions.
 
 Todo: Why exactly is the second term (from the prior) cancelled when doing pCN?
 \subsubsection{Different formulations of multivariate Gaussians}
-\label{sec:orgdddb545}
+\label{sec:org6b2bd92}
 Is an RV \(\xi \sim \N{0}{C}\) distributed the same as \(C^{1/2}\xi_0\), with \(\xi_0 \sim \N{0}{\I}\)?
 
 From wikipedia: Affine transformation \(Y = c + BX\) for \(X \sim \N{\mu}{\Sigma}\) is also a Gaussian
@@ -221,9 +223,88 @@ $$
         \text{ with } \mathbf{Z}_n \sim \N{0}{1} \text{ i.i.d}
     $$
 where \(\Sigma = AA^T\).
+\subsubsection{Autocorrelation of non-centered distributions}
+\label{sec:orga50eccf}
+
+A common definition of the autocorrelation function of a series \(\{X_t\}\) is (cite something here?)
+
+\begin{equation}
+\label{eqn:def_ac}
+R(\tau) = \E{X_t X_{t+\tau}^*},
+\end{equation}
+
+which can be normalized by \(\tilde{R}(\tau) = R(\tau) / R(0)\) \footnote{Since we're only working with real numbers, the complex conjugate in the definition will
+be dropped from now on.}.
+
+For calculating \(R\) of a finite series \(\{X_t\}_{t=1}^{T}\), the series can either be
+zero-padded or the summation limits adjusted accordingly:
+
+\begin{equation}
+R(\tau) = \sum_{t=1}^{T-\tau} X_t X_{t+\tau} \text{  for } \tau < T
+\end{equation}
+
+This seems to be the definition that is used in the function \href{https://numpy.org/doc/1.18/reference/generated/numpy.correlate.html}{\texttt{np.correlate}}:
+\texttt{c\_\{av\}[k] = sum\_n a[n+k] * conj(v[n])} (where we get autocorrelation for \texttt{a=v=x}).
+
+This gives the expected result for uniformly random noise in \([-1, 1]\). However, when shifting
+the same distribution by a constant factor to get uniformly random noise in \([0, 2]\), the
+autocorrelation decays approximately linearly: \ref{fig:ac_uni}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.9\linewidth]{./figures/ac_theory.png}
+\caption{\label{fig:ac_uni}
+Autocorrelation function of the same signal \(\{X_t \sim \mathcal{U}([0,2])\}\), once computed with \texttt{np.correlate} on the original series (uncentered), and once for \(\{X_t - 1\}\) (centered).}
+\end{figure}
+
+To see why this happens, split up the signal into its mean plus a mean-zero pertubation:
+\(X_t = \overline{X} + \tilde{X}_t\), where \(\overline{X} = \E{X}\) and \(\E{\tilde{X}} = 0\).
+The normalized autocorrelation is then:
+
+\begin{align}
+\tilde{R}(\tau) =& \frac{\sum_{t=1}^{T-\tau} X_t X_{t+\tau}}
+                        {\sum_{t=1}^{T} X_t^2} \\
+                =& \frac{\sum_{t=1}^{T-\tau} (\overline{X} + \tilde{X}_t) (\overline{X} + \tilde{X}_{t+\tau})}
+                        {\sum_{t=1}^{T} (\overline{X} + \tilde{X}_t)^2} \\
+                =& \frac{(T-\tau) \overline{X}^2 + \overline{X} \sum_{t=1}^{T-\tau} (\tilde{X}_t + \tilde{X}_{t+\tau}) + \sum_{t=1}^{T-\tau}\tilde{X}_t \tilde{X}_{t+\tau}}
+                        {T \overline{X}^2 + 2 \overline{X} \sum_{t=1}^T \tilde{X}_t + \sum_{t=1}^T \tilde{X}_t^2} \\
+                =& \frac{(T-\tau) \overline{X}^2}
+                        {T(\overline{X}^2 + \text{var}(X))},
+\end{align}
+
+where the last equality holds because
+\begin{itemize}
+\item \(\lvert\sum_{t=1}^{T-\tau} (\tilde{X}_t + \tilde{X}_{t+\tau})\rvert < \epsilon\) and \(\lvert\sum_{t=1}^T \tilde{X}_t \rvert < \epsilon\)
+when \(T >> \tau\) by the weak law of large numbers
+\item \(\sum_{t=1}^{T-\tau}\tilde{X}_t \tilde{X}_{t+\tau} = R(\tau) = 0\) for \(\tau \neq 0\) and X "uncorrelated"
+\item \(\sum_{t=1}^T \tilde{X}_t^2 = T \cdot \text{var}(\tilde{X}) = T \cdot\text{var}(X)\)
+\end{itemize}
+
+This is a linear function in \(\tau\), which is what we see in the plots (plus quite some noise).
+
+For \(\overline{X} >> \text{var}(X)\), we get \(\tilde{R}(\tau) = 1 - \tau / T\), which explains nicely
+why in the "uncentered" autocorrelation always linearly decays to 0, independently of the signal length \(T\).
+
+Considering these points, the python-function that computes the autocorrelation we're actually interested
+in \footnote{The function I'm describing here is called auto-covariance function \(K_{XX} = \E{(X_t - \mu) (X_{t+\tau} - \mu)^*}\).} looks like this:
+
+\begin{minted}[]{python}
+def autocorr(x):
+    x_centered = x - np.mean(x)
+    result = np.correlate(x_centered, x_centered, mode='full')
+    # numpy computes the correlation from -\infty to +\infty
+    result = result[-len(x):]
+    # normalize the result
+    return result / result[0]
+\end{minted}
+
+Much of this hassle could be avoided when the expectation value in the definition of the autocorrelation
+\ref{eqn:def_ac} would be computed correctly (not just "a posteriori" in the normalizing step with
+a much too large factor for bigger values of \(\tau\)). However, this is not possible while still taking
+advantage of the huge speedup of doing the convolution operation in Fourier space.
 
 \section{Framework/Package Structure}
-\label{sec:org70ca97d}
+\label{sec:org657865e}
 The framework is designed to support an easy use case:
 \begin{minted}[]{python}
 proposer = StandardRWProposer(beta=0.25, dims=1)
@@ -239,7 +320,7 @@ This facilitates reproducability.
 
 Tests are done with \texttt{pytest}.
 \subsection{Distributions}
-\label{sec:org4004503}
+\label{sec:org36a9cfc}
 A class for implementing probability distributions.
 \begin{minted}[]{python}
 class DistributionBase(ABC):
@@ -283,7 +364,7 @@ seperate classes would be better.
 
 Also, maybe there is a need to implement a Gaussian using the Karhunen-Loéve-Expansion?
 \subsection{Potentials}
-\label{sec:org086faf1}
+\label{sec:org5a09ecb}
 A class for implementing the potential resulting from rewriting the likelihood as
 $$\text{L}(u) = \exp(- \Phi(u)).$$
 
@@ -308,19 +389,19 @@ concrete potential, one or the other is easier to compute.
 
 Potentials are used in the accepters to decide the relative weight of different configurations.
 They use the \texttt{\_\_call\_\_}-method to do that. Especially for high-dimensional error-terms, the
-pdf of the error term can become very small, so it is important to implement this computing the
-logpdf directly instead of manually exponentiating and running into issues with floating point
-limitations.
+value of the pdf of the error term can become very small, so it is important to implement this
+computing the logpdf directly instead of manually exponentiating and running into issues with
+floating point number limitations.
 
 \subsubsection{AnalyticPotential}
-\label{sec:org2cb6f06}
+\label{sec:orgc82a604}
 
 This potential is used when sampling from an analytically computable probability distribution,
 i.e. a known posterior. In this case
 $$\exp(-\Phi(u)) = \frac{\rho(u)}{\rho_0(u)},$$
 see \url{theory.org}
 \subsubsection{EvolutionPotential}
-\label{sec:org420cad1}
+\label{sec:org7633f52}
 
 This potential results when sampling from the model-equation
 $$y = \G{u} + \eta,$$
@@ -328,7 +409,7 @@ with \(\eta \sim \rho\). The resulting potential can be computed as
 $$\exp(-\Phi(u)) = \rho(y - \G{u}).$$
 
 \subsection{Proposers}
-\label{sec:orgd7c45f2}
+\label{sec:orgb9e5fa5}
 
 Propose a new state \(v\) based on the current one \(u\).
 
@@ -340,7 +421,7 @@ class ProposerBase(ABC):
 \end{minted}
 
 \subsubsection{StandardRWProposer}
-\label{sec:orgbb6d2c3}
+\label{sec:org57662ec}
 
 Propose a new state as
 $$v = u + \sqrt{2\delta} \xi,$$
@@ -350,7 +431,7 @@ This leads to a well-defined algorithm in finite dimensions.
 This is not the case when working on functions (as described in section 6.3 in \cite{cotter_mcmc_2013})
 
 \subsubsection{pCNProposer}
-\label{sec:org0270c92}
+\label{sec:org0cf3ced}
 
 Propose a new state as
 $$v = \sqrt{1-\beta^2} u + \beta \xi,$$
@@ -363,7 +444,7 @@ nicer properties for infinite dimensions)(see sections 6.2 + 6.3 in \cite{cotter
 The wikipedia-article on the Cholesky-factorization mentions the use-case of obtaining a
 correlated sample from an uncorrelated one by the Cholesky-factor. This is not implemented here.
 \subsection{Accepters}
-\label{sec:org3c3a02b}
+\label{sec:org9373fd2}
 
 Given a current state \(u\) and a proposed state \(v\), decide if the new state is accepted or rejected.
 
@@ -384,7 +465,7 @@ class ProbabilisticAccepter(AccepterBase):
 \end{minted}
 
 \subsubsection{AnalyticAccepter}
-\label{sec:org99ac2d6}
+\label{sec:orgcae60bc}
 
 Used when there is an analytic expression of the desired distribution.
 
@@ -395,7 +476,7 @@ class AnalyticAccepter(ProbabilisticAccepter):
 \end{minted}
 
 \subsubsection{StandardRWAccepter}
-\label{sec:orgfaa735f}
+\label{sec:org65cb7bc}
 
 Based on formula (1.2) in \cite{cotter_mcmc_2013}:
 $$a = \text{min}\{1, \exp(I(u) - I(v))\},$$ with
@@ -404,19 +485,19 @@ $$I(u) = \Phi(u) + \frac{1}{2}\norm{\C^{-1/2}u}^2$$.
 See also \url{theory.org}.
 
 \subsubsection{pCNAccepter}
-\label{sec:org0d5ee5f}
+\label{sec:org59efe21}
 
-Works together with the \hyperref[sec:org0270c92]{pCNProposer} to achieve the simpler expression for the acceptance
+Works together with the \hyperref[sec:org0cf3ced]{pCNProposer} to achieve the simpler expression for the acceptance
 $$a = \text{min}\{1, \exp(\Phi(u) - \Phi(v))\}.$$
 
 \subsubsection{CountedAccepter}
-\label{sec:orgd49f4fa}
+\label{sec:org2556bea}
 
 Stores and forwards calls to an "actual" accepter. Counts calls and accepts and is used for
 calculating the acceptance ratio.
 
 \subsection{Sampler}
-\label{sec:orgf62be34}
+\label{sec:orgf34cad5}
 
 The structure of the sampler is quite simple, since it can rely heavily on the functionality
 provided by the Proposers and Accepters.
@@ -434,11 +515,11 @@ class MCMCSampler:
 \end{minted}
 
 \section{Results}
-\label{sec:orgc25e625}
+\label{sec:org84191a3}
 \subsection{Analytic sampling from a bimodal Gaussian}
-\label{sec:org9ff7ca3}
+\label{sec:orga9a232c}
 \subsubsection{Setup}
-\label{sec:orgb675898}
+\label{sec:org552e9ea}
 
 Attempting to recreate the "Computational Illustration" from \cite{cotter_mcmc_2013}. They use,
 among other algorithms, pCN to sample from a 1-D bimodal Gaussian
@@ -452,7 +533,7 @@ sense to me in the 1-D setting (how do I sum infinite eigenfunctions of a scalar
 The potential for density estimation described in section is also not clear to me (maybe for
 a similar reason? What is \(u\) in the density estimate case?).
 
-I ended up using a normal \(\N{0}{1}\) as a prior and the potential described \hyperref[sec:org949f2a6]{before}, and
+I ended up using a normal \(\N{0}{1}\) as a prior and the potential described \hyperref[sec:org0f2cf51]{before}, and
 compared the following samplers:
 \begin{itemize}
 \item (1) \href{code.org}{\texttt{StandardRWProposer}} (\(\delta=0.25\)) + \href{code.org}{\texttt{AnalyticAccepter}}
@@ -463,7 +544,7 @@ compared the following samplers:
 The code is in \href{scripts/analytic.py}{\texttt{analytic.py}}.
 
 \subsubsection{Result}
-\label{sec:org1a04022}
+\label{sec:org219f221}
 
 All three samplers are able to reproduce the target density \ref{fig:hist_bimodal}
 
@@ -486,7 +567,7 @@ AC of bimodal distribution. pCN takes forever to decorrelate}
 \end{figure}
 
 \subsection{Bayesian inverse problem for \(\G{u} = \langle g,u \rangle\)}
-\label{sec:org4a61445}
+\label{sec:org4521147}
 For \(\G{u} = \langle g,u \rangle\) the resulting posterior under a Gaussian prior
 is again a Gaussian. The model equation is
 $$y = \G{u} + \eta$$
@@ -521,7 +602,7 @@ For \(n>2\), the resulting posterior can not be plotted anymore. However, it is 
 with given mean \& covariance. Can just compare the analytical values to the sample values.
 Verify that the error decays like \(\frac{1}{\sqrt{N}}\).
 \subsection{Bayesian inverse problem for \(\G{u} = g (u + \beta u^3)\)}
-\label{sec:org5627f5d}
+\label{sec:orgf01c288}
 Since the observation operator is not linear anymore, the resulting posterior is not
 Gaussian in general. However, since the dimension of the input \(u\) is 1, it can
 still be plotted.
@@ -552,11 +633,11 @@ For \(\beta \neq 0\), the resulting posterior is not a Gaussian. Still \(n=1\), 
 plotted. Just numerically normalize the analytical expression of the posterior?
 
 \subsection{Lorenz96 model}
-\label{sec:org07c5ca3}
+\label{sec:orgd32d9c7}
 \subsubsection{Model}
-\label{sec:org9ce3e9f}
+\label{sec:org407a7ae}
 \paragraph{Based on:}
-\label{sec:orgb72a4e1}
+\label{sec:org2cda0bd}
 
 Properly cite this!
 
@@ -565,7 +646,7 @@ Lorenz, E. N. (1996). Predictability—A problem partly solved. In Reprinted in 
 Predictability, Predictability of Weather and Climate, Cambridge UP (2006) (Vol. 1, pp. 1–18). Reading, Berkshire, UK: ECMWF.
 
 \paragraph{Equation}
-\label{sec:org8ebb641}
+\label{sec:org91ccb22}
 
 A system of ODEs, representing the coupling between slow variables \(X\) and fast, subgrid
 variables \(Y\). The system is used in \cite{schneider_earth_2017} to illustrate different
@@ -596,14 +677,14 @@ algorithms for earth system modelling.
 \end{itemize}
 
 \subparagraph{\(b\) or \(J\)?}
-\label{sec:org7950e9d}
+\label{sec:orgb7cabfb}
 In the original paper, the equations are given in a different form, namely all
 explicit occurences of \(J\) above (in the fast-slow interaction) are replaced by
 \(b\). Since in both concrete realizations (1996 \& 2017) are identical and conviniently
 have \(b=J=10\), the difference doesn't lead to different results for that setup.
 
 \subparagraph{"Looking ahead" vs. "Looking back"}
-\label{sec:orgb9c872b}
+\label{sec:orgb38b3a3}
 Comparing nonlinearity terms
 $$-X_{k-1}(X_{k-2} - X_{k+1})$$
 $$-bY_{j+1,k}(Y_{j+2,k} - Y_{j-1, k})$$
@@ -626,12 +707,12 @@ What about the stuff we care about (statistical properties, chaotic behaviour)?
 
 
 \paragraph{Properties}
-\label{sec:orgca099b4}
+\label{sec:orgf3777ab}
 
 For \(K=36\), \(J=10\) and \(\Theta = [F, h, c, b] = [10, 1, 10, 10]\) there is chaotic behaviour.
 
 \subparagraph{Energy}
-\label{sec:orgb832a47}
+\label{sec:orga874643}
 
 The nonlinearities conserve the energies within a subsystem:
 \begin{itemize}
@@ -663,7 +744,7 @@ In the statistical steady state, the external forcing \(F\) (as long as its posi
 the dampling of the linear terms.
 
 \subparagraph{Averaged quantities}
-\label{sec:org7e90014}
+\label{sec:orgd1a6de6}
 
 $$\expval{\phi} = \frac{1}{T} \int_{t_0}^{t_0 + T} \phi(t) \dd{t}$$ (or a sum over discrete values)
 
@@ -682,7 +763,7 @@ Long-term time-average in the statistical steady state: \(\expval{\cdot}_{\infty
 \end{itemize}
 
 \subparagraph{(Quasi) Ergodicity}
-\label{sec:org0b2fa49}
+\label{sec:orgd854959}
 
 Whether chaotic regions of the phase space of a system are ergodic seems not be an easy question
 to answer (citation needed probably) \footnote{Are there any inaccessible regions in phase space
@@ -711,14 +792,14 @@ As a consequence, as long as the integration time of the system is "long enough"
 condition is meaningless and can even vary without changing the behaviour of the observation operator.
 
 \subsubsection{Model implementation}
-\label{sec:org57efc42}
+\label{sec:org582108c}
 
 Implementing the model in python and using a locally 5-th order RK solver yields the following
 results (inital conditions are just uniformly random numbers in \([0,1)\) since they don't matter
 for the long-term evolution of the chaotic system):
 
 \paragraph{Reproducting the results of the original paper}
-\label{sec:org76957fa}
+\label{sec:orge5acb1a}
 Running the setup with \(K=36, J=10, (F, h, c, b) = (10, 1, 10, 10)\) gives the following states
 \ref{fig:lorenz96_combined},
 which qualitatively agree with the results from Lorenz.
@@ -741,7 +822,7 @@ Energies in the system. \(E_X >> E_{Y_k} > 0\)}
 \end{figure}
 
 \paragraph{Equilibrium averages}
-\label{sec:orgfcbb66f}
+\label{sec:org61c093e}
 Analysis suggests certain long-term averages to be equal in the equilibrium.
 
 \begin{figure}[htbp]
@@ -752,7 +833,7 @@ RMSE for long-term averages \ref{eqn:equilibrium_X} and \ref{eqn:equilibrium_Y}.
 \end{figure}
 
 \subsubsection{MCMC}
-\label{sec:orge8612b3}
+\label{sec:org0022e7f}
 General point: The \texttt{RK45} method uses a predictor/corrector step and thus does non-uniform timesteps.
 However, in the following I compute time-averages with a simple \texttt{np.mean}, ignoring the different
 length of timesteps. It would be not impossible to write my own \texttt{time\_average(y, t)}-function that
@@ -761,7 +842,7 @@ a forward-integration takes \(\mathcal(2000)\) timesteps, so I suspect that diff
 a bit?
 
 \paragraph{Setup}
-\label{sec:org56fef07}
+\label{sec:org0a1827b}
 Denote the Lorenz-96 system \ref{eqn:lorenz_X}, \ref{eqn:lorenz_Y} with parameters \(\tilde{u} = [F, h, c, b]\) as
 \(\mathcal{M}[\tilde{u}]\). It acts on the initial condition \(z_0 = [X_0, Y_0] \in \R^{K(J+1)}\) to evolve
 the system for \(N_t\) timesteps and generate the phase space trajectory
@@ -789,7 +870,7 @@ with:
 \begin{itemize}
 \item \(\expval{f}_\infty \approx \expval{f}_{T_r}\) with \(T_r >> T\) over a simulation \(\mathcal{M}[u^*] z_0\)
 \item \(\expval{f}_T(u)\) the time average over a simulation \(\mathcal{M}[u_p + u] z_0\)
-\item Due to the ergodic properties of \(\mathcal{M}\) \ref{sec:org0b2fa49} , it doesn't really matter what \(z_0\) is
+\item Due to the ergodic properties of \(\mathcal{M}\) \ref{sec:orgd854959} , it doesn't really matter what \(z_0\) is
 \item The parameter vector comes in many different variations:
 \begin{itemize}
 \item \(u^* \in \R^4_{\geq 0}\): true underlying parameters, used to compute the "data"
@@ -802,7 +883,7 @@ where \(r \in \R\) is the "noise level"
 
 \begin{enumerate}
 \item The parameter vector \(u\)
-\label{sec:org27b64d7}
+\label{sec:org9337f2e}
 
 The theoretical background assumes the prior to be a centered Gaussian (\(\mu = 0\)).
 Specifically, it matters during the proposal step, where the step is taken either with
@@ -811,7 +892,7 @@ A compromise would be to just ignore a nonzero prior-mean in the proposal, howev
 sure if such a prior has other effects that invalidate the algorithm.
 
 \item "Noise level"
-\label{sec:org2c40a8f}
+\label{sec:org77cff58}
 
 \(r\) is scaling of covariance matrix of noise term. This in turn is just step-width in proposal.
 
@@ -819,7 +900,7 @@ TODO: Verify by checking acceptance rate for different noise levels
 \end{enumerate}
 
 \subparagraph{Concrete parameters}
-\label{sec:org854bc16}
+\label{sec:org04592cd}
 
 The MCMC-Simulation was carried  out with the following parameters:
 
@@ -851,10 +932,10 @@ But 2 is also what they used in the ESM paper.
 \end{itemize}
 
 \paragraph{Result}
-\label{sec:org12c0b56}
+\label{sec:orgb512d08}
 
 \subparagraph{Density plot for posterior}
-\label{sec:orge10acf4}
+\label{sec:org16c31d5}
 
 The resulting density plots show a improvement from the prior towards the true value \ref{fig:lorenz_densities}.
 The estimation of the parameter \(F\) seems to be easier than \(b\), where the prior and the
@@ -874,23 +955,20 @@ Prior and Posteriors after a 5000 sample MCMC run}
 \end{figure}
 
 \subparagraph{ACF}
-\label{sec:orgfc785db}
+\label{sec:org0552771}
 
-While the plot of the \(F\) -values looks pretty uncorrelated to me \ref{fig:lorenz_F}, the ACF functions
-decays much slower than expected \ref{fig:lorenz_acF}. I there maybe something wrong with how I compute it?
+The autocorrelation decays for all three variables. As expected from the accuracy of the posteriors,
+the autocorrelation of \(F\) decays much faster than that of \(b\). This simulation was done with a
+value of \(\beta=0.5\), which controls the "step size" of the proposer, and resulted in an acceptance
+rate of around \(0.6\). The value for \(\beta\) can now be tuned in such a way to get the fastest decay
+of the autocorrelation, which happens when the steps taken during sampling are big enough to
+quickly decorrelate the chain, while not being so big that the accepter declines too many of the steps.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.9\linewidth]{./figures/acF_K=6_J=4_T=20_r=0.5.png}
+\includegraphics[width=.9\linewidth]{./figures/lorenz_ac_avg_K=6_J=4_T=20_r=0.5.png}
 \caption{\label{fig:lorenz_acF}
-Autocorrelation of \(F\) during the MCMC sampling}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=.9\linewidth]{./figures/F_K=6_J=4_T=20_r=0.5.png}
-\caption{\label{fig:lorenz_F}
-Value of \(F\) during the MCMC sampling}
+Autocorrelation of during the MCMC sampling. The functions are averaged over ten distinct parts of the chain}
 \end{figure}
 
 \bibliographystyle{plain}
