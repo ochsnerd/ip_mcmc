@@ -21,6 +21,7 @@ class MCMCSampler:
         samples = np.empty((n_samples, u.size))
 
         for i in range(n_samples):
+            print(f"Sampling {i + 1}/{n_samples}")
             for _ in range(sample_interval):
                 u = self._step(u, self.rng)
 
@@ -38,3 +39,10 @@ class MCMCSampler:
             return v
 
         return u
+
+    @classmethod
+    def autocorr(cls, x):
+        x_ = x - np.mean(x)
+        result = np.correlate(x_, x_, mode='full')
+        result = result[-len(x):]
+        return result / result[0]
