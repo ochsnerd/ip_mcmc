@@ -1,0 +1,285 @@
+* Model
+** Based on:
+
+   Properly cite this!
+
+
+   Lorenz, E. N. (1996). Predictability—A problem partly solved. In Reprinted in T. N. Palmer & R. Hagedorn (Eds.), Proceedings Seminar on
+   Predictability, Predictability of Weather and Climate, Cambridge UP (2006) (Vol. 1, pp. 1–18). Reading, Berkshire, UK: ECMWF.
+
+** Equation
+
+   A system of ODEs, representing the coupling between slow variables $X$ and fast, subgrid
+   variables $Y$. The system is used in [[cite:schneider_earth_2017]] to illustrate different
+   algorithms for earth system modelling.
+
+   #+NAME: eqn:lorenz_X
+   \begin{equation}
+     \dv{X_k}{t} =                 - X_{k-1}(X_{k-2} - X_{k+1}) - X_k + F - hc \bar{Y}_k
+   \end{equation}
+
+   #+NAME: eqn:lorenz_Y
+   \begin{equation}
+     \frac{1}{c} \dv{Y_{j,k}}{t} = -bY_{j+1,k}(Y_{j+2,k} - Y_{j-1, k}) - Y_{j,k} + \frac{h}{J}X_k
+   \end{equation}
+
+   - $X = [X_0, ..., X_{K-1}] \in \R^K$
+   - $Y = [Y_{j, 0} | ... | Y_{j, K-1}] \in \R^{J \cross K}$ \\
+     $Y_{j,k} = [Y_{0,k}, ..., Y_{J-1,k}] \in  \R^J$
+   - $\bar{Y}_k = \frac{1}{J}\sum_j Y_{j,k}$
+   - periodic: $X_K = X_0$, $Y_{J,k} = Y_{0,k}$
+   - Parameters $\Theta = [F, h, c, b]$
+   - $h$: coupling strength
+   - $c$: relative damping
+   - $F$: external forcing of the slow variables (large scale forcing)
+   - $b$: scale of non-linear interaction of fast variables
+   - $t = 1 \Leftrightarrow 1$ day (simulation duration is given in days)
+
+*** $b$ or $J$?
+    In the original paper, the equations are given in a different form, namely all
+    explicit occurences of $J$ above (in the fast-slow interaction) are replaced by
+    $b$. Since in both concrete realizations (1996 & 2017) are identical and conviniently
+    have $b=J=10$, the difference doesn't lead to different results for that setup.
+
+*** "Looking ahead" vs. "Looking back"
+    Comparing nonlinearity terms
+    $$-X_{k-1}(X_{k-2} - X_{k+1})$$
+    $$-bY_{j+1,k}(Y_{j+2,k} - Y_{j-1, k})$$
+    for a given $Y_{k}$, does the "direction" of the $Z_{k\pm 1}Z_{k\pm 2}$ ($Z=X,Y$) matter?
+
+    I don't think so, since the interaction with the other variable is only via point-value
+    and average, and the nonlinearity is periodic.
+     
+    A bit more formally:
+    The PDE is invariant under "reversing" of the numbering:
+    $Y_{j,k} \rightarrow Y_{J-j,k}$ which is the same as switching $+ \leftrightarrow -$ in
+    the only "asymmetric" term.
+
+    Addendum 2 days later: Need to define more clearly what it means for the direction to
+    _matter_. In the original paper on page 12, it is described how "active areas [..] propagate
+    slowly eastward", while "convective activity tends to propagate westward within the active
+    areas" (rephrased from paper). The paper also explicitly mentions the signs of the subscripts
+    in that context. So some characteristics of the solution are definitely affected.
+    What about the stuff we care about (statistical properties, chaotic behaviour)?
+
+
+** Properties
+
+   For $K=36$, $J=10$ and $\Theta = [F, h, c, b] = [10, 1, 10, 10]$ there is chaotic behaviour.
+
+*** Energy
+
+    The nonlinearities conserve the energies within a subsystem:
+      - $E_X = \sum_k X_k^2$
+
+        $\frac{1}{2} \dv{(\sum_k X_k^2)}{t} =
+         \sum_k X_k \dv{X_k}{t} =
+         -\sum_k (X_k X_{k-1} X_{k-2} - X_{k-1} X_{k} X_{k+1}) =
+         0$,
+
+        where the last equality follows from telescoping + periodicity
+      - $E_{Y_k} = \sum_j Y_{j,k}^2$
+
+        which follows analogously to the $X$ -case
+
+    The interaction between fast and slow variables conserves the total energy:
+      - $E_{T} = \sum_k (X_k^2 + \sum_j Y_{j,k}^2)$
+
+        $\frac{1}{2} \dv{E_{T}}{t} =
+         \sum_k X_k \dv{X_k}{t} + \sum_j Y_{j,k} \dv{Y_j,k}{t} =
+         \sum_k X_k (- \frac{hc}{J} \sum_j Y_{j,k}) + \sum_j Y_{j,k} (\frac{hc}{J} X_k) =
+         \sum_k - \frac{hc}{J} X_k (\sum_j Y_{j,k} + \frac{hc}{J} X_k (\sum_j Y_{j,k})) = 
+         0$
+
+    In the statistical steady state, the external forcing $F$ (as long as its positive) balances
+    the dampling of the linear terms.
+
+*** Averaged quantities
+
+    $$\expval{\phi} = \frac{1}{T} \int_{t_0}^{t_0 + T} \phi(t) \dd{t}$$ (or a sum over discrete values)
+
+    Long-term time-average in the statistical steady state: $\expval{\cdot}_{\infty}$
+
+    - 
+      #+NAME: eqn:equilibrium_X
+      \begin{equation}
+         \expval{X_k^2}_\infty = F \expval{X_k}_{\infty} - hc \expval{X_k\bar{Y_k}}_\infty \forall k
+      \end{equation}
+      (multiply $X$ -equation by $X$, all $X_k$ s are statistically equivalent, $\dv{\expval{X}}{t} = 0$ in steady state)
+    - 
+      #+NAME: eqn:equilibrium_Y
+      \begin{equation}
+        \expval{\bar{Y_k^2}}_{\infty} = \frac{h}{J} \expval{X_k \bar{Y_k}}_{\infty} \forall k
+      \end{equation}
+
+*** (Quasi) Ergodicity
+
+    Whether chaotic regions of the phase space of a system are ergodic seems not be an easy question
+    to answer (citation needed probably) [fn:ergodicity2] Are there any inaccessible regions in phase space
+    for the Lorenz system? I can't think of any. However, there seem to be "traps" that take the
+    system out of it's chaotic behaviour ($X_i = c$, $Y_i=a$). These somehow destroy ergodicity.
+    Are they somehow "measure 0" or something?)/. However, for the purposes of this section (which deals with
+    finite time anyway), it is enough to assert that
+
+    for the Lorenz system, for sufficiently long times, the time-average converges to the
+    "space-average" over phase-space:
+
+    #+NAME: eqn:lorenz_ergodicity
+    \begin{equation}
+       \expval{f}_{\infty} = \lim_{T \to \infty} \int_0^T f(Z(t)) \dd{t} = \int_{\R^{K(J+1)}} f(x) \rho(x) \dd{x}
+    \end{equation}
+
+    where $Z(t)$ is a phase space trajectory of the system and $\rho(x)$ is the probaility of the
+    system in the statistical steady state to be in state $x$.
+
+    One sufficiently long simulation of the system gives information about all accessible [fn:ergodicity] initial conditions.
+    As a consequence, as long as the integration time of the system is "long enough", the chosen initial
+    condition is meaningless and can even vary without changing the behaviour of the observation operator.
+     
+[fn:ergodicity] Here a more precise definition of ergodicity of the system would help out. What I mean
+is "all sensible initial conditions".
+
+[fn:ergodicity2] Are there any inaccessible regions in phase space
+for the Lorenz system? I can't think of any. However, there seem to be "traps" that take the
+system out of it's chaotic behaviour ($X_i = c$, $Y_i=a$). These destroy ergodicity.
+Are they somehow "measure 0" or something?
+
+* Model implementation
+
+  Implementing the model in python and using a locally 5-th order RK solver yields the following
+  results (inital conditions are just uniformly random numbers in $[0,1)$ since they don't matter
+  for the long-term evolution of the chaotic system):
+
+** Reproducting the results of the original paper
+   Running the setup with $K=36, J=10, (F, h, c, b) = (10, 1, 10, 10)$ gives the following states
+   [[fig:lorenz96_combined]],
+   which qualitatively agree with the results from Lorenz.
+
+  #+CAPTION: System around $T=20$
+  #+NAME: fig:lorenz96_combined
+  [[./figures/lorenz96_combined.png]]
+
+  The decay of the linear term and the forcing of the slow variables balance out after reaching the
+  steady state, however there is a much bigger fluctuation in the energy than expected [[fig:lorenz_energy]].
+
+  #+CAPTION: Energies in the system. $E_X >> E_{Y_k} > 0$
+  #+NAME: fig:lorenz_energy
+  [[./figures/lorenz96_energies.png]]
+
+** Equilibrium averages
+    Analysis suggests certain long-term averages to be equal in the equilibrium.
+
+   #+CAPTION: RMSE for long-term averages [[eqn:equilibrium_X]] and [[eqn:equilibrium_Y]]. Averaged over 10 runs
+   #+NAME: fig:lorenz_rmse
+   [[./figures/equilibrium_error_n=10.png]]
+    
+* MCMC
+  General point: The ~RK45~ method uses a predictor/corrector step and thus does non-uniform timesteps.
+  However, in the following I compute time-averages with a simple ~np.mean~, ignoring the different
+  length of timesteps. It would be not impossible to write my own ~time_average(y, t)~-function that
+  takes the non-uniform timesteps into account. However I'm not sure how necessary this is, considering
+  a forward-integration takes $\mathcal(2000)$ timesteps, so I suspect that differences are washed out
+  a bit?
+
+** Setup
+   Denote the Lorenz-96 system [[eqn:lorenz_X]], [[eqn:lorenz_Y]] with parameters $\tilde{u} = [F, h, c, b]$ as
+   $\mathcal{M}[\tilde{u}]$. It acts on the initial condition $z_0 = [X_0, Y_0] \in \R^{K(J+1)}$ to evolve
+   the system for $N_t$ timesteps and generate the phase space trajectory
+   $Z = \left[ \smash{{}^{X_1}_{Y_1}} | \cdots | \smash{{}^{X_{N_t}}_{Y_{N_t}}}  \right] \in
+   \R^{K(J+1) \cross N_t}$:
+   $$Z = \mathcal{M}[\tilde{u}] z_0$$
+
+   Define the "moment function" $f(z): \R^{K(J+1)} \to \R^{5K}$
+
+   \begin{align}
+     f(z) &=
+     \begin{bmatrix}
+       X \\
+       \bar{Y} \\
+       X^2 \\
+       X \bar{Y} \\
+       \overline{Y^2}
+     \end{bmatrix}
+   \end{align}
+
+   The MCMC-Algorithm then samples based on:
+
+   $$\expval{f}_\infty = \expval{f}_T(u) + \eta$$
+   with:
+   - $\expval{f}_\infty \approx \expval{f}_{T_r}$ with $T_r >> T$ over a simulation $\mathcal{M}[u^*] z_0$
+   - $\expval{f}_T(u)$ the time average over a simulation $\mathcal{M}[u_p + u] z_0$
+   - Due to the ergodic properties of $\mathcal{M}$ [[(Quasi) Ergodicity]] , it doesn't really matter what $z_0$ is
+   - The parameter vector comes in many different variations:
+     - $u^* \in \R^4_{\geq 0}$: true underlying parameters, used to compute the "data"
+     - $u_p \in \R^4_{\geq 0}$: mean of the prior
+     - $u \in \R^4$: pertubations to the prior mean, the actual input to the observation operator
+   - $\eta \sim \N{0}{\Sigma}$, where $\Sigma = r^2 [\text{var}(f)_{T_r}]$,
+     where $r \in \R$ is the "noise level"
+
+**** The parameter vector $u$
+
+     The theoretical background assumes the prior to be a centered Gaussian ($\mu = 0$).
+     Specifically, it matters during the proposal step, where the step is taken either with
+     scaled sample from the prior or from a centered Gaussian with the covariance of the prior.
+     A compromise would be to just ignore a nonzero prior-mean in the proposal, however I'm not
+     sure if such a prior has other effects that invalidate the algorithm.
+
+**** "Noise level"
+
+     $r$ is scaling of covariance matrix of noise term. This in turn is just step-width in proposal.
+
+     TODO: Verify by checking acceptance rate for different noise levels
+
+*** Concrete parameters
+
+    The MCMC-Simulation was carried  out with the following parameters:
+
+    - $K = 6, J = 4$
+    - Reference Simulation to get $\expval{f}_\infty$ and $\Sigma$:
+      - $u^* = [F^*, h^*, c^*, b^*]= [10, 10, 1, 10]$
+      - $T_r = 500$
+    - Noise $\eta \sim \N{0}{\Sigma}$ with $\Sigma = r^2 \text{diag}(\text{var}(f_{T_r})) \in \R^{5K \cross 5K}$
+    - Noise level $r= 0.5$
+    - Prior $\N{u_p}{\Sigma_0}$
+      - $u_p = [F_0, h_0, b_0] = [12, 8, 9]$
+      - $\Sigma_0 = \text{diag}([10, 1, 10])$
+      - $c$ was excluded from the sampling since it is very hard to estimate ("bad statistics")
+      - The prior was chosen closer to the true value to make the job of the algorithm easier
+    - Sampling with /pCN/ proposer and acccepter with $\beta = 0.25$
+      - Evaluating the observation operator with a model-simulation of $T=20$
+      - Start sampling very close to true value: $u_0 = [-1.9, 1.9, 0.9]$ so that $u^* \approx u_p + u_0$
+      - This means we can use a short burn-in of 100
+      - Sample $N = 2500$ with a sample-interval of 2
+      - The sample interval of 2 is very short, especially considering the long correlation time see below.
+        But 2 is also what they used in the ESM paper.
+
+** Result
+
+*** Density plot for posterior
+
+    The resulting density plots show a improvement from the prior towards the true value [[fig:lorenz_densities]].
+    The estimation of the parameter $F$ seems to be easier than $b$, where the prior and the
+    posterior seem pretty much identical.
+
+    This slight improvement is however not unexpected, as the simulations I've done are much shorter than
+    the ones in [[cite:schneider_earth_2017]] ($K, J) = (6,4)$ vs $(36, 10)$, $T = 20$ vs 100, $T_r = 500$ vs 46,416)
+
+    Should I do some more analysis here, like reporting sample means and covariances to compare
+    posterior/prior not just visually?
+
+    #+CAPTION: Prior and Posteriors after a 5000 sample MCMC run
+    #+NAME: fig:lorenz_densities
+    [[./figures/combined_K=6_J=4_T=20_r=0.5.png]]
+
+*** ACF
+
+    The autocorrelation decays for all three variables. As expected from the accuracy of the posteriors,
+    the autocorrelation of $F$ decays much faster than that of $b$. This simulation was done with a
+    value of $\beta=0.5$, which controls the "step size" of the proposer, and resulted in an acceptance
+    rate of around $0.6$. The value for $\beta$ can now be tuned in such a way to get the fastest decay
+    of the autocorrelation, which happens when the steps taken during sampling are big enough to
+    quickly decorrelate the chain, while not being so big that the accepter declines too many of the steps.
+
+    #+CAPTION: Autocorrelation of during the MCMC sampling. The functions are averaged over ten distinct parts of the chain
+    #+NAME: fig:lorenz_acF
+    [[./figures/lorenz_ac_avg_K=6_J=4_T=20_r=0.5.png]]
