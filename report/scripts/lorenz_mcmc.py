@@ -131,13 +131,13 @@ def main():
                                    moment_function_means,
                                    noise)
 
-    proposer = pCNProposer(beta=0.25, prior=prior)
+    proposer = pCNProposer(beta=0.5, prior=prior)
     accepter = CountedAccepter(pCNAccepter(potential=potential))
 
     sampler = MCMCSampler(proposer, accepter, rng)
 
     u_0 = np.array([-1.9, 1.9, 0.9])  # start close to true theta
-    n_samples = 5000
+    n_samples = 2000
     try:
         samples = np.load(data_dir + f"S_{K=}_{J=}_T={sim_length}_{r=}_{n_samples=}.npy")
         print("Loaded existing sampling results")
@@ -185,14 +185,20 @@ def main():
     fig.suptitle("Posteriors and priors")
     store_figure(f"combined_{K=}_{J=}_T={sim_length}_{r=}")
 
-    # Plot autocorrelation of F
-    ac = np.correlate(samples[0, :], samples[0, :], mode='full')
-    ac = ac[-len(samples[0, :]):]
-    ac /= ac[0]
-    plt.plot(ac)
-    plt.ylabel("ACF")
-    plt.title("Autocorrelation of F")
-    store_figure(f"acF_{K=}_{J=}_T={sim_length}_{r=}")
+    # Average the autocorrelation
+    ac = np.zeros((3, 100))
+    n = 10
+    for i in range(1,1+n):
+        for var in range(3):
+            ac[var, :] += MCMCSampler.autocorr(samples[var, i*100:(i+1)*100])
+    ac /= n
+    plt.plot(ac[0, :], label="F")
+    plt.plot(ac[1, :], label="h")
+    plt.plot(ac[2, :], label="b")
+    plt.title("Autocorrelation")
+    plt.xlabel("Lag")
+    plt.legend()
+    store_figure(f"lorenz_ac_avg_{K=}_{J=}_T={sim_length}_{r=}")
 
 
 def store_figure(name):
