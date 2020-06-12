@@ -29,7 +29,7 @@ class RusanovFVM:
         self.dudt = np.zeros_like(self.u)
 
     def integrate(self, IC, T, only_endstate=True):
-        self.u = np.array([IC(x_) for x_ in self.x])
+        self.u[:] = np.array([IC(x_) for x_ in self.x], dtype=np.float)
 
         t = 0
 
