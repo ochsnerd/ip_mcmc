@@ -48,6 +48,16 @@
 ** DONE AC Section
 *** DONE Side-by-side plot: [0,2] vs [-1, 1] vs [0, 2] - mean
 ** TODO Burgers
+*** TODO Write report
+*** Stuff that could be done
+**** investigate acceptance ratio and ac as function of prop_beta
+**** investigate goodness of fit as function of measurement placement
+***** metric for goodness of fit?
+**** investigate different samplers (pCN vs ordinary RW)
+***** as far as I understand the paper, pCN is good because it works in high dimensions
+****** proposer-measure doesn't become degenerate or smth
+**** Convergence study over grid refinement or smth?
+**** ?
 ** Report: Lessons learned
    - Distributions was a good idea to make class,
      however it evolved more into a wrapper for scipy.stats pdf
