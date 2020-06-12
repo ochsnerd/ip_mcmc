@@ -55,9 +55,9 @@ class RusanovFVM:
 
             T_ = np.array(Ts)
 
-            return U_, T_
+            return U_[1:-1, :], T_
 
-        return np.copy(self.u), t
+        return np.copy(self.u[1:-1]), t
 
     def _step(self, dt):
         """Write state after dt evolution of self.u into self.u"""
@@ -186,7 +186,7 @@ def show_burgers_riemann():
 
     U, T = r.integrate(lambda x: float(x < 0), 1, False)
 
-    plt.plot(r.x, U[:, -1])
+    plt.plot(r.x[1:-1], U[:, -1])
     plt.show()
 
 if __name__ == '__main__':
