@@ -10,15 +10,8 @@ from ip_mcmc import (MCMCSampler,
 import sys
 sys.path.append("/home/david/fs20/thesis/code/report/scripts/")
 from rusanov import RusanovFVM
+from helpers import store_figure, load_or_compute, autocorrelation
 
-
-def store_figure(name):
-    """
-    Store a figure in the figures directory.
-    Assumes there is an active pyplot-Plot and clears it after
-    """
-    plt.savefig("/home/david/fs20/thesis/code/report/figures/" + name + ".svg", format='svg')
-    plt.clf()
 
 
 class FVMObservationOperator:
@@ -102,7 +95,7 @@ class Measurer:
                                            side='left')
         self.right_limits = np.searchsorted(x_values,
                                             m_p + measurement_interval / 2,
-                                            side='right')
+                                            side='left')
 
     def __call__(self, values):
         assert len(values) == self.n_x_vals, "Provided values don't match x_vals"
@@ -118,7 +111,6 @@ class Measurer:
 
 def main():
     rng = np.random.default_rng(2)
-    data_dir = "home/david/fs20/thesis/code/report/data/"
 
     def flux(u):
         return .5 * u*u
@@ -127,8 +119,8 @@ def main():
         return u
 
     # simulation parameters
-    domain = (-1,1)
-    N_gridpoints = 100
+    domain = (-1, 1)
+    N_gridpoints = 200
     T_end = 1
 
     # initial condition
@@ -136,7 +128,6 @@ def main():
     delta_2 = -0.025
     sigma = -0.02
     true_IC = PerturbedRiemannIC([delta_1, delta_2, sigma])
-    unperturbed_IC = PerturbedRiemannIC([0] * 3)
 
     integrator = RusanovMCMC(flux, flux_prime, domain, N_gridpoints, T_end)
 
@@ -171,29 +162,32 @@ def main():
                                    y,
                                    noise)
 
-    proposer = pCNProposer(beta=0.5, prior=prior)
+    prop_beta = 0.5
+    proposer = pCNProposer(beta=prop_beta, prior=prior)
     accepter = CountedAccepter(pCNAccepter(potential=potential))
 
     sampler = MCMCSampler(proposer, accepter, rng)
 
     u_0 = np.zeros(3)
     n_samples = 1000
-    samples_full = sampler.run(u_0=u_0,
-                               n_samples=n_samples,
-                               burn_in=100,
-                               sample_interval=1)
+    burn_in = 100
+    sample_interval = 1
+
+    samples_full = load_or_compute(f"burgers_samples_n={n_samples}_b={prop_beta}",
+                                   sampler.run,
+                                   (u_0, n_samples, burn_in, sample_interval))
 
     samples_full = samples_full.T
+    # Add pertubations to means
+    for i in range(len(samples_full[0, :])):
+        samples_full[:, i] += prior_means
+
 
     # do sample_interval=5 after the fact
     samples = samples_full[:, ::5]
 
-    # Add pertubations to means
-    for i in range(len(samples[0, :])):
-        samples[:, i] += prior_means
-
     # plot densities
-    fig, plts = plt.subplots(1, 3, figsize=(20,10))
+    fig, plts = plt.subplots(1, 3, figsize=(20, 10))
 
     priors = [GaussianDistribution(mu, np.sqrt(sigma_sq))
               for mu, sigma_sq in zip(prior_means, np.diag(prior_covariance))]
@@ -216,6 +210,48 @@ def main():
 
     fig.suptitle("Posteriors and priors")
     store_figure(f"burgers_densities")
+
+    # autocorrelation
+    ac = autocorrelation(samples_full, 100, 10)
+    for i in range(3):
+        plt.plot(ac[i, :], label=names[i])
+    plt.title("Autocorrelation")
+    plt.xlabel("Lag")
+    plt.legend()
+    store_figure(f"burgers_ac_b={prop_beta}")
+
+
+    plt.plot(samples_full[0,:])
+    plt.show()
+
+    show_setup(true_IC, integrator, measurer)
+
+
+def show_setup(IC, integrator, measurer):
+    unperturbed_IC = PerturbedRiemannIC([0] * 3)
+
+    x_vals = integrator.FVM.x[1:-1]
+
+    unperturbed_u_start = [unperturbed_IC(x) for x in x_vals]
+    perturbed_u_start = [IC(x) for x in x_vals]
+    unperturbed_u_end = integrator(unperturbed_IC)
+    perturbed_u_end = integrator(IC)
+
+    measurement_lims = zip(measurer.left_limits, measurer.right_limits)
+
+    plt.plot(x_vals, unperturbed_u_end, 'k--', label="0,1 Riemann problem")
+    plt.plot(x_vals, unperturbed_u_start, 'k--')
+    plt.plot(x_vals, perturbed_u_end, 'b')
+    plt.plot(x_vals, perturbed_u_start, 'b', label="ground truth for MCMC")
+    for left_idx, right_idx in measurement_lims:
+        plt.axvspan(x_vals[left_idx], x_vals[right_idx], facecolor='g', alpha=0.5)
+
+    plt.legend()
+    plt.title("Setup, at T = 0 and T = 1")
+    plt.xlabel("x")
+    plt.ylabel("u")
+
+    store_figure("burgers_setup")
 
 
 if __name__ == '__main__':
