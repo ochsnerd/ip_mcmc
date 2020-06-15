@@ -92,3 +92,5 @@
 
 ** Lorenz96 model
    #+INCLUDE: lorenz.org
+** Perturbed Riemann problem for Burgers' equation
+   #+INCLUDE: burgers.org

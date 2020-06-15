@@ -1,0 +1,64 @@
+* Model
+** Burgers' Equation
+
+   Blabla
+** Riemann Problem
+
+   Blabla
+** Rusanov FVM
+
+   Blabla
+* MCMC
+** Setup
+
+  [[file:Burg_BInv.pdf]]
+** Result
+
+   The evolution of the Markov chain is shown in this figure: [[fig:burgers_chain]]
+
+   The autocorrelation in decaying not as fast as I could have hoped for [[fig:burgers_ac]].
+
+   The resulting posteriors look like this: [[fig:burgers_densities]]. It is apparent from the investigation
+   of the Markov chain and the autocorrelation that a burn-in of 100 and a sample interval of 5 are both
+   too short to get uncorrelated samples from the steady state. Especially the too short burn-in is visible
+   in the posteriors.
+
+   #+CAPTION: Setup for the MCMC experiment. The values for $u$ at $T=1$, once for the unperturbed Riemann problem, once for the ground truth of the simulation. The green rectangles are the measurement intvervals of the observation operator : $\int_{x_i - 0.05}^{x_i + 0.05}u(x,1)\dd x$, $x_i \in \{ -0.5, -0.25, 0.25, 0.5, 0.75 \}$.
+   #+NAME: fig:burgers_setup
+   [[./figures/burgers_setup.png]]
+
+
+   #+CAPTION: Evolution of the Markov chain with n=1100. The spinup is also shown here. The red value show the shock location for their respective \delta, \sigma values, and the red intervals are the measurement intervals. The black lines are the underlying ground truth. It is apparent that a quite long spinup is necessary for the chain to arrive at a steady state.
+   #+NAME: fig:burgers_chain
+   [[./figures/burgers_chain_b=0.25.png]]
+
+   #+NAME: fig:burgers_ac
+   [[./figures/burgers_ac_b=0.25.png]]
+
+   #+CAPTION: Posteriors of the MCMC-Simulation, obtained from the Chain shown above. burn_in=100, sample_interval=5.
+   #+NAME: fig:burgers_densities
+   [[./figures/burgers_densities.png]]
+
+   #+CAPTION: The same setup as before, but the means of the priors are much closer to the ground truth
+   #+NAME: fig:burgers_densities_easy_prior
+   [[./figures/burgers_densities_easy_prior.png]]
+
+   When the priors are much closer to the ground truth, the chain is able to find the minimum faster,
+   resulting in sharper posteriors [[fig:burgers_densities_easy_prior]]. I guess this is just because
+   this cuts the burn-in time drastically, as we start basically with the correct $u$.
+
+   With the current setup of measurement points
+   and the discontiuous nature of $u$ (see this figure [[fig:burgers_setup]]),
+   the "objective function value" is also "pretty discontinuous",
+   which gives the Markov chain a hard time moving towards the optimum (interpreting the steps as
+   a stochastic gradient descent).
+
+   This manifests itself in the very low acceptance ratio (~0.1), easily visible in the later parts of
+   the chain. This results in a pretty bad exploration of the state space around the steady state.
+   This could probably be "fixed" by using priors with smaller variance or by decreasing the \beta of the
+   MCMC-proposer (are these two equivalent? Not really I think, since a large \beta also "pulls the proposed states towards 0".
+   This effect would actually be a reason to require priors to be mean-0).
+
+   Getting the chain to take smaller steps (at the moment the characteristic stepsize is bigger than the region of the state-space we
+   want to explore ($\beta \cdot \gamma = 0.025$ vs. 0.01 the measurement interval))
+   would however mean a much much longer burn-in, so the prior-means would have to be chosen closer to the true values.
