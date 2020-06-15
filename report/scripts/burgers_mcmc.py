@@ -13,7 +13,6 @@ from rusanov import RusanovFVM
 from helpers import store_figure, load_or_compute, autocorrelation
 
 
-
 class FVMObservationOperator:
     """
     Observation operator for MCMC based on the time-evolution
@@ -127,12 +126,13 @@ def main():
     delta_1 = 0.025
     delta_2 = -0.025
     sigma = -0.02
-    true_IC = PerturbedRiemannIC([delta_1, delta_2, sigma])
+    ground_truth = [delta_1, delta_2, sigma]
+    true_IC = PerturbedRiemannIC(ground_truth)
 
     integrator = RusanovMCMC(flux, flux_prime, domain, N_gridpoints, T_end)
 
     # observables
-    meas_points = [-0.5, -0.25, 0.25, 0.5]
+    meas_points = [-0.5, -0.25, 0.25, 0.5, 0.75]
     meas_interval = 0.1
 
     # exclude ghost cells from x-values
@@ -144,12 +144,12 @@ def main():
     # noise
     noise_beta = 0.05
     noise = GaussianDistribution(mean=np.zeros_like(y),
-                                 covariance=noise_beta*np.identity(len(y)))
+                                 covariance=noise_beta**2 * np.identity(len(y)))
 
     # prior
-    prior_means = np.array([1.5, 0.25, 1.3])  # delta_1, delta_2, sigma
+    prior_means = np.array([1.5, 0.25, -0.5])  # delta_1, delta_2, sigma
     gamma = 0.25
-    prior_covariance = gamma * np.identity(3)
+    prior_covariance = gamma**2 * np.identity(3)
     # centered prior
     prior = GaussianDistribution(np.zeros_like(prior_means), prior_covariance)
 
@@ -162,15 +162,15 @@ def main():
                                    y,
                                    noise)
 
-    prop_beta = 0.5
+    prop_beta = 0.25
     proposer = pCNProposer(beta=prop_beta, prior=prior)
     accepter = CountedAccepter(pCNAccepter(potential=potential))
 
     sampler = MCMCSampler(proposer, accepter, rng)
 
     u_0 = np.zeros(3)
-    n_samples = 1000
-    burn_in = 100
+    n_samples = 1100
+    burn_in = 0  # manually
     sample_interval = 1
 
     samples_full = load_or_compute(f"burgers_samples_n={n_samples}_b={prop_beta}",
@@ -182,21 +182,21 @@ def main():
     for i in range(len(samples_full[0, :])):
         samples_full[:, i] += prior_means
 
-
-    # do sample_interval=5 after the fact
-    samples = samples_full[:, ::5]
+    # do burn_in=100 and sample_interval=5 after the fact
+    samples = samples_full[:, 100:]
+    samples = samples[:, ::5]
 
     # plot densities
     fig, plts = plt.subplots(1, 3, figsize=(20, 10))
 
     priors = [GaussianDistribution(mu, np.sqrt(sigma_sq))
               for mu, sigma_sq in zip(prior_means, np.diag(prior_covariance))]
-    intervals = [(-4, 4)] * 3
+    intervals = [(-2, 2)] * 3
     names = ["delta_1", "delta_2", "sigma"]
 
     plot_info = zip(priors,
                     intervals,
-                    [delta_1, delta_2, sigma],
+                    ground_truth,
                     names,
                     plts)
 
@@ -220,11 +220,31 @@ def main():
     plt.legend()
     store_figure(f"burgers_ac_b={prop_beta}")
 
-
-    plt.plot(samples_full[0,:])
-    plt.show()
-
+    show_chain_evolution(samples_full, prop_beta, integrator, measurer, names, ground_truth)
     show_setup(true_IC, integrator, measurer)
+
+
+def show_chain_evolution(samples, prop_beta, integrator, measurer, names, ground_truth):
+    def shock_location(d1, d2, s):
+        return s + 0.5 * (d2**2 - d1**2 - 2*d1 - 1) / (d1 + d2 - 1)
+
+    x_vals = integrator.FVM.x[1:-1]
+    measurement_lims = zip(measurer.left_limits, measurer.right_limits)
+    for l_idx, r_idx in measurement_lims:
+        plt.axhspan(x_vals[l_idx], x_vals[r_idx], facecolor='r', alpha=0.3)
+
+    for a in ground_truth:
+        plt.axhline(a, color='k')
+
+    for i in range(3):
+        plt.plot(samples[i, :], label=names[i])
+
+    shock_locs = [shock_location(*samples[:, i]) for i in range(len(samples[0,:]))]
+    plt.plot(shock_locs, label="Shock location")
+    plt.ylim(-2, 2)
+    plt.title("Chain evolution")
+    plt.legend()
+    store_figure(f"burgers_chain_b={prop_beta}")
 
 
 def show_setup(IC, integrator, measurer):
