@@ -15,104 +15,150 @@ from utilities import (FVMObservationOperator,
                        Measurer,
                        store_figure,
                        load_or_compute,
+                       BurgersEquation,
                        autocorrelation)
 
 
-def main():
+class Settings:
+    """'Static' class to collect the settings for a MCMC simulation"""
+    # 'Attributes' that derive from other attributes need to be impleneted
+    # using a getter-method, so that they get updated when the thing
+    # they depend on changes.
+    class Simulation:
+        class IC:
+            names = ["delta_1", "delta_2", "sigma"]
+            delta_1 = 0.025
+            delta_2 = -0.025
+            sigma = -0.02
+            ground_truth = [delta_1, delta_2, sigma]
+
+        domain = (-1, 1)
+        N_gridpoints = 200
+        T_end = 1
+        flux = BurgersEquation.flux
+        flux_prime = BurgersEquation.flux_prime
+
+        @staticmethod
+        def get_xvals():
+            return RusanovMCMC(None, None,
+                               Settings.Simulation.domain,
+                               Settings.Simulation.N_gridpoints,
+                               0).FVM.x[1:-1]
+
+    class Measurement:
+        points = [-0.5, -0.25, 0.25, 0.5, 0.75]
+        interval = 0.1
+
+    class Noise:
+        mean = np.array([0] * 5)
+        std_dev = 0.05
+        covariance = std_dev**2 * np.identity(5)
+
+        @staticmethod
+        def get_distribution():
+            return GaussianDistribution(Settings.Noise.mean,
+                                        Settings.Noise.covariance)
+
+    class Prior:
+        mean = np.array([1.5,    # delta_1
+                         0.25,   # delta_2
+                         -0.5])  # sigma
+        std_dev = 0.25
+        covariance = std_dev**2 * np.identity(len(mean))
+
+        @staticmethod
+        def get_distribution():
+            return GaussianDistribution(Settings.Prior.mean,
+                                        Settings.Prior.covariance)
+
+    class Sampling:
+        beta = 0.25
+        u_0 = np.zeros(3)
+        N = 1100
+        burn_in = 100
+        sample_interval = 5
+
+    @staticmethod
+    def filename():
+        return f"burgers_n={Settings.Sampling.N}_b={Settings.Sampling.beta}"
+
+
+def create_integrator():
+    return RusanovMCMC(Settings.Simulation.flux,
+                       Settings.Simulation.flux_prime,
+                       Settings.Simulation.domain,
+                       Settings.Simulation.N_gridpoints,
+                       Settings.Simulation.T_end)
+
+
+def create_measurer():
+    return Measurer(Settings.Measurement.points,
+                    Settings.Measurement.interval,
+                    Settings.Simulation.get_xvals())
+
+
+def create_mcmc_sampler():
     rng = np.random.default_rng(2)
 
-    def flux(u):
-        return .5 * u*u
+    # Proposer
+    prior = Settings.Prior.get_distribution()
+    proposer = pCNProposer(Settings.Sampling.beta, prior)
 
-    def flux_prime(u):
-        return u
-
-    # simulation parameters
-    domain = (-1, 1)
-    N_gridpoints = 200
-    T_end = 1
-
-    # initial condition
-    delta_1 = 0.025
-    delta_2 = -0.025
-    sigma = -0.02
-    ground_truth = [delta_1, delta_2, sigma]
-    true_IC = PerturbedRiemannIC(ground_truth)
-
-    integrator = RusanovMCMC(flux, flux_prime, domain, N_gridpoints, T_end)
-
-    # observables
-    meas_points = [-0.5, -0.25, 0.25, 0.5, 0.75]
-    meas_interval = 0.1
-
-    # exclude ghost cells from x-values
-    measurer = Measurer(meas_points, meas_interval, integrator.FVM.x[1:-1])
-
-    # observe ground truth
-    y = measurer(integrator(true_IC))
-
-    # noise
-    noise_beta = 0.05
-    noise = GaussianDistribution(mean=np.zeros_like(y),
-                                 covariance=noise_beta**2 * np.identity(len(y)))
-
-    # prior
-    prior_means = np.array([1.5, 0.25, -0.5])  # delta_1, delta_2, sigma
-    gamma = 0.25
-    prior_covariance = gamma**2 * np.identity(3)
-    # centered prior
-    prior = GaussianDistribution(np.zeros_like(prior_means), prior_covariance)
-
+    # Accepter
+    integrator = create_integrator()
+    measurer = create_measurer()
+    IC_true = PerturbedRiemannIC(Settings.Simulation.IC.ground_truth)
     observation_operator = FVMObservationOperator(PerturbedRiemannIC,
-                                                  prior_means,
+                                                  Settings.Prior.mean,
                                                   integrator,
                                                   measurer)
 
+    ground_truth = measurer(integrator(IC_true))
+    noise = Settings.Noise.get_distribution()
     potential = EvolutionPotential(observation_operator,
-                                   y,
+                                   ground_truth,
                                    noise)
+    accepter = CountedAccepter(pCNAccepter(potential))
 
-    prop_beta = 0.25
-    proposer = pCNProposer(beta=prop_beta, prior=prior)
-    accepter = CountedAccepter(pCNAccepter(potential=potential))
+    return MCMCSampler(proposer, accepter, rng)
 
-    sampler = MCMCSampler(proposer, accepter, rng)
 
-    u_0 = np.zeros(3)
-    n_samples = 1100
-    burn_in = 0  # manually
-    sample_interval = 1
+def main():
+    sampler = create_mcmc_sampler()
 
-    samples_full = load_or_compute(f"burgers_samples_n={n_samples}_b={prop_beta}",
+    samples_full = load_or_compute(Settings.filename(),
                                    sampler.run,
-                                   (u_0, n_samples, burn_in, sample_interval))
+                                   (Settings.Sampling.u_0,
+                                    Settings.Sampling.N,
+                                    0,
+                                    1))
 
     samples_full = samples_full.T
     # Add pertubations to means
     for i in range(len(samples_full[0, :])):
-        samples_full[:, i] += prior_means
+        samples_full[:, i] += Settings.Prior.mean
 
-    # do burn_in=100 and sample_interval=5 after the fact
-    samples = samples_full[:, 100:]
-    samples = samples[:, ::5]
+    # do burn_in and sample_interval after the fact
+    samples = samples_full[:, Settings.Sampling.burn_in:]
+    samples = samples[:, ::Settings.Sampling.sample_interval]
 
     # plot densities
     fig, plts = plt.subplots(1, 3, figsize=(20, 10))
 
-    priors = [GaussianDistribution(mu, np.sqrt(sigma_sq))
-              for mu, sigma_sq in zip(prior_means, np.diag(prior_covariance))]
+    priors = [GaussianDistribution(mu, Settings.Prior.std_dev)
+              for mu in Settings.Prior.mean]
+
     intervals = [(-2, 2)] * 3
-    names = ["delta_1", "delta_2", "sigma"]
 
     plot_info = zip(priors,
                     intervals,
-                    ground_truth,
-                    names,
+                    Settings.Simulation.IC.ground_truth,
+                    Settings.Simulation.IC.names,
                     plts)
 
     for i, (prior, interval, true_val, name, ax) in enumerate(plot_info):
         ax.hist(samples[i, :], density=True)
-        x_range = np.linspace(*interval)
+        x_range = np.linspace(*interval, num=300)
         ax.plot(x_range, [prior(x) for x in x_range])
         ax.axvline(true_val, c='r')
         ax.set_title(f"Prior and posterior for {name}")
@@ -122,51 +168,55 @@ def main():
     store_figure(f"burgers_densities")
 
     # autocorrelation
-    ac = autocorrelation(samples_full, 100, 10)
+    ac = autocorrelation(samples_full, int(Settings.Sampling.N / 10), 10)
     for i in range(3):
-        plt.plot(ac[i, :], label=names[i])
+        plt.plot(ac[i, :], label=Settings.Simulation.IC.names[i])
     plt.title("Autocorrelation")
     plt.xlabel("Lag")
     plt.legend()
-    store_figure(f"burgers_ac_b={prop_beta}")
+    store_figure(Settings.filename() + "_ac")
 
-    show_chain_evolution(samples_full, prop_beta, integrator, measurer, names, ground_truth)
-    show_setup(true_IC, integrator, measurer)
+    show_chain_evolution(samples_full)
+    show_setup()
 
 
-def show_chain_evolution(samples, prop_beta, integrator, measurer, names, ground_truth):
+def show_chain_evolution(samples):
     def shock_location(d1, d2, s):
         return s + 0.5 * (d2**2 - d1**2 - 2*d1 - 1) / (d1 + d2 - 1)
 
-    x_vals = integrator.FVM.x[1:-1]
+    x_vals = Settings.Simulation.get_xvals()
+    measurer = create_measurer()
     measurement_lims = zip(measurer.left_limits, measurer.right_limits)
     for l_idx, r_idx in measurement_lims:
         plt.axhspan(x_vals[l_idx], x_vals[r_idx], facecolor='r', alpha=0.3)
 
-    for a in ground_truth:
+    for a in Settings.Simulation.IC.ground_truth:
         plt.axhline(a, color='k')
 
     for i in range(3):
-        plt.plot(samples[i, :], label=names[i])
+        plt.plot(samples[i, :], label=Settings.Simulation.IC.names[i])
 
-    shock_locs = [shock_location(*samples[:, i]) for i in range(len(samples[0,:]))]
+    shock_locs = [shock_location(*samples[:, i]) for i in range(len(samples[0, :]))]
     plt.plot(shock_locs, label="Shock location")
     plt.ylim(-2, 2)
     plt.title("Chain evolution")
     plt.legend()
-    store_figure(f"burgers_chain_b={prop_beta}")
+    store_figure(Settings.filename() + "_chain")
 
 
-def show_setup(IC, integrator, measurer):
+def show_setup():
+    integrator = create_integrator()
+    actual_IC = PerturbedRiemannIC(Settings.Simulation.IC.ground_truth)
     unperturbed_IC = PerturbedRiemannIC([0] * 3)
 
-    x_vals = integrator.FVM.x[1:-1]
+    x_vals = Settings.Simulation.get_xvals()
 
     unperturbed_u_start = [unperturbed_IC(x) for x in x_vals]
-    perturbed_u_start = [IC(x) for x in x_vals]
+    perturbed_u_start = [actual_IC(x) for x in x_vals]
     unperturbed_u_end = integrator(unperturbed_IC)
-    perturbed_u_end = integrator(IC)
+    perturbed_u_end = integrator(actual_IC)
 
+    measurer = create_measurer()
     measurement_lims = zip(measurer.left_limits, measurer.right_limits)
 
     plt.plot(x_vals, unperturbed_u_end, 'k--', label="0,1 Riemann problem")
@@ -179,7 +229,7 @@ def show_setup(IC, integrator, measurer):
     plt.legend()
     plt.title("Setup, at T = 0 and T = 1")
     plt.xlabel("x")
-    plt.ylabel("u")
+    plt.ylabel("w")
 
     store_figure("burgers_setup")
 
