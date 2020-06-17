@@ -37,7 +37,9 @@ class StandardRWProposer(ProposerBase):
 
 class pCNProposer(ProposerBase):
     """Propose a new state as 
-    v = sqrt(1-beta^2) * u + beta * w, w ~ N(0,C) (= prior)
+    v = sqrt(1-beta^2) * u + beta * w, w ~ N(0,C)
+
+    w has the same covariance as the prior, but is mean 0
 
     (4.8) in MCMCMF
     """
@@ -45,11 +47,14 @@ class pCNProposer(ProposerBase):
         """
         beta: float
         prior: GaussianDistribution
+
+        Only the covariance of the prior is used, a non-zero mean is ignored
         """
         assert 0 <= beta <= 1, "beta has to be in [0,1]"
         self.beta = beta
         self.contraction = np.sqrt(1 - beta ** 2)
-        self.w = prior
+        self.w = GaussianDistribution(mean=np.zeros_like(prior.mean),
+                                      covariance=prior.covariance)
 
     def __call__(self, u, rng):
         return self.contraction * u + self.beta * self.w.sample(rng)
