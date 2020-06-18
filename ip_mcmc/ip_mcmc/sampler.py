@@ -45,4 +45,10 @@ class MCMCSampler:
         x_ = x - np.mean(x)
         result = np.correlate(x_, x_, mode='full')
         result = result[-len(x):]
+        # the warning raised by numpy on divide-by-zero
+        # somehow doesn't get caught by try-except
+        if result[0] == 0:
+            # When x is constant, x_ is 0, resulting
+            # in 0 correlation, when it should be 1
+            return np.ones_like(result)
         return result / result[0]
