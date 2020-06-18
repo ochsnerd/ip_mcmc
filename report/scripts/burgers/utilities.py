@@ -110,3 +110,15 @@ class BurgersEquation:
     @staticmethod
     def flux_prime(w):
         return w
+
+    @staticmethod
+    def riemann_shock_pos(w_l, w_r, s_0, T):
+        """Return the location of the shock.
+
+        Return the position of the shock after time T
+        of a Riemann problem with initial conditions
+        w(x, 0) = w_l  if x < s_0
+                  w_r  if x > s_0
+        """
+        assert w_l > w_r, "doesn't work for rarefactions"
+        return s_0 + 0.5 * (w_r**2 - w_l**2) / (w_r - w_l) * T

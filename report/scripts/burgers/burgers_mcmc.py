@@ -182,7 +182,7 @@ def main():
 
 def show_chain_evolution(samples):
     def shock_location(d1, d2, s):
-        return s + 0.5 * (d2**2 - d1**2 - 2*d1 - 1) / (d1 + d2 - 1)
+        return BurgersEquation.riemann_shock_pos(1 + d1, d2, s, Settings.Simulation.T_end)
 
     x_vals = Settings.Simulation.get_xvals()
     measurer = create_measurer()
