@@ -1,64 +1,307 @@
 * Model
 ** Burgers' Equation
 
-   Blabla
+   We consider the Burgers' equation
+
+   #+NAME: eqn:burgers
+   \begin{equation}
+     w_t + \left( \frac{w^2}{2} \right)_x = 0
+   \end{equation}
+
+   in the domain $(x, t) \in [-1, 1] \cross [0,1]$.
+
 ** Riemann Problem
 
-   Blabla
-** Rusanov FVM
+   The following family of initial conditions:
+
+   #+NAME: eqn:perturbed_riemann
+   \begin{equation}
+     w(x, 0) =
+     \begin{cases}
+       1 + \delta_1 & \text{if } x < \sigma_0 \\
+       \delta_2     & \text{if } x > \sigma_0    
+     \end{cases}
+   \end{equation}
+
+   can be parametrized by the vector $u = [\delta_1, \delta_2, \sigma_0] \in \R^3$.
+   As long as $\norm{u} \ll 1$ we can expect $w$ to behave very similarly to the
+   usual 1,0-Riemann problem (in particular the location of the shock at $t=1$ will be
+   close to $x=0.5$).
+
+** Discretization
 
    Blabla
 * MCMC
+
+** Hyperparameter tuning
+
+   To optimize hyperparameters, namely choose the step-size (pCN: \beta, RW: \delta) such that for a given chain length
+   as many samples as possible can be used for estimation, the properties of the chain
+   should be well defined and computable.
+
+   The two important characteristics are the burn-in $b$ and the decorrelation time $\tau_0$.
+   Given these values for a chain of length $N$, the number of usable samples $M$ is
+
+   $$ M = \frac{N - b}{\tau_0} $$ 
+
+*** Burn-In $b$
+    Visually inspect chain, see when "steady state" is reached.
+
+    Can also check if statistics change, what I tried is defining the end of the burn-in
+    period as the the last sample when a rolling average over each component of $u$ doens't
+    change significantly anymore.
+
+    (since I don't expect this being a fruitful endeavor, I didn't translate this function into \LaTeX)
+
+    #+BEGIN_SRC python
+    
+    def len_burn_in(x):
+        """Return the index where burn-in has finished
+
+        Burn-in is considered finished once a moving average of the
+        components of u stop changing significantly"""
+        def moving_avg(y, l):
+            res = np.cumsum(y, dtype=float)
+            res[l:] = res[l:] - res[:-l]
+            return res[l - 1:] / l
+
+        avg_window = 50
+        accepted_change = 0.03
+
+        n_vars = len(x[:, 0])
+        n_avgs = len(x[0, :]) - avg_window + 1
+
+        avgs = np.empty((n_vars, n_avgs))
+        for var in range(n_vars):
+            avgs[var, :] = moving_avg(x[var, :], avg_window)
+
+        # indicate significant changes
+        means = np.mean(x, axis=1)
+        avgs_changed = np.empty((n_avgs - 1, ), dtype=bool)
+        for i in range(0, n_avgs - 1):
+            avgs_changed[i] = any(abs(((avgs[v, i] - avgs[v, i + 1]) /
+                                       means[v])) > accepted_change
+                                for v in range(n_vars))
+
+        # require at least avg_window + 1 consecutive significant changes
+        for i in range(len(avgs_changed) - avg_window - 2, 0, -1):
+            if all(avgs_changed[i: i + avg_window + 1]):
+                return i
+
+        return len(x[0, :]) - 1
+    #+END_SRC
+
+    This seems to be hard to get right, especially for significantly changing values of \beta.
+
+    #+CAPTION: Chain evolution during sampling with $\beta=0.1$. Visually it seems the the steady-state is reached after around 1000 samples.
+    #+NAME: fig:burgers_burn-in
+    [[./figures/burgers_chain_report.png]]
+
+*** Decorrelation time $\tau_0$
+
+    After the burn-in is discarded from the original chain, the lag where the autocorrelation
+    function first equals 0 gives the number of samples after which they become decorrelated.
+    (actually "citation needed", see for instance pg 54 of this document:
+    https://ethz.ch/content/dam/ethz/special-interest/baug/ifb/ifb-dam/homepage-IfB/Education/msc_courses/msc_computational-statphys/documents/2018_CP-Lecture-Part1.pdf,
+    where the decorrelation time is defined as the integral of the autocorrelation function)
+    (Also check if the definition of the autocorrelation function given there agrees with mine)
+
+    Since after burn-in the chain is in the statistical steady state, the autocorrelation
+    function is the same, regardless of which interval of the chain is investigated (this
+    is not the case before discarding the burn-in).
+
+    #+CAPTION: Autocorrelation function during sampling with $\beta=0.1$. For this chain, $\tau_0 \approx 30$.
+    #+NAME: fig:burgers_decorr_time
+    [[./figures/burgers_ac_report.png]]
+
+*** Step size \beta
+
+    Given a way to compute $b$ and $\tau_0$, the optimal $\beta^*$ can be found as
+
+    $$\beta^* = \argmax M(\beta)$$
+
+    for a given chain length $N$ (which is usually constrained by computational resources).
+
+    Generally, a bigger value of $\beta$ will result in bigger steps proposed during the
+    MCMC steps. This results in a shorter burn-in at the expense of more declined steps during the
+    steady state, which results in longer decorrelation times.
+
+    Everything here also applies to \delta, the step-size for the random-walk-MCMC algorithm.
+    \beta and \delta are related through $\beta^2 = \frac{8 \delta}{(2 + \delta)^2}$.
+
+
 ** Setup
 
-  [[file:Burg_BInv.pdf]]
-** Result
+   As usual, we sample based on the equation
 
-   The evolution of the Markov chain is shown in this figure: [[fig:burgers_chain]]
+   $$y = \G{u} + \eta$$
 
-   The autocorrelation in decaying not as fast as I could have hoped for [[fig:burgers_ac]].
+   with:
+   - $y \in \R^q$: measurements obtained from a simulation of the ground truth
+   - $u \in \R^n$: vector parametrizing the pertubations to the Riemann initial conditions
+   - $\G{\cdot} :\R^n \to \R^q$: observation operator, measurements on the final state of the Riemann problem
+   - $\eta \sim \N{0}{\gamma^2 \I_q}$: assumed observational noise [fn:variables]
 
-   The resulting posteriors look like this: [[fig:burgers_densities]]. It is apparent from the investigation
-   of the Markov chain and the autocorrelation that a burn-in of 100 and a sample interval of 5 are both
-   too short to get uncorrelated samples from the steady state. Especially the too short burn-in is visible
-   in the posteriors.
+   Stuart et. al. describe some cases in [[cite:stuart_inverse_2010]] (Theorem 2.17) for overdetermined 
+   problems ($q > n$), where the posterior converges to a Dirac measure when $\gamma \to 0$.
+   This however only applies to linear invertible observational maps, which is definitely not the
+   case here. However for well-placed measurements we can definitely expect a sharp posterior.
 
-   #+CAPTION: Setup for the MCMC experiment. The values for $u$ at $T=1$, once for the unperturbed Riemann problem, once for the ground truth of the simulation. The green rectangles are the measurement intvervals of the observation operator : $\int_{x_i - 0.05}^{x_i + 0.05}u(x,1)\dd x$, $x_i \in \{ -0.5, -0.25, 0.25, 0.5, 0.75 \}$.
+[fn:variables] I took the liberty of renaming variables to match more closely Stuart's notation
+[[cite:stuart_inverse_2010]] and avoid collisions such as multiple occurences of $\beta$.
+
+*** Observation operator $\G{u}$
+
+    We use the FVM to evolve the Riemann intial conditions [[eqn:perturbed_riemann]] $w_u(x, 0)$
+    until $T=1$ and then measure the resulting state around certain measurement points:
+
+    \begin{equation}
+    L_i(w) = 10 \int_{x_i - 0.05}^{x_i + 0.05} w(x, 1) \dd x
+    \end{equation}
+
+    with $1 \leq i \leq 5$ and $x_1 = -0.5$, $x_2= -0.25$, $x_3 = 0.25$, $x_4 = 0.5$, $x_5 = 0.75$.
+
+    The observation operator is then:
+
+    $$yeah how do you write this out lol$$
+
+**** Placement of measurements
+
+     The choice of the $x_i$ s is crucial. If the shock is not contained in the measurement
+     interval around and $x_i$, the Markov chain has no chance of determining the initial
+     shock location $\sigma_0$ any more accurately than the spacing between measurements.
+
+     Conversely, if the measurement interval is large enough, a single measurement around the
+     shock gives enough information to determine all three parameters $\delta_1, \delta_2, \sigma_0$
+     simultaneously, provided the Markov chain "finds" to correct parameter configuration to place the
+     shock in the measurement interval.
+
+*** Ground truth measurements $y$
+
+    $y$ is obtained by applying the observation operator to the ground truth $u^*$.
+    $$u^* = [\delta_1^*, \delta_2^*, \sigma_0^*] = [0.025, -0.025, -0.02]$$
+
+   #+CAPTION: Setup for the MCMC experiment. The values for $w$ at $T=1$, once for the unperturbed Riemann problem, once for the ground truth of the simulation $u^*$. The green rectangles are the measurement intvervals of the observation operator : $\int_{x_i - 0.05}^{x_i + 0.05} w(x,1)\dd x$, $x_i \in \{ -0.5, -0.25, 0.25, 0.5, 0.75 \}$.
    #+NAME: fig:burgers_setup
    [[./figures/burgers_setup.png]]
 
+*** Noise
 
-   #+CAPTION: Evolution of the Markov chain with n=1100. The spinup is also shown here. The red value show the shock location for their respective \delta, \sigma values, and the red intervals are the measurement intervals. The black lines are the underlying ground truth. It is apparent that a quite long spinup is necessary for the chain to arrive at a steady state.
-   #+NAME: fig:burgers_chain
-   [[./figures/burgers_chain_b=0.25.png]]
+    $\eta \sim \N{0}{\gamma^2 \I_5}$ with $\gamma = 0.05$.
 
-   #+NAME: fig:burgers_ac
-   [[./figures/burgers_ac_b=0.25.png]]
+*** Prior
 
-   #+CAPTION: Posteriors of the MCMC-Simulation, obtained from the Chain shown above. burn_in=100, sample_interval=5.
-   #+NAME: fig:burgers_densities
-   [[./figures/burgers_densities.png]]
+    $\nu \sim \N{u_p}{\varphi^2 \I_3}$, with
+    - $u_p = [1.5, 0.25, -0.5]$,
+      which corresponds to
+      - $\delta_1^p = 1.5$
+      - $\delta_2^p = 0.25$
+      - $\sigma_0^p = -0.5$
+    - $\varphi = 0.25$
 
-   #+CAPTION: The same setup as before, but the means of the priors are much closer to the ground truth
-   #+NAME: fig:burgers_densities_easy_prior
-   [[./figures/burgers_densities_easy_prior.png]]
+** Result
 
-   When the priors are much closer to the ground truth, the chain is able to find the minimum faster,
-   resulting in sharper posteriors [[fig:burgers_densities_easy_prior]]. I guess this is just because
-   this cuts the burn-in time drastically, as we start basically with the correct $u$.
+*** Investigating concrete values of \beta
 
-   With the current setup of measurement points
-   and the discontiuous nature of $u$ (see this figure [[fig:burgers_setup]]),
-   the "objective function value" is also "pretty discontinuous",
-   which gives the Markov chain a hard time moving towards the optimum (interpreting the steps as
-   a stochastic gradient descent).
+    Three concrete values for \beta are investigated closer; $\beta_1 = 0.01$, $\beta_2 = 0.15$
+    and $\beta_3 = 0.5$. These values were chosen since they correspond to three significantly
+    different behaviours of the Markov chain.
 
-   This manifests itself in the very low acceptance ratio (~0.1), easily visible in the later parts of
-   the chain. This results in a pretty bad exploration of the state space around the steady state.
-   This could probably be "fixed" by using priors with smaller variance or by decreasing the \beta of the
-   MCMC-proposer (are these two equivalent? Not really I think, since a large \beta also "pulls the proposed states towards 0".
-   This effect would actually be a reason to require priors to be mean-0).
+    The pCN-proposer computes prospective new states as
 
-   Getting the chain to take smaller steps (at the moment the characteristic stepsize is bigger than the region of the state-space we
-   want to explore ($\beta \cdot \gamma = 0.025$ vs. 0.01 the measurement interval))
-   would however mean a much much longer burn-in, so the prior-means would have to be chosen closer to the true values.
+    $$v = \sqrt{1-\beta^2} u + \beta \xi$$
+
+    with $\xi \sim \N{0}{\Sigma_0}$, where $\Sigma_0$ is the covariance of the prior. Ignoring the
+    scaling of the current state, a characteristic step-size can be said to be $s = \beta \Sigma_0^{-\frac{1}{2}}$,
+    which in the case of $\Sigma_0 = \gamma^2 \I_q$ takes the simpler form
+
+    #+NAME: eqn:char_step
+    \begin{equation}
+      s = \beta \gamma
+    \end{equation}
+    
+    It is interesting to compare this value to other numbers in the system.
+
+    Comparing $s$ to the distance between the prior-mean and the ground truth (namely for \delta_1,
+    for which this distance is largest) gives us a rough idea of the length of the burn-in we
+    can expect.
+
+    Conversely, the ratio betwenn $s$ and the measurement interval can indicate how high the acceptance
+    ratio in the steady state might be.
+    The idea is that if the stepsize is much larger than the measurement interval, proposed states will
+    likely move the shock outside of the measurement interval and are thus often rejected. (This
+    relationship is admittedly not so simple, since a large change in \sigma_0 can be compensated
+    by an adjustment in a \delta)
+
+**** \beta = 0.01
+
+     This very small value of beta gives a characteristic step size $s = 0.0025$. Moving uniformly from
+     the prior-mean $\delta_1^p = 1.5$ to the ground truth $\delta_1^* = 0.025$ is expected to take
+     around 600 steps.
+
+     What we see in the actual chain evolution is quite different, the steps taken by are so small that
+     the chain gets stuck in a local minimum and places the shock in the wrong measurement interval, even
+     after 5000 steps. It can be argued that this is all part of the burn-in, and indeed also chains with
+     a larger \beta sometimes spend some iterations with the shock-value in the completely wrong location.
+    
+     #+CAPTION: Evolution of the chain with \beta = 0.01. The small step size results in getting stuck in a local minimum, placing the around x=0.25 instead of x=0.5.
+     #+NAME: fig:burgers_chain_01
+     [[./figures/burgers_pCN_n=5000_b=0.01_chain_report.png]]
+
+**** \beta = 0.5
+
+     This large value of \beta results in stagnant behaviour in the steady state. Only very few moves
+     are accepted,  so the sampling interval has to be chosen very large to get adequately decorrelated
+     samples (the autocorrelation function doesn't reach 0 until well after 100 samples).
+     This is not too surprising when comparing the measurement interval of 0.1 around $x=0.5$ with
+     the step-size $s = 0.125$.
+
+     #+CAPTION: Evolution of the chain with \beta = 0.5. After the burn-in, very few moves are accepted, resulting in a long decorrelation time (even longer than written on the figure).
+     #+NAME: fig:burgers_chain_5
+     [[./figures/burgers_pCN_n=5000_b=0.5_chain_report.png]]
+
+**** \beta = 0.15
+
+     With this value of \beta we get a "healthy" behaviour of the chain: the steps are large enough
+     to finish the burn-in in a reasonable time, while still being small enough to explore phase-space
+     around a favourable state. The characteristic step size $s = 0.375$ reflects that fact.
+
+     However, the region which we explore in the steady-state is still quite large, result in
+     not very sharp posteriors. If sharper posteriors are needed, the value of \beta should
+     be decreased, while making sure the burn-in doesn't take too long.
+     An adaptive (decreasing whith chain length) value of \beta could help here.
+
+
+     #+CAPTION: Evolution of the chain with \beta = 0.15. After the burn-in, the phase space around the ground-truth is explored nicely. Interesting is the small "excursion" around step 4800.
+     #+NAME: fig:burgers_chain_15
+     [[./figures/burgers_pCN_n=5000_b=0.15_chain_report.png]]
+
+*** pCN vs ordinary random Walk
+
+    The pCN proposer generates new states as
+
+    $$v = \sqrt{1-\beta^2} u + \beta \xi,$$
+
+    while the ordinary random walk proposer does
+
+    $$x = u + \sqrt{2\delta}\xi$$
+
+    with $\xi \sim \N{0}{\Sigma_0}$.
+
+    Equating the stepsize $s$ gives $\delta = 0.045$ being equivalent to $\beta = 0.15$. The chain
+    seems pretty comparable, but the burn-in is noticably shorter. This can be attributed to the
+    scaling of the current state $\sqrt{1-\beta^2}$, which "pulls" the proposed state towards the prior mean.
+
+    #+CAPTION: Evolution of the chain with a random walk proposal and $\delta = 0.045$
+    #+NAME: fig:burgers_delta_045
+    [[./figures/burgers_RW_n=5000_d=0.045_chain_report.png]]
+
+*** Posterior estimates
+
+    #+CAPTION: Posterior densities, taken from the pCN-chain shown above with $\beta = 0.15$, burn-in 500 and sampling interval 25.
+    #+NAME: fig:burgers_densities_15
+    [[./figures/burgers_pCN_n=5000_b=0.15_densities_report.png]]
+    
+    #+CAPTION: Posterior densities, taken from the RW-chain shown above with $\delta = 0.045$, burn-in 500 and sampling interval 25.
+    #+NAME: fig:burgers_densities_delta_0045
+    [[./figures/burgers_RW_n=5000_d=0.045_densities_report.png]]
