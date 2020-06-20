@@ -122,3 +122,67 @@ class BurgersEquation:
         """
         assert w_l > w_r, "doesn't work for rarefactions"
         return s_0 + 0.5 * (w_r**2 - w_l**2) / (w_r - w_l) * T
+
+
+def len_burn_in(x):
+    """Return the index where burn-in has finished
+
+    Burn-in is considered finished once a moving average of the
+    components of u stop changing significantly"""
+    def moving_avg(y, l):
+        res = np.cumsum(y, dtype=float)
+        res[l:] = res[l:] - res[:-l]
+        return res[l - 1:] / l
+
+    avg_window = 50
+    accepted_change = 0.03
+
+    n_vars = len(x[:, 0])
+    n_avgs = len(x[0, :]) - avg_window + 1
+
+    avgs = np.empty((n_vars, n_avgs))
+    for var in range(n_vars):
+        avgs[var, :] = moving_avg(x[var, :], avg_window)
+
+    # indicate significant changes
+    means = np.mean(x, axis=1)
+    avgs_changed = np.empty((n_avgs - 1, ), dtype=bool)
+    for i in range(0, n_avgs - 1):
+        avgs_changed[i] = any(abs((avgs[v, i] - avgs[v, i + 1]) / means[v]) > accepted_change
+                              for v in range(n_vars))
+
+    # require at least avg_window + 1 consecutive significant changes
+    for i in range(len(avgs_changed) - avg_window - 2, 0, -1):
+        if all(avgs_changed[i: i + avg_window + 1]):
+            return i
+
+    return len(x[0, :]) - 1
+
+
+def uncorrelated_sample_spacing(x):
+    """Return the required spacing for samples to be uncorrelated"""
+    # find length of sequence where autocorrelation becomes 0 for the first
+    # time. The shorter the sequence where that happens, the better
+    # (value will be more exact since we can average over more subsequences)
+    tau = 10
+    while (True):
+        if 2 > int(len(x[0, :]) / tau):
+            # never decorrelate
+            return len(x)
+
+        tau = int(tau * 1.5)
+        ac = autocorrelation(x, tau)
+        avg_ac = np.mean(ac, axis=0)
+        idx = np.argwhere(avg_ac <= 0.001)
+
+        if len(idx) > 0:
+            return idx[0][0]
+
+
+def clean_samples(x):
+    """Purge burn_in and correlated samples"""
+    x_ = np.copy(x)
+    x_ = x_[:, len_burn_in(x_):]
+    x_ = x_[:, ::uncorrelated_sample_spacing(x_)]
+
+    return x_

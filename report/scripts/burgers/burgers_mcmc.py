@@ -165,7 +165,7 @@ def main():
         ax.set(xlabel=name, ylabel="Probability")
 
     fig.suptitle("Posteriors and priors")
-    store_figure(f"burgers_densities")
+    store_figure(Settings.filename() + "_densities")
 
     # autocorrelation
     ac = autocorrelation(samples_full, int(Settings.Sampling.N / 10), 10)
