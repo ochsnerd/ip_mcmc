@@ -36,9 +36,10 @@ def load_or_compute(name, function, args):
     return res
 
 
-def autocorrelation(samples, tau_max, avg_over):
-    assert tau_max * avg_over <= len(samples[0, :]), (
-        "Not enough samples to average {tau_max=} over {avg_over} subseries")
+def autocorrelation(samples, tau_max):
+    avg_over = int(len(samples[0, :]) / tau_max)
+    assert avg_over > 0, ("Not enough samples to compute autocorrelation"
+                          "with specified length")
 
     n_vars = len(samples[:, 0])
     ac = np.zeros((n_vars, tau_max))
