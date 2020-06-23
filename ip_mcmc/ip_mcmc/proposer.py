@@ -12,27 +12,21 @@ class ProposerBase(ABC):
 
 
 class StandardRWProposer(ProposerBase):
-    """Propose a new state as v = u + sqrt(2*delta*covariance) * epsilon,
-    with epsilon ~ N(0,I)
+    """Propose a new state as
+    v = u + sqrt(2*delta) * w, w ~ N(0,C)
+
+    w has the same covariance as the prior, but is mean 0
 
     (4.3) in MCMCMF
     """
-    def __init__(self, delta, dims, sqrt_covariance=None):
+    def __init__(self, delta, prior):
         self.prefactor = np.sqrt(2*delta)
 
-        # TODO: Can we use GaussianDistribution better?
-        self.epsilon = GaussianDistribution(mean=np.zeros(dims),
-                                            covariance=np.identity(dims))
-
-        if sqrt_covariance is not None:
-            self.prefactor *= sqrt_covariance
+        self.w = GaussianDistribution(mean=np.zeros_like(prior.mean),
+                                      covariance=prior.covariance)
 
     def __call__(self, u, rng):
-        # Scalar case is uncommon enough to not warrant if-statement
-        try:
-            return u + self.prefactor @ self.epsilon.sample(rng)
-        except (ValueError, TypeError):
-            return u + self.prefactor * self.epsilon.sample(rng)
+        return u + self.prefactor * self.w.sample(rng)
 
 
 class pCNProposer(ProposerBase):
