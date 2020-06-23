@@ -8,28 +8,28 @@ from .test_utilities import MockRNG
 def test_StandardRWProposer_Scalar():
     rng = MockRNG(-np.pi)
     delta = np.e
-    sqrt_cov = np.sin(np.e)
+    prior = GaussianDistribution(100, np.sin(np.e))
 
-    p = StandardRWProposer(delta, 1, sqrt_cov)
+    p = StandardRWProposer(delta, prior)
 
-    assert np.isclose(p.prefactor, np.sqrt(2*delta) * sqrt_cov), ""
+    assert np.isclose(p.prefactor, np.sqrt(2*delta)), ""
     assert np.isclose(p(-np.e, rng), -np.e - p.prefactor * np.pi), ""
 
 
 def test_StandardRWProposer_Multivariate():
     rng = MockRNG(np.array([1,2]))
     delta = np.pi
-    sqrt_cov = np.array([[1, 0],[0, 2]])
+    prior = GaussianDistribution(np.array([-1,2]), np.array([[1, 0],[0, 4]]))
 
-    p = StandardRWProposer(delta, 2, sqrt_cov)
+    p = StandardRWProposer(delta, prior)
 
     assert np.isclose(
         p.prefactor,
-        np.diagflat([np.sqrt(2 * delta), 2 * np.sqrt(2 * delta)])
+        np.sqrt(2*delta)
     ).all(), ""
     assert np.isclose(
         p(np.array([-1, 2]), rng),
-        np.array([-1 + p.prefactor[0, 0], 2 + 2 * p.prefactor[1, 1]])
+        np.array([-1 + p.prefactor, 2 + 2 * p.prefactor])
     ).all(), ""
 
 
@@ -45,8 +45,7 @@ def test_pCNProposer_Scalar():
                       np.sqrt(1 - beta**2) * (-np.pi) + beta * -np.pi), ""
 
 
-
-def test_pCNProposer_Scalar():
+def test_pCNProposer_Multivariate():
     rng = MockRNG(np.array([2, -1]))
     beta = 0.5
     prior = GaussianDistribution(mean=np.array([0, 0]),
