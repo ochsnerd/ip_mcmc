@@ -48,13 +48,17 @@
 ** DONE AC Section
 *** DONE Side-by-side plot: [0,2] vs [-1, 1] vs [0, 2] - mean
 ** TODO Burgers
-*** Changes:
 *** Investigate
 **** How much burn-in is enough: check that average of values is in steady state
 **** Ground truth: do mcmc on fine grid O(500) and a lot of samples
 **** Wasserstein-distance convergence when grid converges
 *** TODO Write report
-
+**** DONE Compare betas: b=0.01, b=0.15, b=0.5
+**** DONE deta = 0.045 was actually wrong, it should be 0.01125
+*** Autocorrelation still a big shady IMO
+*** TODO Write a chain-annalysis script
+*** TODO Wasserstein convergence over chain-length
+*** Investigate effect of mesh-spacing
 
 *** Stuff that could be done
 **** investigate acceptance ratio and ac as function of prop_beta

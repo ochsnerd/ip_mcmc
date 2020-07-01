@@ -45,53 +45,15 @@
    $$ M = \frac{N - b}{\tau_0} $$ 
 
 *** Burn-In $b$
-    Visually inspect chain, see when "steady state" is reached.
 
-    Can also check if statistics change, what I tried is defining the end of the burn-in
-    period as the the last sample when a rolling average over each component of $u$ doens't
-    change significantly anymore.
+    The most fruitful approach seems to be to visually inspect the evolution of the
+    parameter values and roughly decide when a steady-state is reached. This works nicely
+    as long as the step-size is not too small and we actually reach a steady state.
 
-    (since I don't expect this being a fruitful endeavor, I didn't translate this function into \LaTeX)
-
-    #+BEGIN_SRC python
-    
-    def len_burn_in(x):
-        """Return the index where burn-in has finished
-
-        Burn-in is considered finished once a moving average of the
-        components of u stop changing significantly"""
-        def moving_avg(y, l):
-            res = np.cumsum(y, dtype=float)
-            res[l:] = res[l:] - res[:-l]
-            return res[l - 1:] / l
-
-        avg_window = 50
-        accepted_change = 0.03
-
-        n_vars = len(x[:, 0])
-        n_avgs = len(x[0, :]) - avg_window + 1
-
-        avgs = np.empty((n_vars, n_avgs))
-        for var in range(n_vars):
-            avgs[var, :] = moving_avg(x[var, :], avg_window)
-
-        # indicate significant changes
-        means = np.mean(x, axis=1)
-        avgs_changed = np.empty((n_avgs - 1, ), dtype=bool)
-        for i in range(0, n_avgs - 1):
-            avgs_changed[i] = any(abs(((avgs[v, i] - avgs[v, i + 1]) /
-                                       means[v])) > accepted_change
-                                for v in range(n_vars))
-
-        # require at least avg_window + 1 consecutive significant changes
-        for i in range(len(avgs_changed) - avg_window - 2, 0, -1):
-            if all(avgs_changed[i: i + avg_window + 1]):
-                return i
-
-        return len(x[0, :]) - 1
-    #+END_SRC
-
-    This seems to be hard to get right, especially for significantly changing values of \beta.
+    A more formal approach would require to actually define a criterion for the parameter
+    evolution in the chain that indicates when the steady state is reached. This is challenging,
+    especially when no knowledge of the underlying values (ground truth) is used, and when
+    the criterion should be valid for a wide range of step-sizes.
 
     #+CAPTION: Chain evolution during sampling with $\beta=0.1$. Visually it seems the the steady-state is reached after around 1000 samples.
     #+NAME: fig:burgers_burn-in
@@ -100,15 +62,16 @@
 *** Decorrelation time $\tau_0$
 
     After the burn-in is discarded from the original chain, the lag where the autocorrelation
-    function first equals 0 gives the number of samples after which they become decorrelated.
-    (actually "citation needed", see for instance pg 54 of this document:
-    https://ethz.ch/content/dam/ethz/special-interest/baug/ifb/ifb-dam/homepage-IfB/Education/msc_courses/msc_computational-statphys/documents/2018_CP-Lecture-Part1.pdf,
-    where the decorrelation time is defined as the integral of the autocorrelation function)
-    (Also check if the definition of the autocorrelation function given there agrees with mine)
+    function first equals 0 gives the number of samples after which they become decorrelated
+    [fn:decorr].
 
     Since after burn-in the chain is in the statistical steady state, the autocorrelation
     function is the same, regardless of which interval of the chain is investigated (this
     is not the case before discarding the burn-in).
+
+[fn:decorr] A different, more involved criterion would be to define the decorrelation time
+as the integral over the autocorrelation function; $\Theta$
+
 
     #+CAPTION: Autocorrelation function during sampling with $\beta=0.1$. For this chain, $\tau_0 \approx 30$.
     #+NAME: fig:burgers_decorr_time
@@ -276,6 +239,23 @@
      #+NAME: fig:burgers_chain_15
      [[./figures/burgers_pCN_n=5000_b=0.15_chain_report.png]]
 
+**** Variable \delta
+
+     The idea to have a variable step-size (usually monotonically decreasing) to reap the benefits
+     of both worlds (short burn-in and quick decorrelation in the steady state) is frequently used
+     in optimization. There it is called /simulated annealing/, based on an analogy to tempering metals.
+     The ground state (minimizing the free energy) of the system has favorable mechanical properties
+     and is reached by letting the metal cool slowly. This process is "simulated" by decreasing the
+     step-size of the Markov chain, which in a physical system corresponds to lowering the temperature.
+     This procedure can be very successful at finding global minima of challenging objective functions.
+
+     Here, we chose a linearly decreasing step-size during burn-in, which is kept constant after. The
+     results look promising and result in the best-performing chain.
+
+    #+CAPTION: Evolution of the chain with a random walk proposal and a piecewise linear \delta, starting at $\delta_s = 0.1$ and decreasing to $\delta_e = 0.001$ during burn-in.
+    #+NAME: fig:burgers_delta_pwl
+    [[./figures/burgers_RW_n=5000_b=pwl_0.1_0.001_250_chain_report.png]]
+
 *** pCN vs ordinary random Walk
 
     The pCN proposer generates new states as
@@ -288,13 +268,14 @@
 
     with $\xi \sim \N{0}{\Sigma_0}$.
 
-    Equating the stepsize $s$ gives $\delta = 0.045$ being equivalent to $\beta = 0.15$. The chain
-    seems pretty comparable, but the burn-in is noticably shorter. This can be attributed to the
-    scaling of the current state $\sqrt{1-\beta^2}$, which "pulls" the proposed state towards the prior mean.
+    Equating the stepsize $s$ gives $\delta = 0.01125$ being equivalent to $\beta = 0.15$.
+    The chain seems pretty comparable, but the burn-in is noticably shorter.
+    This can be attributed to the scaling of the current state $\sqrt{1-\beta^2}$, which "pulls"
+    the proposed state towards the prior mean.
 
-    #+CAPTION: Evolution of the chain with a random walk proposal and $\delta = 0.045$
-    #+NAME: fig:burgers_delta_045
-    [[./figures/burgers_RW_n=5000_d=0.045_chain_report.png]]
+    #+CAPTION: Evolution of the chain with a random walk proposal and $\delta = 0.01125$
+    #+NAME: fig:burgers_delta_0
+    [[./figures/burgers_RW_n=5000_delta=0.01125_chain_report.png]]
 
 *** Posterior estimates
 
