@@ -36,6 +36,25 @@ class CountedAccepter(AccepterBase):
         return self.accepts / self.calls
 
 
+class ConstrainAccepter(AccepterBase):
+    """Decline a new move if it violates some constraint.
+
+    Decorates another accepter"""
+    def __init__(self, accepter, constraint):
+        """
+        accepter: instance of AccepterBase
+        constraint: callable
+            Takes as argument a state and returns False if it violates
+        """
+        self.accepter = accepter
+        self.is_valid = constraint
+
+    def __call__(self, u, v, rng):
+        if self.is_valid(v):
+            return self.accepter(u, v, rng)
+        return False
+
+
 class ProbabilisticAccepter(AccepterBase):
     def __call__(self, u, v, rng):
         """Return True if v is accepted"""
