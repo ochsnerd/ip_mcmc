@@ -240,3 +240,30 @@
 be dropped from now on.
 
 [fn:autocov] The function I'm describing here is called auto-covariance function $K_{XX} = \E{(X_t - \mu) (X_{t+\tau} - \mu)^*}$.
+*** Wasserstein metric
+
+    The Wasserstein metric is a distance function between distributions over a space $M$.
+
+    The $p$ -th Wasserstein distance between two distributions $\mu, \nu$ is given by
+
+    #+NAME: eqn:wasserstein
+    \begin{equation}
+      W_p(\mu, \nu) = \left( \inf_{\gamma \in \Gamma(\mu, \nu)} \int_{M \times M} d(x, y)^p \dd{\gamma(x, y)}  \right)^\frac{1}{p},
+    \end{equation}
+
+    with:
+    - don't confuse distance function $d(x,y)$ and measure $\dd{\gamma(x,y)}$
+    - on wiki: first condition is that for for distributions with finite p-th moment,
+      there is a point to where the "moment" (weighted distance) is finite -> normalizable
+
+      How does that help exactly?
+    - explain marginal space
+      - easy for single diracs
+    
+    Equivalently, <formulation using expected value>, however this is "straightforward"
+
+    Connection to optimal transport (EMD):
+    - Conservation of mass -> marginals
+    - Minimizing cost of "reallocation" gives $W_1$
+
+    Linear (?) program formulation from Kjetil's OT library
