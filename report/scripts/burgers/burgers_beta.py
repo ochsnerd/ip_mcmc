@@ -3,10 +3,11 @@ import matplotlib.pyplot as plt
 
 from ip_mcmc import (MCMCSampler,
                      pCNAccepter, CountedAccepter,
-                     pCNProposer,
+                     ConstSteppCNProposer,
                      EvolutionPotential,
                      GaussianDistribution,
-                     StandardRWProposer,
+                     ConstStepStandardRWProposer,
+                     VarStepStandardRWProposer,
                      StandardRWAccepter)
 
 import sys
@@ -18,12 +19,7 @@ from utilities import (FVMObservationOperator,
                        store_figure,
                        load_or_compute,
                        BurgersEquation,
-                       autocorrelation,
-                       len_burn_in,
-                       uncorrelated_sample_spacing,
-                       clean_samples)
-
-from utilities import uncorrelated_sample_spacing
+                       autocorrelation)
 
 
 class Settings:
@@ -79,15 +75,16 @@ class Settings:
                                         Settings.Prior.covariance)
 
     class Sampling:
-        beta = 0.25
+        step = 0.25
         u_0 = np.zeros(3)
         N = 5000
-        burn_in = 0
-        sample_interval = 10
+        burn_in = 250
+        sample_interval = 20
+        rng = np.random.default_rng(2)
 
     @staticmethod
     def filename():
-        return f"burgers_RW_n={Settings.Sampling.N}_b={Settings.Sampling.beta}"
+        return f"burgers_RW_n={Settings.Sampling.N}_b={Settings.Sampling.step}"
 
 
 def create_integrator():
@@ -105,14 +102,11 @@ def create_measurer():
 
 
 def create_mcmc_sampler():
-    rng = np.random.default_rng(2)
-
     # Proposer
     prior = Settings.Prior.get_distribution()
-    proposer = pCNProposer(Settings.Sampling.beta, prior)
-    proposer = StandardRWProposer(delta=Settings.Sampling.beta, # not very correct
-                                  dims=len(Settings.Sampling.u_0),
-                                  sqrt_covariance=Settings.Prior.std_dev * np.identity(len(Settings.Sampling.u_0)))
+    # proposer = ConstSteppCNProposer(Settings.Sampling.step, prior)
+    # proposer = ConstStepStandardRWProposer(Settings.Sampling.step, prior)
+    proposer = VarStepStandardRWProposer(Settings.Sampling.step, prior)
 
     # Accepter
     integrator = create_integrator()
@@ -128,19 +122,39 @@ def create_mcmc_sampler():
     potential = EvolutionPotential(observation_operator,
                                    ground_truth,
                                    noise)
-    accepter = CountedAccepter(pCNAccepter(potential))
+    # accepter = CountedAccepter(pCNAccepter(potential))
     accepter = CountedAccepter(StandardRWAccepter(potential, prior))
 
-    return MCMCSampler(proposer, accepter, rng)
+    return MCMCSampler(proposer, accepter, Settings.Sampling.rng)
+
+
+class PWLinear:
+    """linearly decrease delta until burn_in is finished, then keep it constant"""
+    def __init__(self, start_delta, end_delta, len_burn_in):
+        self.d_s = start_delta
+        self.d_e = end_delta
+        self.l = len_burn_in
+
+        self.slope = (start_delta - end_delta) / len_burn_in
+
+    def __call__(self, i):
+        if i > self.l:
+            return self.d_e
+        return self.d_s - self.slope * i
+
+    def __repr__(self):
+        """For filename"""
+        return f"pwl_{self.d_s}_{self.d_e}_{self.l}"
 
 
 def main():
-    betas = [0.045, 0.5]
-    burn_ins = [500, 500]
-    sample_intervals = [25, 25]
+    stepsize = PWLinear(0.1, 0.001, Settings.Sampling.burn_in)
+    steps = [stepsize]
+    burn_ins = [Settings.Sampling.burn_in]
+    sample_intervals = [Settings.Sampling.sample_interval]
 
-    for beta, burn_in, sample_interval in zip(betas, burn_ins, sample_intervals):
-        Settings.Sampling.beta = beta
+    for step, burn_in, sample_interval in zip(steps, burn_ins, sample_intervals):
+        Settings.Sampling.step = step
         Settings.Sampling.burn_in = burn_in
         Settings.Sampling.sample_interval = sample_interval
 
@@ -200,7 +214,7 @@ def main():
         plt.legend()
         store_figure(Settings.filename() + "_ac")
 
-        show_chain_evolution(samples_full)
+        show_chain_evolution_and_step(samples_full)
 
 
 def show_chain_evolution(samples):
@@ -244,6 +258,51 @@ def show_chain_evolution(samples):
     plt.title("Chain evolution")
     plt.legend()
     store_figure(Settings.filename() + "_chain")
+
+
+def show_chain_evolution_and_step(samples):
+    fig, (parameters, shock, steps) = plt.subplots(3, 1, figsize=(15, 10),
+                                                   gridspec_kw={'height_ratios': [3, 3, 1]})
+
+    # ground truth lines
+    for a in Settings.Simulation.IC.ground_truth:
+        parameters.axhline(a, linestyle='dashed', color='k')
+
+    # actual chain values
+    for i in range(3):
+        parameters.plot(samples[i, :], label=Settings.Simulation.IC.names[i])
+    parameters.set_ylim(-.8, 1.6)
+    parameters.set_xlim(0, Settings.Sampling.N)
+    parameters.legend()
+    parameters.set_title("Parameters")
+
+    # measurement indicators
+    x_vals = Settings.Simulation.get_xvals()
+    measurer = create_measurer()
+    measurement_lims = zip(measurer.left_limits, measurer.right_limits)
+    for l_idx, r_idx in measurement_lims:
+        shock.axhspan(x_vals[l_idx], x_vals[r_idx], facecolor='r', alpha=0.3)
+
+    # shock locations
+    shock_locs = [BurgersEquation.riemann_shock_pos(samples[0, i] + 1,
+                                                    samples[1, i],
+                                                    samples[2, i],
+                                                    Settings.Simulation.T_end)
+                  for i in range(len(samples[0, :]))]
+    shock.plot(shock_locs, color='r')
+    shock.set_ylim(Settings.Simulation.domain)
+    shock.set_xlim(0, Settings.Sampling.N)
+    shock.set_title("Shock locations and measurement intervals")
+
+    # beta evolution
+    step_vals = np.array([Settings.Sampling.step(i) for i in range(len(samples[0, :]))])
+    steps.plot(step_vals, color='k')
+    steps.set_ylim(0, Settings.Sampling.step.d_s)
+    steps.set_xlim(0, Settings.Sampling.N)
+    steps.set_title("Step size")
+
+    fig.suptitle("Chain evolution")
+    store_figure(Settings.filename() + "_chain_beta")
 
 
 if __name__ == '__main__':
