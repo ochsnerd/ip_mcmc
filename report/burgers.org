@@ -279,6 +279,8 @@ as the integral over the autocorrelation function; $\Theta$
 
 *** Posterior estimates
 
+    (Just some histograms scattered around, see the captions)
+
     #+CAPTION: Posterior densities, taken from the pCN-chain shown above with $\beta = 0.15$, burn-in 500 and sampling interval 25.
     #+NAME: fig:burgers_densities_15
     [[./figures/burgers_pCN_n=5000_b=0.15_densities_report.png]]
@@ -291,3 +293,106 @@ as the integral over the autocorrelation function; $\Theta$
     #+CAPTION: Posterior densities, taken from the RW-chain shown above with piecewise-linear $\delta = 0.1 \to 0.001$, burn-in 250 and sampling interval 20.
     #+NAME: fig:burgers_densities_delta_pwl
     [[./figures/burgers_posterior_pwl.png]]
+*** Convergence results
+**** Convergence over chain length
+
+     *Idea*: The posterior distributions of chains with increasing length
+     should converge to a delta function located at the ground truth in
+     the Wasserstein distance.
+
+     *Setup*:
+     - Create a /long/ chain with the following characteristics:
+       - $N = 100'000$
+       - $\delta = \text{PWL}(0.05 \to 0.001)$
+       - other parameters as usual
+
+     - Repeatedly bisect the chain, keeping the "right half" for the analysis and
+       continuing with the "left half", repeat 4 times;
+
+       get (unique) chains of length 50'000, 25'000, 12'500, 6'250.
+
+     - Remove correlated states. Based on the AC-plot, every 20th state is uncorrelated;
+
+       get 2500, 1250, 625, 312 uncorrelated samples.
+
+     - Create a normalized histogram with 20 bins along each dimension for each sample-set
+       
+       (either in 3D for the whole parameter space or in 1D, just using the \delta_1-marginal).
+
+     - Create a "normalized histogram" (actually just a {0,1}-array) corresponding to the
+       ground truth.
+
+     - Compute the Wasserstein-distance ($p=1$, Euclidean distance) between each of the sample-histograms
+       and the ground truth
+
+     *Result*: Not really promising.
+
+     *Improvement*: Looking at the evolution of the chain, the correlation plot and the posteriors,
+     I would have really expected to see some kind of convergence. The natural solution in the
+     stochastic setting of the MCMC algorithm would be to work with averages. However, what exactly should
+     be averaged?
+     - Take multiple chains of the same length and average their states before doing the histogram:
+
+       Seems like nonsense, that would just decrease the variance of the resulting sample set and
+       rougly correspond to a chain taking smaller steps (citation needed)
+
+     - Take multiple chains and average the densitites they produce: This seems like the most
+       sensible approach to me, however:
+       - Since the chains are in the steady state with the same hyper-parameters, this just corresponds to
+         taking all chains in the example above to be longer, but doesn't change anything else.
+       - When increasing the length of the "base-chain" from 10'000 to 100'000, it didn't qualitatively
+         change anything
+     - Average the Wasserstein distances of multiple chains of the same length:
+       - I don't expect this to improve things, since the non-negative distances are unlikely to
+         compensate the bigger values for the longer chains
+
+     #+CAPTION: Wasserstein distance between the posterior and a delta-peak at the ground truth for different lengths of the chain
+     #+NAME: fig:wasserstein_chain
+    [[./figures/burgers_RW_n=100000_b=pwl_0.05_0.001_250_wasserstein_convergence_chain_report.png]]
+
+**** Convergence over cell-size
+
+     *Idea*: The posterior distributions of chains using a decreasing cell
+     size in the underlying simulation should converge to a delta function
+     located at the ground truth in the Wasserstein distance.
+
+     *Setup*:
+     - Create chains with the following characteristics:
+       - $N = 10'000$
+       - $\delta = \text{PWL}(0.05 \to 0.001)$
+       - grid-spacing in the underlying simulation:
+
+         split the $[1, 1]$ domain into 32, 64, 128, 256 cells
+
+     - Remove correlated states and a burn-in of 250 steps.
+       Based on the AC-plot, every 20th state is uncorrelated;
+
+       get 4 sets of \sim 500 uncorrelated samples.
+
+     - Create a normalized histogram with 20 bins along each dimension for each sample-set.
+
+     - Create a "normalized histogram" (actually just a {0,1}-array) corresponding to the
+       ground truth.
+
+     - Compute the Wasserstein-distance ($p=1$, Euclidean distance) between each of the sample-histograms
+       and the ground truth.
+
+     *Result*: Not really promising.
+
+     *Improvement*: Here it seems pretty clear what should be done to reduce the variance of the result
+     and so hopefully get convergence: Average the densities over multiple chains / make the chains longer [fn:var]
+
+     *Further work*: It might be interesting to compare the characteristic step size to the grid-size
+     to get an idea of a lower bound of hoping to get useful results (when the gridspacing is
+     bigger than steps taken in $\sigma_0$ the MCMC will have problems)
+
+     #+CAPTION: Wasserstein distance between the posterior and a delta-peak at the ground truth for different grid sizes
+     #+NAME: fig:wasserstein_grid
+    [[./figures/burgers_RW_n=10000_b=pwl_0.05_0.001_250_wasserstein_convergence_grid_report.png]]
+
+[fn:var] In this case, since the global optimum is clearly attained in every chain, longer chains or
+averaging over multiple chains is equivalent. When it is not straight forward to verify that the chain
+reaches it's steady state (it might get stuck in a local optimum for an extended amount of time), it can
+be safer to use multiple chains instead of one long one.
+
+
