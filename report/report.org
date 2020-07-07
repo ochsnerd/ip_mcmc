@@ -56,8 +56,23 @@
 **** DONE Compare betas: b=0.01, b=0.15, b=0.5
 **** DONE deta = 0.045 was actually wrong, it should be 0.01125
 *** Autocorrelation still a big shady IMO
-*** TODO Write a chain-annalysis script
+*** TODO Write a chain-analysis script (add acceptance computation)
 *** TODO Wasserstein convergence over chain-length
+    Situation: Taking one long chain (10000), split it up in (5000, 2500, 1250,...)
+    (non-overlapping or overlapping, doesn't affect result)
+    Then do Wasserstein-distance vs. delta function at the ground truth
+    Result: opposite of convergence, the same for 3D case and just delta_1
+
+    Probably because there are some "excursions" of size O(100) samples which
+    really influence the distribution negatively. The longer the chain, the more
+    excursions, but because the chains are so short (longest one has like 250 samples)
+    the excursion don't really get corrected/washed out.
+
+    Solution: Just take the average. But average over what?
+    Samples: lol
+    Generated densities: The same as just making all chains longer
+    Distance: no.
+    
 *** Investigate effect of mesh-spacing
 
 *** Stuff that could be done
