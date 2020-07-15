@@ -1,4 +1,4 @@
-% Created 2020-07-07 Di 14:44
+% Created 2020-07-15 Mi 11:27
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -43,14 +43,14 @@
 
 
 \section{Theory}
-\label{sec:org936a920}
+\label{sec:org2029243}
 \subsection{Papers}
-\label{sec:org0bc9962}
+\label{sec:orga185a6f}
 \subsubsection{Stuart et al: Inverse Problems: A Bayesian Perspective \cite{stuart_inverse_2010}}
-\label{sec:org83b768a}
+\label{sec:org574315f}
 Theoretical Background
 \paragraph{Notation}
-\label{sec:orgb9718a1}
+\label{sec:orgba8da89}
 Central equation:
 $$y = \G{u} + \eta$$
 with:
@@ -61,15 +61,15 @@ with:
 \item \(\eta\): mean zero RV, observational noise (a.s. \(\eta \sim \N{0}{\C}\))
 \end{itemize}
 \subsubsection{Cotter et al: MCMC for functions \cite{cotter_mcmc_2013}}
-\label{sec:orgb20d462}
+\label{sec:org5155fe4}
 Implementation, MCMC in infinite dimensions
 \subsubsection{Schneider et al: Earth System Modeling 2.0  \cite{schneider_earth_2017}}
-\label{sec:org20886d3}
+\label{sec:org7b2e275}
 Example for MCMC on ODE
 \subsection{Small results}
-\label{sec:org89906dd}
+\label{sec:org68403d9}
 \subsubsection{Gaussian in infinite dimensions}
-\label{sec:org1e9399a}
+\label{sec:org95f97f7}
 This section is quite a mess, maybe you could suggest a not-too-technical introduction
 to infinite dimensional Gaussian measures?
 
@@ -106,7 +106,7 @@ but for example in the wiki-article about the matrix (operator) square root (\ur
 "The Cholesky factorization provides another particular example of square root, which should not be confused with the unique non-negative square root."
 
 \subsubsection{Bayes' Formula \& Radon-Nikodym Derivative}
-\label{sec:org510e2cd}
+\label{sec:org607267a}
 Bayes' Formula is stated using the Radon-Nikodym Derivative in both \cite{cotter_mcmc_2013} and \cite{stuart_inverse_2010}:
 $$\dv{\mu}{\mu_0} \propto \text{L}(u),$$
 where \(\text{L}(u)\) is the likelihood.
@@ -127,7 +127,7 @@ Using this we recover the more familiar formulation of Bayes' formula:
 $$\frac{\rho(u)}{\rho_o(u)} \propto \text{L}(u).$$
 
 \subsubsection{Acceptance Probability for Metropolis-Hastings}
-\label{sec:org68e93c3}
+\label{sec:org53cfa95}
 A Markov process with transition probabilities \(t(y|x)\) has a stationary distribution \(\pi(x)\).
 \begin{itemize}
 \item The \uline{existence} of \(\pi(x)\) follows from \emph{detailed balance}:
@@ -164,7 +164,7 @@ a(y,x) = \min\left\{1, \frac{P(y)}{P(x)}\right\}.
 Since the target distribution \(P(x)\) only appears as a ratio, normalizing factors can be ignored.
 
 \subsubsection{Potential for Bayes'-MCMC when sampling from analytic distributions}
-\label{sec:org806d1a7}
+\label{sec:orgb7f9a71}
 How can we use formulations of Metropolis-Hastings-MCMC algorithms designed to sample from
 posteriors when want to sample from probability distribution with an easy analytical expression?
 
@@ -190,7 +190,7 @@ This cancellation does not happen when using the pCN-Acceptance probablity. This
 explain the poorer performance of pCN when directly sampling a probablity distribution.
 
 \subsubsection{Acceptance Probabilities for different MCMC Proposers}
-\label{sec:org9fedfdd}
+\label{sec:org0f5505a}
 Start from Bayes' formula and rewrite the likelyhood \(\text{L}(u)\) as \(\exp(-\Phi(u))\) for
 a positive scalar function \(\Phi\) called the potential:
 $$\frac{\rho(u)}{\rho_o(u)} \propto \exp(\Phi(u)).$$
@@ -201,13 +201,13 @@ since \(u^T C^{-1} u = (C^{-1/2} u)^T(C^{-1/2} u) = \langle C^{-1/2}u, C^{-1/2}u
 where in the first equality we used \(C\) being symmetric.
 
 This is formula (1.2) in \cite{cotter_mcmc_2013} and is used in the acceptance probability for
-the standard random walk (see also \hyperref[sec:org68e93c3]{Acceptance Probability for Metropolis-Hastings})
+the standard random walk (see also \hyperref[sec:org53cfa95]{Acceptance Probability for Metropolis-Hastings})
 
 \(\C^{-1/2}u\) makes problems in infinite dimensions.
 
 Todo: Why exactly is the second term (from the prior) cancelled when doing pCN?
 \subsubsection{Different formulations of multivariate Gaussians}
-\label{sec:org201d167}
+\label{sec:orgf2003b5}
 Is an RV \(\xi \sim \N{0}{C}\) distributed the same as \(C^{1/2}\xi_0\), with \(\xi_0 \sim \N{0}{\I}\)?
 
 From wikipedia: Affine transformation \(Y = c + BX\) for \(X \sim \N{\mu}{\Sigma}\) is also a Gaussian
@@ -226,7 +226,7 @@ $$
     $$
 where \(\Sigma = AA^T\).
 \subsubsection{Autocorrelation of non-centered distributions}
-\label{sec:orgc801e02}
+\label{sec:org441e033}
 
 A common definition of the autocorrelation function of a series \(\{X_t\}\) is (cite something here?)
 
@@ -305,7 +305,7 @@ Much of this hassle could be avoided when the expectation value in the definitio
 a much too large factor for bigger values of \(\tau\)). However, this is not possible while still taking
 advantage of the huge speedup of doing the convolution operation in Fourier space.
 \subsubsection{Wasserstein metric}
-\label{sec:org33aad7f}
+\label{sec:org5dfff97}
 
 The Wasserstein metric is a distance function between distributions over a space \(M\).
 
@@ -340,7 +340,7 @@ Connection to optimal transport (EMD):
 Linear (?) program formulation from Kjetil's OT library
 
 \section{Framework/Package Structure}
-\label{sec:orge2e5019}
+\label{sec:org37d1c8c}
 The framework is designed to support an easy use case:
 \begin{minted}[]{python}
 proposer = StandardRWProposer(beta=0.25, dims=1)
@@ -356,7 +356,7 @@ This facilitates reproducability.
 
 Tests are done with \texttt{pytest}.
 \subsection{Distributions}
-\label{sec:orgae1de6e}
+\label{sec:orgf6b4c2b}
 A class for implementing probability distributions.
 \begin{minted}[]{python}
 class DistributionBase(ABC):
@@ -400,7 +400,7 @@ seperate classes would be better.
 
 Also, maybe there is a need to implement a Gaussian using the Karhunen-Loéve-Expansion?
 \subsection{Potentials}
-\label{sec:org62643ce}
+\label{sec:orgf35ecba}
 A class for implementing the potential resulting from rewriting the likelihood as
 $$\text{L}(u) = \exp(- \Phi(u)).$$
 
@@ -430,14 +430,14 @@ computing the logpdf directly instead of manually exponentiating and running int
 floating point number limitations.
 
 \subsubsection{AnalyticPotential}
-\label{sec:org07a0fb4}
+\label{sec:orgd178462}
 
 This potential is used when sampling from an analytically computable probability distribution,
 i.e. a known posterior. In this case
 $$\exp(-\Phi(u)) = \frac{\rho(u)}{\rho_0(u)},$$
 see \url{theory.org}
 \subsubsection{EvolutionPotential}
-\label{sec:orgfc23d40}
+\label{sec:orgef911de}
 
 This potential results when sampling from the model-equation
 $$y = \G{u} + \eta,$$
@@ -445,7 +445,7 @@ with \(\eta \sim \rho\). The resulting potential can be computed as
 $$\exp(-\Phi(u)) = \rho(y - \G{u}).$$
 
 \subsection{Proposers}
-\label{sec:orgc3627b3}
+\label{sec:orgd6a7b99}
 
 Propose a new state \(v\) based on the current one \(u\).
 
@@ -457,7 +457,7 @@ class ProposerBase(ABC):
 \end{minted}
 
 \subsubsection{StandardRWProposer}
-\label{sec:orgcb33560}
+\label{sec:org4eee9a9}
 
 Propose a new state as
 $$v = u + \sqrt{2\delta} \xi,$$
@@ -467,7 +467,7 @@ This leads to a well-defined algorithm in finite dimensions.
 This is not the case when working on functions (as described in section 6.3 in \cite{cotter_mcmc_2013})
 
 \subsubsection{pCNProposer}
-\label{sec:org37860de}
+\label{sec:org5e07f4f}
 
 Propose a new state as
 $$v = \sqrt{1-\beta^2} u + \beta \xi,$$
@@ -480,7 +480,7 @@ nicer properties for infinite dimensions)(see sections 6.2 + 6.3 in \cite{cotter
 The wikipedia-article on the Cholesky-factorization mentions the use-case of obtaining a
 correlated sample from an uncorrelated one by the Cholesky-factor. This is not implemented here.
 \subsection{Accepters}
-\label{sec:org3db83ed}
+\label{sec:org31d56b7}
 
 Given a current state \(u\) and a proposed state \(v\), decide if the new state is accepted or rejected.
 
@@ -501,7 +501,7 @@ class ProbabilisticAccepter(AccepterBase):
 \end{minted}
 
 \subsubsection{AnalyticAccepter}
-\label{sec:orgaad5cc5}
+\label{sec:org182bda3}
 
 Used when there is an analytic expression of the desired distribution.
 
@@ -512,7 +512,7 @@ class AnalyticAccepter(ProbabilisticAccepter):
 \end{minted}
 
 \subsubsection{StandardRWAccepter}
-\label{sec:orge8abe09}
+\label{sec:org574b0b0}
 
 Based on formula (1.2) in \cite{cotter_mcmc_2013}:
 $$a = \text{min}\{1, \exp(I(u) - I(v))\},$$ with
@@ -521,19 +521,19 @@ $$I(u) = \Phi(u) + \frac{1}{2}\norm{\C^{-1/2}u}^2$$.
 See also \url{theory.org}.
 
 \subsubsection{pCNAccepter}
-\label{sec:org0a36ad8}
+\label{sec:org635c10d}
 
-Works together with the \hyperref[sec:org37860de]{pCNProposer} to achieve the simpler expression for the acceptance
+Works together with the \hyperref[sec:org5e07f4f]{pCNProposer} to achieve the simpler expression for the acceptance
 $$a = \text{min}\{1, \exp(\Phi(u) - \Phi(v))\}.$$
 
 \subsubsection{CountedAccepter}
-\label{sec:org5629a2c}
+\label{sec:org30f48a1}
 
 Stores and forwards calls to an "actual" accepter. Counts calls and accepts and is used for
 calculating the acceptance ratio.
 
 \subsection{Sampler}
-\label{sec:org8d09078}
+\label{sec:orgb481f56}
 
 The structure of the sampler is quite simple, since it can rely heavily on the functionality
 provided by the Proposers and Accepters.
@@ -551,11 +551,11 @@ class MCMCSampler:
 \end{minted}
 
 \section{Results}
-\label{sec:org7660f43}
+\label{sec:orgf3eb5c4}
 \subsection{Analytic sampling from a bimodal Gaussian}
-\label{sec:org02429ab}
+\label{sec:orgc809a89}
 \subsubsection{Setup}
-\label{sec:org247a6ef}
+\label{sec:org5e6d014}
 
 Attempting to recreate the "Computational Illustration" from \cite{cotter_mcmc_2013}. They use,
 among other algorithms, pCN to sample from a 1-D bimodal Gaussian
@@ -569,7 +569,7 @@ sense to me in the 1-D setting (how do I sum infinite eigenfunctions of a scalar
 The potential for density estimation described in section is also not clear to me (maybe for
 a similar reason? What is \(u\) in the density estimate case?).
 
-I ended up using a normal \(\N{0}{1}\) as a prior and the potential described \hyperref[sec:org806d1a7]{before}, and
+I ended up using a normal \(\N{0}{1}\) as a prior and the potential described \hyperref[sec:orgb7f9a71]{before}, and
 compared the following samplers:
 \begin{itemize}
 \item (1) \href{code.org}{\texttt{StandardRWProposer}} (\(\delta=0.25\)) + \href{code.org}{\texttt{AnalyticAccepter}}
@@ -580,7 +580,7 @@ compared the following samplers:
 The code is in \href{scripts/analytic.py}{\texttt{analytic.py}}.
 
 \subsubsection{Result}
-\label{sec:orgc616882}
+\label{sec:org43e7790}
 
 All three samplers are able to reproduce the target density \ref{fig:hist_bimodal}
 
@@ -591,19 +591,11 @@ All three samplers are able to reproduce the target density \ref{fig:hist_bimoda
 Burn-in: 1000, sample-interval: 200, samples: 500}
 \end{figure}
 
-The autocorrelation decays for all samplers: \ref{fig:ac_bimodal}. However, the pCN doens't
-do nearly as well as expected. This could be the consequence of the awkward
-formulation of the potential or a bad prior.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=.9\linewidth]{./figures/analytic_standard_rw_pCN_50_5000.png}
-\caption{\label{fig:ac_bimodal}
-AC of bimodal distribution. pCN takes forever to decorrelate}
-\end{figure}
+The autocorrelation of the pCN sampler doesn't decay nearly as well as expected.
+This could be the consequence of the awkward formulation of the potential or a bad prior.
 
 \subsection{Bayesian inverse problem for \(\G{u} = \langle g,u \rangle\)}
-\label{sec:org20f8178}
+\label{sec:org6245881}
 For \(\G{u} = \langle g,u \rangle\) the resulting posterior under a Gaussian prior
 is again a Gaussian. The model equation is
 $$y = \G{u} + \eta$$
@@ -616,29 +608,58 @@ with:
 
 A concrete realization with scalar \(u\):
 \begin{itemize}
-\item \(u = 2\)
-\item \(g = 3\)
-\item \(\gamma = 0.5\)
-\item \(y=6.172\)
-\item prior \(\N{0}{\Sigma_0=1}\)
+\item Ground truth \(u^* = 1\)
+\item \(g = 1\)
+\item \(\gamma = 0.1\)
+\item \(y = 1.012\)
+\item prior \(\N{0}{\Sigma_0=(0.5)^2}\)
 \end{itemize}
-leads to a posterior with mean
-\(\mu = \frac{(\Sigma_0g)y}{\gamma^2 + \langle g, \Sigma_0g \rangle} \approx 2\),
-which is what we see when we plot the result \ref{fig:stuart_21_density}.
-The pCN-Sampler with \(\beta = 0.25\) had an acceptance rate of 0.567.
+leads to a posterior givne by \ref{fig:stuart_21_density}.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=.9\linewidth]{./figures/stuart_example_21_n=1_N=5000.png}
+\includegraphics[width=.9\linewidth]{./figures/Stuart_21.png}
 \caption{\label{fig:stuart_21_density}
-\(N=5000, \mu \approx 2\)}
+Posterior sampled from a chain with length 1'000'000, using a standard random walk sampler.}
 \end{figure}
 
-For \(n>2\), the resulting posterior can not be plotted anymore. However, it is still Gaussian
-with given mean \& covariance. Can just compare the analytical values to the sample values.
-Verify that the error decays like \(\frac{1}{\sqrt{N}}\).
+\subsubsection{Posterior mean is off}
+\label{sec:org56b1f1e}
+
+According to Stuart, the posterior is a Gaussian with
+
+\begin{itemize}
+\item mean: \(m = \frac{(\Sigma_0 g) y}{\gamma^2 + \langle g, \Sigma_0g \rangle}\)
+\item covariance: \(\Sigma = \Sigma_0 - \frac{(\Sigma_0 g)(\Sigma_0 g)^*}{\gamma^2 + \langle g, \Sigma_0g \rangle}\).
+\end{itemize}
+
+This is (according to Stuart) in the case of \(q = 1\) (\(\to y \in \R\)) and \(n \in \NN\) (\(\to g,u \in \R^n\)).
+
+I chose to work with \(n=1\), since then it's easy to visualize the posterior and the chain.
+
+However, when \(q=n=1\), I'm doubtful whether the expressions given for the posterior are actually
+correct, since when Stuart discusses the zero-noise limit in the case of \(n=q\), he proves that
+then the posterior is independent of the prior (which for \(q=n\) in this example is not the case).
+
+(Theorem 2.3 pg 463 \cite{stuart_inverse_2010})
+
+\subsubsection{Wasserstein convergence}
+\label{sec:org1038c2b}
+
+As noted above, we have an analytical expression for the posterior. The steady state of the
+Markov Chain will sample from this distribution, so we expect the distributions sampled
+from the steady state to converge to the posterior 
+when the sample length is increased (citation needed).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=.9\linewidth]{./figures/stuart_wasserstein_convergence_chain_report.png}
+\caption{\label{fig:stuart_21_convergence}
+Wasserstein distance between the sample distributions and the analyical posterior. The same chain as above is used.}
+\end{figure}
+
 \subsection{Bayesian inverse problem for \(\G{u} = g (u + \beta u^3)\)}
-\label{sec:orgadf4988}
+\label{sec:orgb249dd9}
 Since the observation operator is not linear anymore, the resulting posterior is not
 Gaussian in general. However, since the dimension of the input \(u\) is 1, it can
 still be plotted.
@@ -669,11 +690,11 @@ For \(\beta \neq 0\), the resulting posterior is not a Gaussian. Still \(n=1\), 
 plotted. Just numerically normalize the analytical expression of the posterior?
 
 \subsection{Lorenz96 model}
-\label{sec:orgf3c962c}
+\label{sec:org27400ec}
 \subsubsection{Model}
-\label{sec:orgbadef89}
+\label{sec:org89edd4f}
 \paragraph{Based on:}
-\label{sec:org9d3e3f6}
+\label{sec:org1324a76}
 
 Properly cite this!
 
@@ -682,7 +703,7 @@ Lorenz, E. N. (1996). Predictability—A problem partly solved. In Reprinted in 
 Predictability, Predictability of Weather and Climate, Cambridge UP (2006) (Vol. 1, pp. 1–18). Reading, Berkshire, UK: ECMWF.
 
 \paragraph{Equation}
-\label{sec:orgeb1855a}
+\label{sec:org7080b1c}
 
 A system of ODEs, representing the coupling between slow variables \(X\) and fast, subgrid
 variables \(Y\). The system is used in \cite{schneider_earth_2017} to illustrate different
@@ -713,14 +734,14 @@ algorithms for earth system modelling.
 \end{itemize}
 
 \subparagraph{\(b\) or \(J\)?}
-\label{sec:org65f9f8e}
+\label{sec:org6ab9d5a}
 In the original paper, the equations are given in a different form, namely all
 explicit occurences of \(J\) above (in the fast-slow interaction) are replaced by
 \(b\). Since in both concrete realizations (1996 \& 2017) are identical and conviniently
 have \(b=J=10\), the difference doesn't lead to different results for that setup.
 
 \subparagraph{"Looking ahead" vs. "Looking back"}
-\label{sec:org31e5d53}
+\label{sec:org58c604a}
 Comparing nonlinearity terms
 $$-X_{k-1}(X_{k-2} - X_{k+1})$$
 $$-bY_{j+1,k}(Y_{j+2,k} - Y_{j-1, k})$$
@@ -743,12 +764,12 @@ What about the stuff we care about (statistical properties, chaotic behaviour)?
 
 
 \paragraph{Properties}
-\label{sec:orga38a480}
+\label{sec:orgec56c42}
 
 For \(K=36\), \(J=10\) and \(\Theta = [F, h, c, b] = [10, 1, 10, 10]\) there is chaotic behaviour.
 
 \subparagraph{Energy}
-\label{sec:org5a340f4}
+\label{sec:orgf5fbc14}
 
 The nonlinearities conserve the energies within a subsystem:
 \begin{itemize}
@@ -780,7 +801,7 @@ In the statistical steady state, the external forcing \(F\) (as long as its posi
 the dampling of the linear terms.
 
 \subparagraph{Averaged quantities}
-\label{sec:orga5e057e}
+\label{sec:org88ae285}
 
 $$\expval{\phi} = \frac{1}{T} \int_{t_0}^{t_0 + T} \phi(t) \dd{t}$$ (or a sum over discrete values)
 
@@ -799,7 +820,7 @@ Long-term time-average in the statistical steady state: \(\expval{\cdot}_{\infty
 \end{itemize}
 
 \subparagraph{(Quasi) Ergodicity}
-\label{sec:orgb1a8393}
+\label{sec:org5576994}
 
 Whether chaotic regions of the phase space of a system are ergodic seems not be an easy question
 to answer (citation needed probably) \footnote{Are there any inaccessible regions in phase space
@@ -828,14 +849,14 @@ As a consequence, as long as the integration time of the system is "long enough"
 condition is meaningless and can even vary without changing the behaviour of the observation operator.
 
 \subsubsection{Model implementation}
-\label{sec:org147e1bd}
+\label{sec:org78be6d5}
 
 Implementing the model in python and using a locally 5-th order RK solver yields the following
 results (inital conditions are just uniformly random numbers in \([0,1)\) since they don't matter
 for the long-term evolution of the chaotic system):
 
 \paragraph{Reproducting the results of the original paper}
-\label{sec:org7a22474}
+\label{sec:org8fe37ca}
 Running the setup with \(K=36, J=10, (F, h, c, b) = (10, 1, 10, 10)\) gives the following states
 \ref{fig:lorenz96_combined},
 which qualitatively agree with the results from Lorenz.
@@ -858,7 +879,7 @@ Energies in the system. \(E_X >> E_{Y_k} > 0\)}
 \end{figure}
 
 \paragraph{Equilibrium averages}
-\label{sec:org35246ac}
+\label{sec:org5335811}
 Analysis suggests certain long-term averages to be equal in the equilibrium.
 
 \begin{figure}[htbp]
@@ -869,7 +890,7 @@ RMSE for long-term averages \ref{eqn:equilibrium_X} and \ref{eqn:equilibrium_Y}.
 \end{figure}
 
 \subsubsection{MCMC}
-\label{sec:org7a26bee}
+\label{sec:orgf66e578}
 General point: The \texttt{RK45} method uses a predictor/corrector step and thus does non-uniform timesteps.
 However, in the following I compute time-averages with a simple \texttt{np.mean}, ignoring the different
 length of timesteps. It would be not impossible to write my own \texttt{time\_average(y, t)}-function that
@@ -878,7 +899,7 @@ a forward-integration takes \(\mathcal(2000)\) timesteps, so I suspect that diff
 a bit?
 
 \paragraph{Setup}
-\label{sec:org5647629}
+\label{sec:org4a43fd0}
 Denote the Lorenz-96 system \ref{eqn:lorenz_X}, \ref{eqn:lorenz_Y} with parameters \(\tilde{u} = [F, h, c, b]\) as
 \(\mathcal{M}[\tilde{u}]\). It acts on the initial condition \(z_0 = [X_0, Y_0] \in \R^{K(J+1)}\) to evolve
 the system for \(N_t\) timesteps and generate the phase space trajectory
@@ -906,7 +927,7 @@ with:
 \begin{itemize}
 \item \(\expval{f}_\infty \approx \expval{f}_{T_r}\) with \(T_r >> T\) over a simulation \(\mathcal{M}[u^*] z_0\)
 \item \(\expval{f}_T(u)\) the time average over a simulation \(\mathcal{M}[u_p + u] z_0\)
-\item Due to the ergodic properties of \(\mathcal{M}\) \ref{sec:orgb1a8393} , it doesn't really matter what \(z_0\) is
+\item Due to the ergodic properties of \(\mathcal{M}\) \ref{sec:org5576994} , it doesn't really matter what \(z_0\) is
 \item The parameter vector comes in many different variations:
 \begin{itemize}
 \item \(u^* \in \R^4_{\geq 0}\): true underlying parameters, used to compute the "data"
@@ -919,7 +940,7 @@ where \(r \in \R\) is the "noise level"
 
 \begin{enumerate}
 \item The parameter vector \(u\)
-\label{sec:org514b7e7}
+\label{sec:org6fc777e}
 
 The theoretical background assumes the prior to be a centered Gaussian (\(\mu = 0\)).
 Specifically, it matters during the proposal step, where the step is taken either with
@@ -928,7 +949,7 @@ A compromise would be to just ignore a nonzero prior-mean in the proposal, howev
 sure if such a prior has other effects that invalidate the algorithm.
 
 \item "Noise level"
-\label{sec:orgee68004}
+\label{sec:orgf559194}
 
 \(r\) is scaling of covariance matrix of noise term. This in turn is just step-width in proposal.
 
@@ -936,7 +957,7 @@ TODO: Verify by checking acceptance rate for different noise levels
 \end{enumerate}
 
 \subparagraph{Concrete parameters}
-\label{sec:org5c81b01}
+\label{sec:orge638f2a}
 
 The MCMC-Simulation was carried  out with the following parameters:
 
@@ -968,10 +989,10 @@ But 2 is also what they used in the ESM paper.
 \end{itemize}
 
 \paragraph{Result}
-\label{sec:org7737fac}
+\label{sec:orgc4bbfb4}
 
 \subparagraph{Density plot for posterior}
-\label{sec:org45f43d4}
+\label{sec:orgaba2daa}
 
 The resulting density plots show a improvement from the prior towards the true value \ref{fig:lorenz_densities}.
 The estimation of the parameter \(F\) seems to be easier than \(b\), where the prior and the
@@ -991,7 +1012,7 @@ Prior and Posteriors after a 5000 sample MCMC run}
 \end{figure}
 
 \subparagraph{ACF}
-\label{sec:orgd965eb0}
+\label{sec:orgf42c672}
 
 The autocorrelation decays for all three variables. As expected from the accuracy of the posteriors,
 the autocorrelation of \(F\) decays much faster than that of \(b\). This simulation was done with a
@@ -1007,11 +1028,11 @@ quickly decorrelate the chain, while not being so big that the accepter declines
 Autocorrelation of during the MCMC sampling. The functions are averaged over ten distinct parts of the chain}
 \end{figure}
 \subsection{Perturbed Riemann problem for Burgers' equation}
-\label{sec:orgd0f0f56}
+\label{sec:org59d78c2}
 \subsubsection{Model}
-\label{sec:org0240355}
+\label{sec:orga50d220}
 \paragraph{Burgers' Equation}
-\label{sec:org45dea7c}
+\label{sec:org728dbda}
 
 We consider the Burgers' equation
 
@@ -1023,7 +1044,7 @@ We consider the Burgers' equation
 in the domain \((x, t) \in [-1, 1] \cross [0,1]\).
 
 \paragraph{Riemann Problem}
-\label{sec:org52c3b9f}
+\label{sec:org56715c6}
 
 The following family of initial conditions:
 
@@ -1042,14 +1063,14 @@ usual 1,0-Riemann problem (in particular the location of the shock at \(t=1\) wi
 close to \(x=0.5\)).
 
 \paragraph{Discretization}
-\label{sec:orgd573ae5}
+\label{sec:orgf3a7c49}
 
 Blabla
 \subsubsection{MCMC}
-\label{sec:org242170b}
+\label{sec:org1c9c329}
 
 \paragraph{Hyperparameter tuning}
-\label{sec:org9a9403d}
+\label{sec:org05f3294}
 
 To optimize hyperparameters, namely choose the step-size (pCN: \(\beta\), RW: \(\delta\)) such that for a given chain length
 as many samples as possible can be used for estimation, the properties of the chain
@@ -1061,7 +1082,7 @@ Given these values for a chain of length \(N\), the number of usable samples \(M
 $$ M = \frac{N - b}{\tau_0} $$ 
 
 \subparagraph{Burn-In \(b\)}
-\label{sec:org8187993}
+\label{sec:orge635b47}
 
 The most fruitful approach seems to be to visually inspect the evolution of the
 parameter values and roughly decide when a steady-state is reached. This works nicely
@@ -1080,7 +1101,7 @@ Chain evolution during sampling with \(\beta=0.1\). Visually it seems the the st
 \end{figure}
 
 \subparagraph{Decorrelation time \(\tau_0\)}
-\label{sec:orgdb5bce1}
+\label{sec:orgcbb0bcf}
 
 After the burn-in is discarded from the original chain, the lag where the autocorrelation
 function first equals 0 gives the number of samples after which they become decorrelated
@@ -1099,7 +1120,7 @@ Autocorrelation function during sampling with \(\beta=0.1\). For this chain, \(\
 \end{figure}
 
 \subparagraph{Step size \(\beta\)}
-\label{sec:org2e1e13f}
+\label{sec:org084475a}
 
 Given a way to compute \(b\) and \(\tau_0\), the optimal \(\beta^*\) can be found as
 
@@ -1116,7 +1137,7 @@ Everything here also applies to \(\delta\), the step-size for the random-walk-MC
 
 
 \paragraph{Setup}
-\label{sec:org2acf5e4}
+\label{sec:org0982e42}
 
 As usual, we sample based on the equation
 
@@ -1137,7 +1158,7 @@ This however only applies to linear invertible observational maps, which is defi
 case here. However for well-placed measurements we can definitely expect a sharp posterior.
 
 \subparagraph{Observation operator \(\G{u}\)}
-\label{sec:org5e8f9ce}
+\label{sec:orgc48cca8}
 
 We use the FVM to evolve the Riemann intial conditions \ref{eqn:perturbed_riemann} \(w_u(x, 0)\)
 until \(T=1\) and then measure the resulting state around certain measurement points:
@@ -1154,7 +1175,7 @@ $$yeah how do you write this out lol$$
 
 \begin{enumerate}
 \item Placement of measurements
-\label{sec:org3a9328d}
+\label{sec:orga7b7789}
 
 The choice of the \(x_i\) s is crucial. If the shock is not contained in the measurement
 interval around and \(x_i\), the Markov chain has no chance of determining the initial
@@ -1167,7 +1188,7 @@ shock in the measurement interval.
 \end{enumerate}
 
 \subparagraph{Ground truth measurements \(y\)}
-\label{sec:orgb580cf1}
+\label{sec:org326a9ba}
 
 \(y\) is obtained by applying the observation operator to the ground truth \(u^*\).
 $$u^* = [\delta_1^*, \delta_2^*, \sigma_0^*] = [0.025, -0.025, -0.02]$$
@@ -1180,12 +1201,12 @@ Setup for the MCMC experiment. The values for \(w\) at \(T=1\), once for the unp
 \end{figure}
 
 \subparagraph{Noise}
-\label{sec:orgda5415e}
+\label{sec:org47dd935}
 
 \(\eta \sim \N{0}{\gamma^2 \I_5}\) with \(\gamma = 0.05\).
 
 \subparagraph{Prior}
-\label{sec:org53817d0}
+\label{sec:orgd00ab74}
 
 \(\nu \sim \N{u_p}{\varphi^2 \I_3}\), with
 \begin{itemize}
@@ -1200,10 +1221,10 @@ which corresponds to
 \end{itemize}
 
 \paragraph{Result}
-\label{sec:orgf2c13b2}
+\label{sec:org63a1724}
 
 \subparagraph{Investigating concrete values of \(\beta\)}
-\label{sec:org09438f6}
+\label{sec:org31560dd}
 
 Three concrete values for \(\beta\) are investigated closer; \(\beta_1 = 0.01\), \(\beta_2 = 0.15\)
 and \(\beta_3 = 0.5\). These values were chosen since they correspond to three significantly
@@ -1237,7 +1258,7 @@ by an adjustment in a \(\delta\))
 
 \begin{enumerate}
 \item \(\beta\) = 0.01
-\label{sec:org32d28f2}
+\label{sec:orgde524b2}
 
 This very small value of beta gives a characteristic step size \(s = 0.0025\). Moving uniformly from
 the prior-mean \(\delta_1^p = 1.5\) to the ground truth \(\delta_1^* = 0.025\) is expected to take
@@ -1256,7 +1277,7 @@ Evolution of the chain with \(\beta\) = 0.01. The small step size results in get
 \end{figure}
 
 \item \(\beta\) = 0.5
-\label{sec:org47b457b}
+\label{sec:org7471a00}
 
 This large value of \(\beta\) results in stagnant behaviour in the steady state. Only very few moves
 are accepted,  so the sampling interval has to be chosen very large to get adequately decorrelated
@@ -1272,7 +1293,7 @@ Evolution of the chain with \(\beta\) = 0.5. After the burn-in, very few moves a
 \end{figure}
 
 \item \(\beta\) = 0.15
-\label{sec:orgee7b442}
+\label{sec:orga275d77}
 
 With this value of \(\beta\) we get a "healthy" behaviour of the chain: the steps are large enough
 to finish the burn-in in a reasonable time, while still being small enough to explore phase-space
@@ -1292,7 +1313,7 @@ Evolution of the chain with \(\beta\) = 0.15. After the burn-in, the phase space
 \end{figure}
 
 \item Variable \(\delta\)
-\label{sec:org78538d9}
+\label{sec:orgf712d4e}
 
 The idea to have a variable step-size (usually monotonically decreasing) to reap the benefits
 of both worlds (short burn-in and quick decorrelation in the steady state) is frequently used
@@ -1314,7 +1335,7 @@ Evolution of the chain with a random walk proposal and a piecewise-linear \(\del
 \end{enumerate}
 
 \subparagraph{pCN vs ordinary random Walk}
-\label{sec:org9e9ac28}
+\label{sec:org03d925b}
 
 The pCN proposer generates new states as
 
@@ -1339,7 +1360,7 @@ Evolution of the chain with a random walk proposal and \(\delta = 0.01125\)}
 \end{figure}
 
 \subparagraph{Posterior estimates}
-\label{sec:org2b5f8ef}
+\label{sec:orgd851091}
 
 (Just some histograms scattered around, see the captions)
 
@@ -1365,10 +1386,10 @@ Posterior densities, taken from the RW-chain shown above with \(\delta = 0.01125
 Posterior densities, taken from the RW-chain shown above with piecewise-linear \(\delta = 0.1 \to 0.001\), burn-in 250 and sampling interval 20.}
 \end{figure}
 \subparagraph{Convergence results}
-\label{sec:org79f0eb1}
+\label{sec:org7b177ba}
 \begin{enumerate}
 \item Convergence over chain length
-\label{sec:org1eeaf4c}
+\label{sec:org44fad1b}
 
 \textbf{Idea}: The posterior distributions of chains with increasing length
 should converge to a delta function located at the ground truth in
@@ -1438,7 +1459,7 @@ Wasserstein distance between the posterior and a delta-peak at the ground truth 
 \end{figure}
 
 \item Convergence over cell-size
-\label{sec:orge154a19}
+\label{sec:orgfb1bd39}
 
 \textbf{Idea}: The posterior distributions of chains using a decreasing cell
 size in the underlying simulation should converge to a delta function
@@ -1452,7 +1473,7 @@ located at the ground truth in the Wasserstein distance.
 \item \(\delta = \text{PWL}(0.05 \to 0.001)\)
 \item grid-spacing in the underlying simulation:
 
-split the \([1, 1]\) domain into 32, 64, 128, 256 cells
+split the \([-1, 1]\) domain into 32, 64, 128, 256 cells
 \end{itemize}
 
 \item Remove correlated states and a burn-in of 250 steps.

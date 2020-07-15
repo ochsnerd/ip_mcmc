@@ -58,22 +58,17 @@
 *** Autocorrelation still a big shady IMO
 *** TODO Write a chain-analysis script (add acceptance computation)
 *** TODO Wasserstein convergence over chain-length
-    Situation: Taking one long chain (10000), split it up in (5000, 2500, 1250,...)
-    (non-overlapping or overlapping, doesn't affect result)
-    Then do Wasserstein-distance vs. delta function at the ground truth
-    Result: opposite of convergence, the same for 3D case and just delta_1
+*** TODO Wasserstein convergence over grid-spacing
+*** Is the Burgers-posterior really a Gaussian?
+    CF. linear example in stuart.
+    There, the posterior is a product of Gaussians,
+    one becoming a delta as noise covariance \to 0 (i think),
+    and the other basically the prior
 
-    Probably because there are some "excursions" of size O(100) samples which
-    really influence the distribution negatively. The longer the chain, the more
-    excursions, but because the chains are so short (longest one has like 250 samples)
-    the excursion don't really get corrected/washed out.
-
-    Solution: Just take the average. But average over what?
-    Samples: lol
-    Generated densities: The same as just making all chains longer
-    Distance: no.
-    
-*** Investigate effect of mesh-spacing
+    Stuarts theorem for q = n says the small-noise limit (so for our purposes,
+    when the grid-points \to \infty), the posterior becomes a delta peak. However,
+    this relies on niceness properties of the observation operator, which we probably
+    don't have (?)
 
 *** Stuff that could be done
 **** investigate acceptance ratio and ac as function of prop_beta
