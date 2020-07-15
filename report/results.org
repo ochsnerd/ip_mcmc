@@ -30,13 +30,8 @@
     #+NAME: fig:hist_bimodal
     [[./figures/bimodal_density_combined.png]]
 
-    The autocorrelation decays for all samplers: [[fig:ac_bimodal]]. However, the pCN doens't
-    do nearly as well as expected. This could be the consequence of the awkward
-    formulation of the potential or a bad prior.
-
-    #+CAPTION: AC of bimodal distribution. pCN takes forever to decorrelate
-    #+NAME: fig:ac_bimodal
-    [[./figures/analytic_standard_rw_pCN_50_5000.png]]
+    The autocorrelation of the pCN sampler doesn't decay nearly as well as expected.
+    This could be the consequence of the awkward formulation of the potential or a bad prior.
 
 ** Bayesian inverse problem for $\G{u} = \langle g,u \rangle$
    For $\G{u} = \langle g,u \rangle$ the resulting posterior under a Gaussian prior
@@ -48,23 +43,45 @@
    - $\eta \sim \N{0}{\gamma^2}$ for $\gamma \in \R$
 
    A concrete realization with scalar $u$:
-   - $u = 2$
-   - $g = 3$
-   - $\gamma = 0.5$
-   - $y=6.172$
-   - prior $\N{0}{\Sigma_0=1}$
-   leads to a posterior with mean
-   $\mu = \frac{(\Sigma_0g)y}{\gamma^2 + \langle g, \Sigma_0g \rangle} \approx 2$,
-   which is what we see when we plot the result [[fig:stuart_21_density]].
-   The pCN-Sampler with $\beta = 0.25$ had an acceptance rate of 0.567.
-    
-   #+CAPTION: $N=5000, \mu \approx 2$
-   #+NAME: fig:stuart_21_density
-   [[./figures/stuart_example_21_n=1_N=5000.png]]
+   - Ground truth $u^* = 1$
+   - $g = 1$
+   - $\gamma = 0.1$
+   - $y = 1.012$
+   - prior $\N{0}{\Sigma_0=(0.5)^2}$
+   leads to a posterior givne by [[fig:stuart_21_density]].
 
-   For $n>2$, the resulting posterior can not be plotted anymore. However, it is still Gaussian
-   with given mean & covariance. Can just compare the analytical values to the sample values.
-   Verify that the error decays like $\frac{1}{\sqrt{N}}$.
+   #+CAPTION: Posterior sampled from a chain with length 1'000'000, using a standard random walk sampler.
+   #+NAME: fig:stuart_21_density
+   [[./figures/Stuart_21.png]]
+
+*** Posterior mean is off
+
+    According to Stuart, the posterior is a Gaussian with
+
+    - mean: $m = \frac{(\Sigma_0 g) y}{\gamma^2 + \langle g, \Sigma_0g \rangle}$
+    - covariance: $\Sigma = \Sigma_0 - \frac{(\Sigma_0 g)(\Sigma_0 g)^*}{\gamma^2 + \langle g, \Sigma_0g \rangle}$.
+
+    This is (according to Stuart) in the case of $q = 1$ ($\to y \in \R$) and $n \in \NN$ ($\to g,u \in \R^n$).
+
+    I chose to work with $n=1$, since then it's easy to visualize the posterior and the chain.
+
+    However, when $q=n=1$, I'm doubtful whether the expressions given for the posterior are actually
+    correct, since when Stuart discusses the zero-noise limit in the case of $n=q$, he proves that
+    then the posterior is independent of the prior (which for $q=n$ in this example is not the case).
+
+    (Theorem 2.3 pg 463 [[cite:stuart_inverse_2010]])
+
+*** Wasserstein convergence
+
+    As noted above, we have an analytical expression for the posterior. The steady state of the
+    Markov Chain will sample from this distribution, so we expect the distributions sampled
+    from the steady state to converge to the posterior 
+    when the sample length is increased (citation needed).
+
+    #+CAPTION: Wasserstein distance between the sample distributions and the analyical posterior. The same chain as above is used.
+    #+NAME: fig:stuart_21_convergence
+    [[./figures/stuart_wasserstein_convergence_chain_report.png]]
+
 ** Bayesian inverse problem for $\G{u} = g (u + \beta u^3)$
    Since the observation operator is not linear anymore, the resulting posterior is not
    Gaussian in general. However, since the dimension of the input $u$ is 1, it can
