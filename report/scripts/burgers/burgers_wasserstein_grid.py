@@ -22,7 +22,8 @@ from utilities import (FVMObservationOperator,
                        load_or_compute,
                        BurgersEquation,
                        autocorrelation,
-                       wasserstein_distance)
+                       wasserstein_distance,
+                       show_chain)
 
 
 class PWLinear:
@@ -194,9 +195,14 @@ def main():
     plt.ylabel("$W_1$")
     store_figure(Settings.filename() + "_wasserstein_convergence_grid")
 
+    for chain in data:
+        for i in range(len(chain[0, :])):
+            chain[:, i] -= Settings.Prior.mean
+        print(f"Showing chain with length {len(chain[0, :])}")
+        show_chain(chain, Settings.Sampling.burn_in, Settings.Sampling.sample_interval)
+
 
 def create_data(grid_cells):
-
     chains = []
     for N in grid_cells:
         Settings.Simulation.N_gridpoints = N
