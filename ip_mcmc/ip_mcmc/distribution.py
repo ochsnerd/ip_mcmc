@@ -92,14 +92,6 @@ class GaussianDistribution(DistributionBase):
     # - Seperate multivariate and scalar case
     # - maybe even throw in a scalar baseclass
     def __init__(self, mean=0, covariance=1):
-        """
-        Careful:
-        For 1D:  covariance (function argument) == standard deviation (= sqrt(variance))
-        For 2+D: covariance (function argument) == covariance matrix (with (standard deviation)**2 as diagonal entries for uncorrelated)
-
-        This inconsistency is a consequence of the inconsistency of numpys
-        multivariate_normal / normal functions
-        """
         mean = self._ensure_array(mean, ndim=1)
         covariance = self._ensure_array(covariance, ndim=2)
         self.k = mean.shape[0]
