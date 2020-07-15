@@ -362,7 +362,7 @@ as the integral over the autocorrelation function; $\Theta$
        - $\delta = \text{PWL}(0.05 \to 0.001)$
        - grid-spacing in the underlying simulation:
 
-         split the $[1, 1]$ domain into 32, 64, 128, 256 cells
+         split the $[-1, 1]$ domain into 32, 64, 128, 256 cells
 
      - Remove correlated states and a burn-in of 250 steps.
        Based on the AC-plot, every 20th state is uncorrelated;
