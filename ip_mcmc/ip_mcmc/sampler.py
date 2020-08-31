@@ -17,14 +17,14 @@ class MCMCSampler:
         for _ in range(max(0, burn_in - sample_interval)):
             u = self._step(u, rng)
 
-        samples = np.empty((n_samples, u.size))
+        samples = np.empty((u.size, n_samples))
 
         for i in range(n_samples):
             # print(f"Sampling {i + 1}/{n_samples}")
             for _ in range(sample_interval):
                 u = self._step(u, rng)
 
-            samples[i, :] = u
+            samples[:, i] = u
 
         if isinstance(self.accepter, CountedAccepter):
             print(f"Acceptance ratio: {self.accepter.ratio()}")

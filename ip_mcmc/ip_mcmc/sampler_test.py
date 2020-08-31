@@ -18,4 +18,4 @@ def test_sampler():
 
     assert a.calls == 100 + 9*20, ""
     assert a.accepts == a.calls, ""
-    assert all(np.isclose(r_, 1) for r_ in r), ""
+    assert all(np.isclose(r_, 1) for r_ in r[0]), ""
