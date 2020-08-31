@@ -4,26 +4,25 @@ from .accepter import CountedAccepter
 
 
 class MCMCSampler:
-    def __init__(self, proposal, acceptance, rng):
+    def __init__(self, proposal, acceptance):
         self.proposer = proposal
         self.accepter = acceptance
-        self.rng = rng
 
-    def run(self, u_0, n_samples, burn_in=1000, sample_interval=200):
+    def run(self, u_0, n_samples, rng, burn_in=1000, sample_interval=200):
         u = u_0
 
         if isinstance(self.accepter, CountedAccepter):
             self.accepter.reset()
 
         for _ in range(max(0, burn_in - sample_interval)):
-            u = self._step(u, self.rng)
+            u = self._step(u, rng)
 
         samples = np.empty((n_samples, u.size))
 
         for i in range(n_samples):
-            print(f"Sampling {i + 1}/{n_samples}")
+            # print(f"Sampling {i + 1}/{n_samples}")
             for _ in range(sample_interval):
-                u = self._step(u, self.rng)
+                u = self._step(u, rng)
 
             samples[i, :] = u
 

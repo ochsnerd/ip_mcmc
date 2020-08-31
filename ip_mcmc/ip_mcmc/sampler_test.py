@@ -8,10 +8,13 @@ from .accepter import AnalyticAccepter, CountedAccepter
 def test_sampler():
     a = CountedAccepter(AnalyticAccepter(lambda x: x))
     s = MCMCSampler(MockProposer(),
-                    a,
-                    MockRNG(0.1))
+                    a)
 
-    r = s.run(np.array([1]), n_samples=10, burn_in=100, sample_interval=20)
+    r = s.run(np.array([1]),
+              n_samples=10,
+              rng=MockRNG(0.1),
+              burn_in=100,
+              sample_interval=20)
 
     assert a.calls == 100 + 9*20, ""
     assert a.accepts == a.calls, ""
