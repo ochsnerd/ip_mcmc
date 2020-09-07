@@ -8,7 +8,7 @@ class MCMCSampler:
         self.proposer = proposal
         self.accepter = acceptance
 
-    def run(self, u_0, n_samples, rng, burn_in=1000, sample_interval=200):
+    def run(self, u_0, n_samples, burn_in, sample_interval, rng):
         u = u_0
 
         if isinstance(self.accepter, CountedAccepter):

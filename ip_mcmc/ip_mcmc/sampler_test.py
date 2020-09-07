@@ -12,9 +12,9 @@ def test_sampler():
 
     r = s.run(np.array([1]),
               n_samples=10,
-              rng=MockRNG(0.1),
               burn_in=100,
-              sample_interval=20)
+              sample_interval=20,
+              rng=MockRNG(0.1))
 
     assert a.calls == 100 + 9*20, ""
     assert a.accepts == a.calls, ""
