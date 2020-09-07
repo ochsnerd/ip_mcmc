@@ -3,3 +3,4 @@ from .proposer import ConstStepStandardRWProposer, VarStepStandardRWProposer, Co
 from .accepter import AnalyticAccepter, StandardRWAccepter, pCNAccepter, CountedAccepter, ConstrainAccepter
 from .potential import AnalyticPotential, EvolutionPotential
 from .distribution import GaussianDistribution, LogNormalDistribution, IndependentDistributions
+from .ensemble import EnsembleManager
