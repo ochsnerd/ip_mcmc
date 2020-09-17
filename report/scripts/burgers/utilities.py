@@ -8,7 +8,8 @@ sys.path.append("/home/david/fs20/thesis/code/report/scripts/")
 from helpers import (store_figure,
                      load_or_compute,
                      autocorrelation,
-                     wasserstein_distance)
+                     wasserstein_distance,
+                     DATA_DIR)
 
 sys.path.append("/home/david/fs20/thesis/code/report/scripts/burgers")
 from rusanov import RusanovFVM
