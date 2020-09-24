@@ -193,15 +193,15 @@ def create_data(ensemble_size, chain_lengths, ref_length):
         ensembles.append(ensemble)
 
     # Compute reference
+    Settings.Sampling.N = ref_length
     ref_chain_start = partial(sampler.run,
                               Settings.Sampling.u_0,
-                              ref_length,
+                              Settings.Sampling.N,
                               Settings.Sampling.burn_in,
                               Settings.Sampling.sample_interval)
 
     ref_manager = EnsembleManager(DATA_DIR,
-                                  f"{Settings.filename()}_"
-                                  f"ref_N={ref_length}")
+                                  f"{Settings.filename()}_ref")
 
     ref_chain = ref_manager.compute(ref_chain_start, rngs[:1], 1)[0, :, :]
 
