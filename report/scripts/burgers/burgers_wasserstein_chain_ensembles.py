@@ -102,9 +102,9 @@ class Settings:
                                         Settings.Noise.covariance)
 
     class Prior:
-        mean = np.array([1.5,    # delta_1
+        mean = np.array([0.25,    # delta_1
                          0.25,   # delta_2
-                         -0.5])  # sigma
+                         -0.25])  # sigma
         std_dev = 0.25
         covariance = std_dev**2 * np.identity(len(mean))
 
@@ -123,7 +123,7 @@ class Settings:
 
     @staticmethod
     def filename():
-        return f"burgers_RW_n={Settings.Sampling.N}_b={Settings.Sampling.step}"
+        return f"burgers_EP_n={Settings.Sampling.N}_b={Settings.Sampling.step}"
 
 
 def create_integrator():
