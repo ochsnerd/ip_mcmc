@@ -227,8 +227,6 @@ def wasserstein_convergence(ensembles, ref_chain, filename):
     u_range = np.array([np.min([np.min(ensemble) for ensemble in ensembles]),
                         np.max([np.max(ensemble) for ensemble in ensembles])])
 
-    print(f"All values are between {u_range[0]} and {u_range[1]}")
-
     n_bins = 20
     ref_binned = np.histogram(ref_chain[0, :],
                               bins=n_bins,
@@ -239,16 +237,7 @@ def wasserstein_convergence(ensembles, ref_chain, filename):
 
     distances = np.zeros((n_ensembles, ensemble_size))
 
-    print(type(ensembles[0]))
     for j, ensemble in enumerate(ensembles):
-        print(f"Working at {j}th ensemble, with chain-length {ensemble.shape[2]}")
-        print(f"Whole ensemble:")
-        print(f"mean: {np.mean(ensemble)}")
-        print(f"variance: {np.var(ensemble)}")
-        print(f"First chain:")
-        print(f"mean: {np.mean(ensemble[0, 0, :])}")
-        print(f"variance: {np.var(ensemble[0, 0, :])}")
-
         # Bin ensembles
         ensemble_binned = np.empty((ensemble_size, n_bins))
         for i in range(ensemble_size):
@@ -258,18 +247,11 @@ def wasserstein_convergence(ensembles, ref_chain, filename):
                                                  density=False)[0]
             ensemble_binned[i, :] = ensemble_binned[i, :] / np.sum(ensemble_binned[i, :])
 
-            print(f"Binned ensemble {i}, shape: {ensemble_binned[i, :].shape}, norm: {np.sum(ensemble_binned[i, :])}")
-
         # Compute distance to reference
         for i in range(ensemble_size):
             distances[j, i] = wasserstein_distance(ensemble_binned[i, :],
                                                    ref_binned,
                                                    u_range.reshape(1,2))
-
-    for j, ensemble in enumerate(ensembles):
-        print(f"Looking at the {j}th ensemble, with chain-length {ensemble.shape[2]}")
-        print(f"{np.mean(distances[j, :])}")
-        print(f"{np.var(distances[j, :])}")
 
     chain_lengths = [ensemble.shape[2] for ensemble in ensembles]
     means = [np.mean(distances[j, :]) for j in range(n_ensembles)]
@@ -290,6 +272,8 @@ def wasserstein_convergence(ensembles, ref_chain, filename):
 
 def show_ensemble(ensemble):
     """Plz write docstring"""
+
+    title = f"Chain length: {ensemble.shape[2]}, ensemble members: {ensemble.shape[0]}"
     for k in range(ensemble.shape[0] - 1):
         for i in range(3):
             plt.plot(ensemble[k, i, :])
@@ -319,6 +303,7 @@ def show_ensemble(ensemble):
             plt.axvline(i, color='r', alpha=0.05)
 
     plt.legend()
+    plt.title(title)
     plt.show()
 
     # densities
