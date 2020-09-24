@@ -95,11 +95,27 @@ class StandardRWAccepter(ProbabilisticAccepter):
         self.theta = potential
         self.prior = prior
 
+        # Instead of just printing to stdout,
+        # numpy will raise an exception.
+        # This is so that we can surpress the warning
+        # when calculating the accept_probability below.
+        # There it can happen when a large improvement is
+        # proposed that the return value overflows a 64-bit float.
+        # This is not a problem however, since the return value
+        # is only relevant if it's in [0,1]
+        np.seterr(all='raise')
+
     def accept_probability(self, u, v):
         Iu = self._I(u)
         Iv = self._I(v)
 
-        return np.exp(Iu - Iv)
+        try:
+            return np.exp(Iu - Iv)
+        except FloatingPointError:
+            # The result is too big for np.float64,
+            # we however only care if the value
+            # is in [0,1].
+            return 1
 
     def _I(self, w):
         regularizer = .5 * np.linalg.norm(self.prior.apply_sqrt_covariance(w)) ** 2
