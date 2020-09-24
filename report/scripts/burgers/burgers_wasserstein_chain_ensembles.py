@@ -56,8 +56,9 @@ def is_valid_IC(u):
     outside of the domain.
     """
     s = u[2] + Settings.Prior.mean[2]
-    return (s > Settings.Simulation.domain[0] and
-            s < Settings.Simulation.domain[1])
+    eps = 0.1
+    return (s > Settings.Simulation.domain[0] + eps and
+            s < Settings.Simulation.domain[1] - eps)
 
 
 class Settings:
