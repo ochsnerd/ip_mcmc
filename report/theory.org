@@ -23,7 +23,7 @@
     However, the Lesbesgue-Measure is not defined in an infinite-dimensional space ([[https://en.wikipedia.org/wiki/Infinite-dimensional_Lebesgue_measure][wiki]]).
 
     Can still define a measure to be Gaussian if we demand all push-forward measures via a
-    linear functional onto $\R$ to be a Gaussian. (What about the star (E^*, L_*)
+    linear functional onto $\R$ to be a Gaussian. What about the star (E^*, L_*)
     in the wiki-article? Are they dual-spaces?) (What would be an example of that? An example
     for a linear functional on an inf-dims space given on wikipedia is integration.
     What do we integrate? How does this lead to a Gaussian?)

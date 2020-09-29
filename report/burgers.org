@@ -124,10 +124,6 @@ as the integral over the autocorrelation function; $\Theta$
 
     with $1 \leq i \leq 5$ and $x_1 = -0.5$, $x_2= -0.25$, $x_3 = 0.25$, $x_4 = 0.5$, $x_5 = 0.75$.
 
-    The observation operator is then:
-
-    $$yeah how do you write this out lol$$
-
 **** Placement of measurements
 
      The choice of the $x_i$ s is crucial. If the shock is not contained in the measurement
@@ -388,7 +384,7 @@ as the integral over the autocorrelation function; $\Theta$
 
      #+CAPTION: Wasserstein distance between the posterior and a delta-peak at the ground truth for different grid sizes
      #+NAME: fig:wasserstein_grid
-    [[./figures/burgers_RW_n=10000_b=pwl_0.05_0.001_250_wasserstein_convergence_grid_report.png]]
+     [[./figures/burgers_RW_n=10000_b=pwl_0.05_0.001_250_wasserstein_convergence_grid_report.png]]
 
 [fn:var] In this case, since the global optimum is clearly attained in every chain, longer chains or
 averaging over multiple chains is equivalent. When it is not straight forward to verify that the chain

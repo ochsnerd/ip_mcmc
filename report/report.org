@@ -1,4 +1,6 @@
 #+TITLE: Markov Chain Monte Carlo for Inverse Problems
+#+DATE: 11.09.2020
+#+AUTHOR: David Ochsner @@latex:\\@@ Supervisor: Siddhartha Mishra
 
 #+OPTIONS: H:5
 
@@ -11,6 +13,8 @@
 #+INCLUDE: results.org
 
 #+BIBLIOGRAPHY: ../papers/inverse_problems plain
+
+[[./Selbststandigkeitserklarung.png]]
 
 * TODO Meta                                                        :noexport:
 ** TODO Can I get code execution to work here for the results? (-> DIY jupyter I guess)
@@ -47,16 +51,16 @@
 *** DONE Time-averages are just np.mean, but the RK-integrator does non-uniform timesteps
 ** DONE AC Section
 *** DONE Side-by-side plot: [0,2] vs [-1, 1] vs [0, 2] - mean
-** TODO Burgers
+** DONE Burgers
 *** Investigate
 **** How much burn-in is enough: check that average of values is in steady state
 **** Ground truth: do mcmc on fine grid O(500) and a lot of samples
 **** Wasserstein-distance convergence when grid converges
-*** TODO Write report
+*** DONE Write report
 **** DONE Compare betas: b=0.01, b=0.15, b=0.5
 **** DONE deta = 0.045 was actually wrong, it should be 0.01125
 *** Autocorrelation still a big shady IMO
-*** TODO Write a chain-analysis script (add acceptance computation)
+*** DONE Write a chain-analysis script (add acceptance computation)
 *** TODO Wasserstein convergence over chain-length
 *** TODO Wasserstein convergence over grid-spacing
 *** Is the Burgers-posterior really a Gaussian?
