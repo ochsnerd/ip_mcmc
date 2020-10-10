@@ -241,57 +241,90 @@ def create_data(ensemble_size,
     return ensembles, ref_chain
 
 
-def wasserstein_convergence(ensembles, ref_chain, filename):
-    # only 1D u for now
+def convergence(ensembles, reference, varied_quantity,
+                observable_function, distance_function,
+                plt_info, filename):
+    """Compute convergence of obsverable_function over varied_quantity of
+    ensembles towards reference, measured by distance_function.
+
+    ensembles: list(np.array((ensemble_size, u_dim, chain_length)))
+    reference: np.array((u_dim, chain_length))
+    varied_quantity: list
+        len(varied_quantity) == len(ensembles)
+    observable_function: callable
+        Takes as argument one element of an ensemble (np.array((u_dim, chain_length)))
+        and returns a 1D np.array.
+    distance_function: callable
+        Takes as argument two return values from observable_function and returns a
+        the distance between them (a float).
+    plot_info: dict(str: str)
+        Dict containing:
+        title
+        xlabel (name of varied quantity)
+        ylabel (name of observable)
+    filename: string
+    """
     n_ensembles = len(ensembles)
+    assert n_ensembles == len(varied_quantity), ""
     ensemble_size = ensembles[0].shape[0]
     for ensemble in ensembles:
         assert ensemble_size == ensemble.shape[0], "Require equal-sized ensembles"
 
-    u_range = np.array([np.min([np.min(ensemble) for ensemble in ensembles]),
-                        np.max([np.max(ensemble) for ensemble in ensembles])])
-
-    n_bins = 20
-    ref_binned = np.histogram(ref_chain[0, :],
-                              bins=n_bins,
-                              range=u_range,
-                              density=False)[0]
-    # Hand-made "normalization"
-    ref_binned = ref_binned / np.sum(ref_binned)
+    reference_observable = observable_function(reference)
 
     distances = np.zeros((n_ensembles, ensemble_size))
 
     for j, ensemble in enumerate(ensembles):
-        # Bin ensembles
-        ensemble_binned = np.empty((ensemble_size, n_bins))
+        ensemble_observables = np.empty((ensemble_size,
+                                         *reference_observable.shape))
         for i in range(ensemble_size):
-            ensemble_binned[i, :] = np.histogram(ensemble[i, :],
-                                                 bins=n_bins,
-                                                 range=u_range,
-                                                 density=False)[0]
-            ensemble_binned[i, :] = ensemble_binned[i, :] / np.sum(ensemble_binned[i, :])
+            ensemble_observables[i, :] = observable_function(ensemble[i, :])
 
-        # Compute distance to reference
         for i in range(ensemble_size):
-            distances[j, i] = wasserstein_distance(ensemble_binned[i, :],
-                                                   ref_binned,
-                                                   u_range.reshape(1,2))
+            distances[j, i] = distance_function(ensemble_observables[i, :],
+                                                reference_observable)
 
-    chain_lengths = [ensemble.shape[2] for ensemble in ensembles]
-    means = [np.mean(distances[j, :]) for j in range(n_ensembles)]
-    l_quartile = [np.quantile(distances[j, :], 0.25) for j in range(n_ensembles)]
-    u_quartile = [np.quantile(distances[j, :], 0.75) for j in range(n_ensembles)]
+    means = np.array([np.mean(distances[j, :]) for j in range(n_ensembles)])
+    l_quartile = np.array([np.quantile(distances[j, :], 0.25) for j in range(n_ensembles)])
+    u_quartile = np.array([np.quantile(distances[j, :], 0.75) for j in range(n_ensembles)])
 
-    plt.plot(chain_lengths, means, label="mean")
-    plt.plot(chain_lengths, l_quartile, label="lower quartile")
-    plt.plot(chain_lengths, u_quartile, label="upper quartile")
-    plt.plot(chain_lengths, [np.sqrt(chain_lengths[0]) * means[0] / np.sqrt(a) for a in chain_lengths], '--', label="O(L^(-1/2))")
-    plt.title("$W_1$ for different chain lengths")
-    plt.xlabel("Length of the chain")
+    plt.errorbar(x=varied_quantity,
+                 y=means,
+                 yerr=np.array([means - l_quartile, u_quartile - means]),
+                 capsize=5)
+    plt.plot(varied_quantity, [np.sqrt(varied_quantity[0]) * means[0] / np.sqrt(a)
+                               for a in varied_quantity], '--', label="O(L^(-1/2))")
+    plt.title(plt_info["title"])
+    plt.xlabel(plt_info["xlabel"])
     plt.xscale("log")
-    plt.ylabel("$W_1$")
-    plt.legend()
-    store_figure(f"{filename}_wasserstein_convergence_chain")
+    plt.ylabel(plt_info["ylabel"])
+    store_figure(f"{filename}_convergence_{plt_info['ylabel']}_{plt_info['xlabel']}")
+
+
+class WassersteinDistanceComputer:
+    def __init__(self, ensembles, n_bins):
+        # determine range of u
+        self.u_range = np.array([np.min([np.min(ensemble) for ensemble in ensembles]),
+                                 np.max([np.max(ensemble) for ensemble in ensembles])])
+        self.n_bins = n_bins
+
+    def create_histogram(self, chain):
+        assert np.all(chain >= self.u_range[0]), ("Value(s) of this chain are outside the "
+                                                  "precomputed range")
+        assert np.all(chain <= self.u_range[1]), ("Value(s) of this chain are outside the "
+                                                  "precomputed range")
+
+        ensemble_binned = np.histogram(chain,
+                                       bins=self.n_bins,
+                                       range=self.u_range,
+                                       density=False)[0]
+        # hand-made normalization
+        ensemble_binned = ensemble_binned / np.sum(ensemble_binned)
+
+        return ensemble_binned
+
+    def compute_distance(self, hist1, hist2):
+        return wasserstein_distance(hist1, hist2, self.u_range.reshape(1, 2))
 
 
 def show_ensemble(ensemble):
