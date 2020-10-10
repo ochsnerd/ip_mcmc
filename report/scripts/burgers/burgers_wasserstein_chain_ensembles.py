@@ -123,7 +123,7 @@ class Settings:
 
     @staticmethod
     def filename():
-        return f"burgers_EP_n={Settings.Sampling.N}_b={Settings.Sampling.step}"
+        return f"burgers_EP_n={Settings.Sampling.N}_h={Settings.Simulation.N_gridpoints}"
 
 
 def create_integrator():
