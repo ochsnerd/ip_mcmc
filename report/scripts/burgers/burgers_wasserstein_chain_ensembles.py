@@ -339,8 +339,8 @@ def show_ensemble(ensemble):
         plt.plot(ensemble[-1, i, :], label=Settings.Simulation.IC.names[i])
 
     for p in Settings.Measurement.points:
-        l = p - Settings.Measurement.interval
-        r = p + Settings.Measurement.interval
+        l = p - Settings.Measurement.interval / 2
+        r = p + Settings.Measurement.interval / 2
         plt.axhspan(l, r, facecolor='r', alpha=0.3)
 
     shock_locs = np.zeros_like(ensemble[0, 0, :])
