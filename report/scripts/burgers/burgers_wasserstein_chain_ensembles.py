@@ -167,15 +167,36 @@ def create_mcmc_sampler():
     return MCMCSampler(proposer, accepter)
 
 
-def create_data(ensemble_size, chain_lengths, ref_length):
+def create_data(ensemble_size,
+                varied_quantity_setter,
+                varied_quantity_getter,
+                varied_quantity_values,
+                varied_quantity_reference):
+    """Create an ensemble and reference with the specified varied quantity
+
+    ensemble_size: int
+    varied_quantity_setter: callable
+        Provides access to the global Settings and is used the change the
+        varied_quantity in a way that the create_mcmc_sampler works correctly
+        (i.e. sees the updated values)
+    varied_quantity_getter: callable
+        Gives access to the varied quantity, used so that the state of the
+        Settings can be restored
+    varied_quantity_values: list
+        List elements are arguments to varied_quantity_setter
+    varied_quantity: scalar
+        Argument to varied_quantity_setter
+    """
+    # Change the global Settings variable, not the local one in function scope
+    original_value = varied_quantity_getter()
+
     rngs = [np.random.default_rng(i) for i in range(ensemble_size)]
 
     # Compute chains
-    sampler = create_mcmc_sampler()
-
     ensembles = []
-    for n_samples in chain_lengths:
-        Settings.Sampling.N = n_samples
+    for val in varied_quantity_values:
+        varied_quantity_setter(val)
+        sampler = create_mcmc_sampler()
         chain_start = partial(sampler.run,
                               Settings.Sampling.u_0,
                               Settings.Sampling.N,
@@ -190,10 +211,16 @@ def create_data(ensemble_size, chain_lengths, ref_length):
                                             rngs,
                                             ensemble_size)
 
+        # Add prior mean
+        for j in range(ensemble_size):
+            for i in range(Settings.Sampling.N):
+                ensemble[j, :, i] += Settings.Prior.mean
+
         ensembles.append(ensemble)
 
     # Compute reference
-    Settings.Sampling.N = ref_length
+    varied_quantity_setter(varied_quantity_reference)
+    sampler = create_mcmc_sampler()
     ref_chain_start = partial(sampler.run,
                               Settings.Sampling.u_0,
                               Settings.Sampling.N,
@@ -205,14 +232,11 @@ def create_data(ensemble_size, chain_lengths, ref_length):
 
     ref_chain = ref_manager.compute(ref_chain_start, rngs[:1], 1)[0, :, :]
 
-    # Add prior mean
-    for ensemble, chain_length in zip(ensembles, chain_lengths):
-        for j in range(ensemble_size):
-            for i in range(chain_length):
-                ensemble[j, :, i] += Settings.Prior.mean
-
-    for i in range(ref_length):
+    for i in range(Settings.Sampling.N):
         ref_chain[:, i] += Settings.Prior.mean
+
+    # reset varied quantity
+    varied_quantity_setter(original_value)
 
     return ensembles, ref_chain
 
