@@ -116,8 +116,8 @@ class Settings:
     class Sampling:
         step = PWLinear(0.05, 0.001, 250)
         u_0 = np.zeros(3)
-        N = 5000
-        burn_in = 250
+        N = 2500
+        burn_in = 500
         sample_interval = 20
         rng = np.random.default_rng(2)
 
@@ -444,9 +444,9 @@ def wasserstein_convergence_chainlength():
 
 
 def wasserstein_convergence_grid():
-    ensemble_size = 3
-    grid_sizes = [32, 64]
-    ref_grid = 128
+    ensemble_size = 10
+    grid_sizes = [16, 32, 64, 128]
+    ref_grid = 256
     ensembles, ref_chain = create_data(ensemble_size,
                                        grid_N_change,
                                        grid_N_get,
@@ -504,7 +504,9 @@ def convergence_scalar_function_chainlength(function, name):
 
 
 if __name__ == '__main__':
-    # wasserstein_convergence_chainlength()
+    Settings.Sampling.N = 2500
     wasserstein_convergence_grid()
-    # convergence_scalar_function_chainlength(np.mean, "mean")
-    # convergence_scalar_function_chainlength(np.var, "variance")
+    Settings.Sampling.N = 5000
+    wasserstein_convergence_chainlength()
+    convergence_scalar_function_chainlength(np.mean, "mean")
+    convergence_scalar_function_chainlength(np.var, "variance")
