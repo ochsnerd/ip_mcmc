@@ -298,7 +298,9 @@ def convergence(ensembles, reference, varied_quantity,
     plt.xlabel(plt_info["xlabel"])
     plt.xscale("log")
     plt.ylabel(plt_info["ylabel"])
-    store_figure(f"{filename}_convergence_{plt_info['ylabel']}_{plt_info['xlabel']}")
+    store_figure(f"{filename}_convergence_{plt_info['ylabel']}_{plt_info['xlabel']}"
+                 .replace('$', '').replace(' ', '_'))
+    # $ can occur from latex in labels and gives trouble for bash-operations
 
 
 class WassersteinDistanceComputer:
