@@ -444,10 +444,10 @@ def wasserstein_convergence_chainlength():
                                        chain_lengths,
                                        ref_length)
 
-    wasserstein_plot_info = {"title": "$W_1$ for different chain lengths",
-                             "xlabel": "Length of the chain",
+    wasserstein_plot_info = {"xlabel": "Length of the chain",
                              "ylabel": "$W_1$"}
     for i, name in enumerate(Settings.Simulation.IC.names):
+        wasserstein_plot_info["title"] = f"$W_1$ for different chain lengths for {name}"
         # extract 1 dim of u from ensembles
         one_var_ensembles = [ensemble[:, i, :].reshape(ensemble_size,
                                                        1,
@@ -474,10 +474,10 @@ def wasserstein_convergence_grid():
                                        grid_sizes,
                                        ref_grid)
 
-    wasserstein_plot_info = {"title": "$W_1$ for different grid spacings",
-                             "xlabel": "Number of gridpoints",
+    wasserstein_plot_info = {"xlabel": "Number of gridpoints",
                              "ylabel": "$W_1$"}
     for i, name in enumerate(Settings.Simulation.IC.names):
+        wasserstein_plot_info["title"] = f"$W_1$ for different grid spacings for {name}"
         # extract 1 dim of u from ensembles
         one_var_ensembles = [ensemble[:, i, :].reshape(ensemble_size,
                                                        1,
