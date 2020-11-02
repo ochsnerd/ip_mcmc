@@ -473,6 +473,36 @@ def wasserstein_convergence_grid():
                     filename=f"{Settings.filename()}_{name}")
 
 
+def convergence_scalar_function_grid(function, name):
+    """Convergence over scalar function of the posterior"""
+    ensemble_size = 30
+    grid_sizes = [32, 64, 128, 256]
+    ref_grid = 512
+    ensembles, ref_chain = create_data(ensemble_size,
+                                       grid_N_change,
+                                       grid_N_get,
+                                       grid_sizes,
+                                       ref_grid)
+
+    plot_info = {"title": f"Posterior {name} for different grid spacings",
+                 "xlabel": "Number of gridpoints",
+                 "ylabel": f"{name}"}
+    for i, name in enumerate(Settings.Simulation.IC.names):
+        # extract 1 dim of u from ensembles
+        one_var_ensembles = [ensemble[:, i, :].reshape(ensemble_size,
+                                                       1,
+                                                       Settings.Sampling.N)
+                             for ensemble in ensembles]
+
+        convergence(ensembles=one_var_ensembles,
+                    reference=ref_chain[i, :].reshape(1, Settings.Sampling.N),
+                    varied_quantity=grid_sizes,
+                    observable_function=lambda x: np.array([function(x)]),
+                    distance_function=lambda x, y: np.abs(x-y),
+                    plt_info=plot_info,
+                    filename=f"{Settings.filename()}_{name}")
+
+
 def convergence_scalar_function_chainlength(function, name):
     """Convergence over scalar function of the posterior"""
     ensemble_size = 10
