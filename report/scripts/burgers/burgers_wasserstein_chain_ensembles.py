@@ -514,9 +514,9 @@ def convergence_scalar_function_chainlength(function, name):
                                        chain_lengths,
                                        ref_length)
 
-    mean_plot_info = {"title": f"Posterior {name} for different chain lengths",
-                      "xlabel": "Length of the chain",
-                      "ylabel": f"{name}"}
+    plot_info = {"title": f"Posterior {name} for different chain lengths",
+                 "xlabel": "Length of the chain",
+                 "ylabel": f"{name}"}
     for i, name in enumerate(Settings.Simulation.IC.names):
         # extract 1 dim of u from ensembles
         one_var_ensembles = [ensemble[:, i, :].reshape(ensemble_size,
@@ -529,7 +529,7 @@ def convergence_scalar_function_chainlength(function, name):
                     varied_quantity=chain_lengths,
                     observable_function=lambda x: np.array([function(x)]),
                     distance_function=lambda x, y: np.abs(x-y),
-                    plt_info=mean_plot_info,
+                    plt_info=plot_info,
                     filename=f"{Settings.filename()}_{name}")
 
 
