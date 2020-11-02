@@ -257,7 +257,7 @@ def convergence(ensembles, reference, varied_quantity,
     distance_function: callable
         Takes as argument two return values from observable_function and returns a
         the distance between them (a float).
-    plot_info: dict(str: str)
+    plt_info: dict(str: str)
         Dict containing:
         title
         xlabel (name of varied quantity)
