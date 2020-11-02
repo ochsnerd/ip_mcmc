@@ -30,6 +30,20 @@ from utilities import (FVMObservationOperator,
                        DATA_DIR)
 
 
+def export_to_tikz_array(name, x, y):
+    """Export in tikz usable format
+
+    Overwrite existing files"""
+    x, y = (np.asarray(x), np.asarray(y))
+    assert len(x.shape) == 1, ""
+    assert len(y.shape) == 1, ""
+    assert x.size == y.size, ""
+
+    with open(DATA_DIR + name + ".tikz.txt", "w") as f:
+        for x_, y_ in zip(x, y):
+            print(x_, y_, file=f)
+
+
 class PWLinear:
     """linearly decrease delta until burn_in is finished, then keep it constant"""
     def __init__(self, start_delta, end_delta, len_burn_in):
@@ -288,6 +302,7 @@ def convergence(ensembles, reference, varied_quantity,
     l_quartile = np.array([np.quantile(distances[j, :], 0.25) for j in range(n_ensembles)])
     u_quartile = np.array([np.quantile(distances[j, :], 0.75) for j in range(n_ensembles)])
 
+    # Matplotlib plot
     plt.errorbar(x=varied_quantity,
                  y=means,
                  yerr=np.array([means - l_quartile, u_quartile - means]),
@@ -301,6 +316,12 @@ def convergence(ensembles, reference, varied_quantity,
     store_figure(f"{filename}_convergence_{plt_info['ylabel']}_{plt_info['xlabel']}"
                  .replace('$', '').replace(' ', '_'))
     # $ can occur from latex in labels and gives trouble for bash-operations
+
+    # Export to tikz format
+    name = plt_info["title"].replace('$', '').replace(' ', '_')
+    export_to_tikz_array(name + "_means", varied_quantity, means)
+    export_to_tikz_array(name + "_lquartile", varied_quantity, l_quartile)
+    export_to_tikz_array(name + "_uquartile", varied_quantity, u_quartile)
 
 
 class WassersteinDistanceComputer:
@@ -444,8 +465,8 @@ def wasserstein_convergence_chainlength():
 
 
 def wasserstein_convergence_grid():
-    ensemble_size = 10
-    grid_sizes = [16, 32, 64, 128]
+    ensemble_size = 30
+    grid_sizes = [32, 64, 128]
     ref_grid = 256
     ensembles, ref_chain = create_data(ensemble_size,
                                        grid_N_change,
@@ -476,8 +497,8 @@ def wasserstein_convergence_grid():
 def convergence_scalar_function_grid(function, name):
     """Convergence over scalar function of the posterior"""
     ensemble_size = 30
-    grid_sizes = [32, 64, 128, 256]
-    ref_grid = 512
+    grid_sizes = [32, 64, 128]
+    ref_grid = 256
     ensembles, ref_chain = create_data(ensemble_size,
                                        grid_N_change,
                                        grid_N_get,
