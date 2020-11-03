@@ -44,6 +44,15 @@ def export_to_tikz_array(name, x, y):
             print(x_, y_, file=f)
 
 
+def hist_export_to_tikz_array(name, vals):
+    bins, binsize = np.linspace(-0.6, 0.6, num=25, retstep=True)
+    hist, _ = np.histogram(vals, bins=bins, density=True)
+
+    # give center of bins
+    x = np.array([left_edge + binsize/2 for left_edge in bins[:-1]])
+    export_to_tikz_array(name, x, hist)
+
+
 class PWLinear:
     """linearly decrease delta until burn_in is finished, then keep it constant"""
     def __init__(self, start_delta, end_delta, len_burn_in):
@@ -444,6 +453,11 @@ def wasserstein_convergence_chainlength():
                                        chain_lengths,
                                        ref_length)
 
+    # export posterior to tikz
+    hist_export_to_tikz_array("hist_delta_1_N=2000", ensembles[-1][0,0,:])
+    hist_export_to_tikz_array("hist_delta_2_N=2000", ensembles[-1][0,1,:])
+    hist_export_to_tikz_array("hist_sigma_0_N=2000", ensembles[-1][0,2,:])
+
     wasserstein_plot_info = {"xlabel": "Length of the chain",
                              "ylabel": "$W_1$"}
     for i, name in enumerate(Settings.Simulation.IC.names):
@@ -473,6 +487,11 @@ def wasserstein_convergence_grid():
                                        grid_N_get,
                                        grid_sizes,
                                        ref_grid)
+
+    # export posterior to tikz
+    hist_export_to_tikz_array("hist_delta_1_h=128", ensembles[-1][0,0,:])
+    hist_export_to_tikz_array("hist_delta_2_h=128", ensembles[-1][0,1,:])
+    hist_export_to_tikz_array("hist_sigma_0_h=128", ensembles[-1][0,2,:])
 
     wasserstein_plot_info = {"xlabel": "Number of gridpoints",
                              "ylabel": "$W_1$"}
