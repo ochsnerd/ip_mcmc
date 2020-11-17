@@ -236,7 +236,8 @@ def create_data(ensemble_size,
     # Change the global Settings variable, not the local one in function scope
     original_value = varied_quantity_getter()
 
-    rngs = [np.random.default_rng(i) for i in range(ensemble_size)]
+    # need at least one rng for the reference
+    rngs = [np.random.default_rng(i) for i in range(max(ensemble_size, 1))]
 
     # Compute chains
     ensembles = []
