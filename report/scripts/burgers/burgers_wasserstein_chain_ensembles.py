@@ -53,6 +53,29 @@ def hist_export_to_tikz_array(name, vals):
     export_to_tikz_array(name, x, hist)
 
 
+def mean_MAP_plot(name, samples):
+    # extract mean
+    mean = np.mean(samples, axis=1)
+    print(f"mean={mean}")
+
+    # extract MAP
+    MAP = np.zeros_like(mean)
+    for i in range(MAP.shape[0]):
+        histvals, bins = np.histogram(samples[i, :], bins=1000)
+        MAP[i] = (bins[np.argmax(histvals)] + bins[np.argmax(histvals) + 1]) / 2
+    print(f"MAP={MAP}")
+
+    # run FVM with those point as input
+    integrator = create_integrator()
+    mean_endstate = integrator(PerturbedRiemannIC(mean))
+    MAP_endstate = integrator(PerturbedRiemannIC(MAP))
+
+    # export to tikz
+    x_vals = Settings.Simulation.get_xvals()
+    export_to_tikz_array(name + "_mean", x_vals, mean_endstate)
+    export_to_tikz_array(name + "_MAP", x_vals, MAP_endstate)
+
+
 class PWLinear:
     """linearly decrease delta until burn_in is finished, then keep it constant"""
     def __init__(self, start_delta, end_delta, len_burn_in):
@@ -492,6 +515,7 @@ def wasserstein_convergence_grid():
     hist_export_to_tikz_array("hist_delta_1_h=128", ensembles[-1][0,0,:])
     hist_export_to_tikz_array("hist_delta_2_h=128", ensembles[-1][0,1,:])
     hist_export_to_tikz_array("hist_sigma_0_h=128", ensembles[-1][0,2,:])
+    mean_MAP_plot("Burgers_endstate_h=128", ensembles[-1][0,:,:])
 
     wasserstein_plot_info = {"xlabel": "Number of gridpoints",
                              "ylabel": "$W_1$"}
