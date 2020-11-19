@@ -275,7 +275,7 @@ def convergence(ensembles, reference, varied_quantity,
     ensembles towards reference, measured by distance_function.
 
     ensembles: list(np.array((ensemble_size, u_dim, chain_length)))
-    reference: np.array((u_dim, chain_length))
+    reference: np.array((ensemble_size, u_dim, chain_length))
     varied_quantity: list
         len(varied_quantity) == len(ensembles)
     observable_function: callable
@@ -297,7 +297,8 @@ def convergence(ensembles, reference, varied_quantity,
     for ensemble in ensembles:
         assert ensemble_size == ensemble.shape[0], "Require equal-sized ensembles"
 
-    reference_observable = observable_function(reference)
+    reference_observable = np.mean([observable_function(ref_chain) for ref_chain in reference],
+                                   axis=0)
 
     distances = np.zeros((n_ensembles, ensemble_size))
 
