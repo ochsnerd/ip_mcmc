@@ -216,9 +216,8 @@ def create_mcmc_sampler():
 def create_data(ensemble_size,
                 varied_quantity_setter,
                 varied_quantity_getter,
-                varied_quantity_values,
-                varied_quantity_reference):
-    """Create an ensemble and reference with the specified varied quantity
+                varied_quantity_values):
+    """Create an ensemble with the specified varied quantities
 
     ensemble_size: int
     varied_quantity_setter: callable
@@ -230,14 +229,12 @@ def create_data(ensemble_size,
         Settings can be restored
     varied_quantity_values: list
         List elements are arguments to varied_quantity_setter
-    varied_quantity: scalar
-        Argument to varied_quantity_setter
     """
     # Change the global Settings variable, not the local one in function scope
     original_value = varied_quantity_getter()
 
     # need at least one rng for the reference
-    rngs = [np.random.default_rng(i) for i in range(max(ensemble_size, 1))]
+    rngs = [np.random.default_rng(i) for i in range(ensemble_size)]
 
     # Compute chains
     ensembles = []
@@ -265,27 +262,10 @@ def create_data(ensemble_size,
 
         ensembles.append(ensemble)
 
-    # Compute reference
-    varied_quantity_setter(varied_quantity_reference)
-    sampler = create_mcmc_sampler()
-    ref_chain_start = partial(sampler.run,
-                              Settings.Sampling.u_0,
-                              Settings.Sampling.N,
-                              Settings.Sampling.burn_in,
-                              Settings.Sampling.sample_interval)
-
-    ref_manager = EnsembleManager(DATA_DIR,
-                                  f"{Settings.filename()}_ref")
-
-    ref_chain = ref_manager.compute(ref_chain_start, rngs[:1], 1)[0, :, :]
-
-    for i in range(Settings.Sampling.N):
-        ref_chain[:, i] += Settings.Prior.mean
-
     # reset varied quantity
     varied_quantity_setter(original_value)
 
-    return ensembles, ref_chain
+    return ensembles
 
 
 def convergence(ensembles, reference, varied_quantity,
