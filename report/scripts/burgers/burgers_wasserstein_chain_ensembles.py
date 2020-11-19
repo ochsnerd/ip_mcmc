@@ -451,17 +451,15 @@ def grid_N_get():
 def wasserstein_convergence_chainlength():
     ensemble_size = 10
     chain_lengths = [250, 500, 1000, 2000]
-    ref_length = 5000
-    ensembles, ref_chain = create_data(ensemble_size,
-                                       sample_N_change,
-                                       sample_N_get,
-                                       chain_lengths,
-                                       ref_length)
+    ensembles = create_data(ensemble_size,
+                            sample_N_change,
+                            sample_N_get,
+                            chain_lengths)
 
     # export posterior to tikz
-    hist_export_to_tikz_array("hist_delta_1_N=2000", ensembles[-1][0,0,:])
-    hist_export_to_tikz_array("hist_delta_2_N=2000", ensembles[-1][0,1,:])
-    hist_export_to_tikz_array("hist_sigma_0_N=2000", ensembles[-1][0,2,:])
+    # hist_export_to_tikz_array("hist_delta_1_N=2000", ensembles[-1][0,0,:])
+    # hist_export_to_tikz_array("hist_delta_2_N=2000", ensembles[-1][0,1,:])
+    # hist_export_to_tikz_array("hist_sigma_0_N=2000", ensembles[-1][0,2,:])
 
     wasserstein_plot_info = {"xlabel": "Length of the chain",
                              "ylabel": "$W_1$"}
@@ -472,11 +470,11 @@ def wasserstein_convergence_chainlength():
                                                        1,
                                                        chain_length)
                              for ensemble, chain_length in zip(ensembles, chain_lengths)]
-        n_bins = 20
+        n_bins = 100
         wasserstein = WassersteinDistanceComputer(one_var_ensembles, n_bins)
-        convergence(ensembles=one_var_ensembles,
-                    reference=ref_chain[i, :].reshape(1, ref_length),
-                    varied_quantity=chain_lengths,
+        convergence(ensembles=one_var_ensembles[:-1],
+                    reference=one_var_ensembles[-1],
+                    varied_quantity=chain_lengths[:-1],
                     observable_function=wasserstein.create_histogram,
                     distance_function=wasserstein.compute_distance,
                     plt_info=wasserstein_plot_info,
@@ -485,22 +483,21 @@ def wasserstein_convergence_chainlength():
 
 def wasserstein_convergence_grid():
     ensemble_size = 30
-    grid_sizes = [32, 64, 128]
-    ref_grid = 256
-    ensembles, ref_chain = create_data(ensemble_size,
-                                       grid_N_change,
-                                       grid_N_get,
-                                       grid_sizes,
-                                       ref_grid)
+    grid_sizes = [32, 64, 128, 256]
+    ensembles = create_data(ensemble_size,
+                            grid_N_change,
+                            grid_N_get,
+                            grid_sizes)
 
     # export posterior to tikz
-    hist_export_to_tikz_array("hist_delta_1_h=128", ensembles[-1][0,0,:])
-    hist_export_to_tikz_array("hist_delta_2_h=128", ensembles[-1][0,1,:])
-    hist_export_to_tikz_array("hist_sigma_0_h=128", ensembles[-1][0,2,:])
-    mean_MAP_plot("Burgers_endstate_h=128", ensembles[-1][0,:,:])
+    # hist_export_to_tikz_array("hist_delta_1_h=128", ensembles[-1][0,0,:])
+    # hist_export_to_tikz_array("hist_delta_2_h=128", ensembles[-1][0,1,:])
+    # hist_export_to_tikz_array("hist_sigma_0_h=128", ensembles[-1][0,2,:])
+    # mean_MAP_plot("Burgers_endstate_h=128", ensembles[-1][0,:,:])
 
     wasserstein_plot_info = {"xlabel": "Number of gridpoints",
                              "ylabel": "$W_1$"}
+
     for i, name in enumerate(Settings.Simulation.IC.names):
         wasserstein_plot_info["title"] = f"$W_1$ for different grid spacings for {name}"
         # extract 1 dim of u from ensembles
@@ -508,11 +505,11 @@ def wasserstein_convergence_grid():
                                                        1,
                                                        Settings.Sampling.N)
                              for ensemble in ensembles]
-        n_bins = 20
+        n_bins = 100
         wasserstein = WassersteinDistanceComputer(one_var_ensembles, n_bins)
-        convergence(ensembles=one_var_ensembles,
-                    reference=ref_chain[i, :].reshape(1, Settings.Sampling.N),
-                    varied_quantity=grid_sizes,
+        convergence(ensembles=one_var_ensembles[:-1],
+                    reference=one_var_ensembles[-1],
+                    varied_quantity=grid_sizes[:-1],
                     observable_function=wasserstein.create_histogram,
                     distance_function=wasserstein.compute_distance,
                     plt_info=wasserstein_plot_info,
@@ -523,12 +520,10 @@ def convergence_scalar_function_grid(function, name):
     """Convergence over scalar function of the posterior"""
     ensemble_size = 30
     grid_sizes = [32, 64, 128]
-    ref_grid = 256
-    ensembles, ref_chain = create_data(ensemble_size,
-                                       grid_N_change,
-                                       grid_N_get,
-                                       grid_sizes,
-                                       ref_grid)
+    ensembles = create_data(ensemble_size,
+                            grid_N_change,
+                            grid_N_get,
+                            grid_sizes)
 
     plot_info = {"title": f"Posterior {name} for different grid spacings",
                  "xlabel": "Number of gridpoints",
@@ -540,9 +535,9 @@ def convergence_scalar_function_grid(function, name):
                                                        Settings.Sampling.N)
                              for ensemble in ensembles]
 
-        convergence(ensembles=one_var_ensembles,
-                    reference=ref_chain[i, :].reshape(1, Settings.Sampling.N),
-                    varied_quantity=grid_sizes,
+        convergence(ensembles=one_var_ensembles[:-1],
+                    reference=one_var_ensembles[-1],
+                    varied_quantity=grid_sizes[:-1],
                     observable_function=lambda x: np.array([function(x)]),
                     distance_function=lambda x, y: np.abs(x-y),
                     plt_info=plot_info,
@@ -553,12 +548,10 @@ def convergence_scalar_function_chainlength(function, name):
     """Convergence over scalar function of the posterior"""
     ensemble_size = 10
     chain_lengths = [250, 500, 1000, 2000]
-    ref_length = 5000
-    ensembles, ref_chain = create_data(ensemble_size,
-                                       sample_N_change,
-                                       sample_N_get,
-                                       chain_lengths,
-                                       ref_length)
+    ensembles = create_data(ensemble_size,
+                            sample_N_change,
+                            sample_N_get,
+                            chain_lengths)
 
     plot_info = {"title": f"Posterior {name} for different chain lengths",
                  "xlabel": "Length of the chain",
@@ -570,9 +563,9 @@ def convergence_scalar_function_chainlength(function, name):
                                                        chain_length)
                              for ensemble, chain_length in zip(ensembles, chain_lengths)]
 
-        convergence(ensembles=one_var_ensembles,
-                    reference=ref_chain[i, :].reshape(1, ref_length),
-                    varied_quantity=chain_lengths,
+        convergence(ensembles=one_var_ensembles[:-1],
+                    reference=one_var_ensembles[-1],
+                    varied_quantity=chain_lengths[:-1],
                     observable_function=lambda x: np.array([function(x)]),
                     distance_function=lambda x, y: np.abs(x-y),
                     plt_info=plot_info,
