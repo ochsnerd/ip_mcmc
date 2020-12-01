@@ -169,7 +169,7 @@ class Settings:
 
     @staticmethod
     def filename():
-        return f"burgers_EP_n={Settings.Sampling.N}_h={Settings.Simulation.N_gridpoints}"
+        return f"burgers_CA_n={Settings.Sampling.N}_h={Settings.Simulation.N_gridpoints}"
 
 
 def create_integrator():
@@ -202,7 +202,12 @@ def create_mcmc_sampler():
                                                   integrator,
                                                   measurer)
 
-    ground_truth = measurer(integrator(IC_true))
+    # compute the ground truth on a very fine grid
+    old_N_gridpoints = Settings.Simulation.N_gridpoints
+    Settings.Simulation.N_gridpoints = 4096
+    ground_truth = measurer(create_integrator()(IC_true))
+    Settings.Simulation.N_gridpoints = old_N_gridpoints
+
     noise = Settings.Noise.get_distribution()
     potential = EvolutionPotential(observation_operator,
                                    ground_truth,
@@ -482,12 +487,15 @@ def wasserstein_convergence_chainlength():
 
 
 def wasserstein_convergence_grid():
-    ensemble_size = 30
-    grid_sizes = [32, 64, 128, 256]
+    ensemble_size = 50
+    grid_sizes = [32, 64, 128, 256, 512]
     ensembles = create_data(ensemble_size,
                             grid_N_change,
                             grid_N_get,
                             grid_sizes)
+
+    for e in ensembles:
+        show_ensemble(e)
 
     # export posterior to tikz
     # hist_export_to_tikz_array("hist_delta_1_h=128", ensembles[-1][0,0,:])
@@ -575,7 +583,10 @@ def convergence_scalar_function_chainlength(function, name):
 if __name__ == '__main__':
     Settings.Sampling.N = 2500
     wasserstein_convergence_grid()
-    Settings.Sampling.N = 5000
-    wasserstein_convergence_chainlength()
-    convergence_scalar_function_chainlength(np.mean, "mean")
-    convergence_scalar_function_chainlength(np.var, "variance")
+    # convergence_scalar_function_grid(np.mean, "mean")
+    # convergence_scalar_function_grid(np.var, "variance")
+
+    # Settings.Sampling.N = 5000
+    # wasserstein_convergence_chainlength()
+    # convergence_scalar_function_chainlength(np.mean, "mean")
+    # convergence_scalar_function_chainlength(np.var, "variance")
