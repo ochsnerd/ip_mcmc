@@ -205,7 +205,7 @@ def create_mcmc_sampler():
     # compute the ground truth on a very fine grid
     old_N_gridpoints = Settings.Simulation.N_gridpoints
     Settings.Simulation.N_gridpoints = 4096
-    ground_truth = measurer(create_integrator()(IC_true))
+    ground_truth = create_measurer()(create_integrator()(IC_true))
     Settings.Simulation.N_gridpoints = old_N_gridpoints
 
     noise = Settings.Noise.get_distribution()
