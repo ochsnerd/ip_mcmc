@@ -29,7 +29,11 @@ class RusanovFVM:
         self.dudt = np.zeros_like(self.u)
 
     def integrate(self, IC, T, only_endstate=True):
-        self.u[:] = np.array([IC(x_) for x_ in self.x], dtype=np.float)
+        for i in range(self.N):
+            # initialize u_0 with cell averages
+            x = self.x[i]
+            domain = np.linspace(x - .5 * self.dx, x + .5 * self.dx)
+            self.u[i] = np.trapz(y=[IC(x_) for x_ in domain], x=domain) / self.dx
 
         t = 0
 
