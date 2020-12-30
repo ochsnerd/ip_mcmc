@@ -84,7 +84,8 @@ class Measurer:
     """
     Measure around points
     """
-    def __init__(self, measurement_points, measurement_interval, x_values):
+    def __init__(self, measurement_points, measurement_interval, x_values,
+                 weights=None):
         # x_values: evenly spaced points where the given values are located
         self.n_meas = len(measurement_points)
 
@@ -98,6 +99,12 @@ class Measurer:
                                             m_p + measurement_interval / 2,
                                             side='left')
 
+        if weights is None:
+            self.weights = np.ones_like(measurement_points)
+        else:
+            assert len(weights) == len(measurement_points), ""
+            self.weights = weights
+
     def __call__(self, values):
         assert len(values) == self.n_x_vals, "Provided values don't match x_vals"
 
@@ -105,7 +112,7 @@ class Measurer:
         for i in range(self.n_meas):
             left = self.left_limits[i]
             right = self.right_limits[i]
-            m[i] = 10 * np.trapz(values[left:right], dx=self.dx)
+            m[i] = self.weights[i] * 10 * np.trapz(values[left:right], dx=self.dx)
 
         return m
 
