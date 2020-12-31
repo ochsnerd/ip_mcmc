@@ -84,26 +84,26 @@ class Measurer:
     """
     Measure around points
     """
-    def __init__(self, measurement_points, measurement_interval, x_values,
-                 weights=None):
+    def __init__(self, measurement_points, measurement_interval, x_values):
         # x_values: evenly spaced points where the given values are located
         self.n_meas = len(measurement_points)
 
         self.n_x_vals = len(x_values)
         self.dx = x_values[1] - x_values[0]
         m_p = np.asarray(measurement_points, dtype=np.float)
-        self.left_limits = np.searchsorted(x_values,
+
+        self.m_p_left = np.asarray(m_p - measurement_interval /2)
+        self.m_p_right = np.asarray(m_p + measurement_interval /2)
+
+        self.x_cell_limits = np.append(np.asarray(x_values-self.dx/2), x_values[-1]+self.dx/2)
+        self.left_limits = np.searchsorted(self.x_cell_limits,
                                            m_p - measurement_interval / 2,
                                            side='left')
-        self.right_limits = np.searchsorted(x_values,
+
+        self.right_limits = np.searchsorted(self.x_cell_limits,
                                             m_p + measurement_interval / 2,
                                             side='left')
 
-        if weights is None:
-            self.weights = np.ones_like(measurement_points)
-        else:
-            assert len(weights) == len(measurement_points), ""
-            self.weights = weights
 
     def __call__(self, values):
         assert len(values) == self.n_x_vals, "Provided values don't match x_vals"
@@ -111,8 +111,15 @@ class Measurer:
         m = np.empty_like(self.left_limits, dtype=np.float)
         for i in range(self.n_meas):
             left = self.left_limits[i]
-            right = self.right_limits[i]
-            m[i] = self.weights[i] * 10 * np.trapz(values[left:right], dx=self.dx)
+            right = self.right_limits[i] - 1
+            
+            left_box = 0.
+            right_box = 0.
+            if self.x_cell_limits[left] != self.m_p_left[i]:
+                left_box = (self.x_cell_limits[left]-self.m_p_left[i]) * values[left-1]
+            if self.x_cell_limits[right] != self.m_p_right[i]:
+                right_box = (self.m_p_right[i]-self.x_cell_limits[right]) * values[right]
+            m[i] = 10 * (np.sum(values[left:right])*self.dx + left_box + right_box)
 
         return m
 
