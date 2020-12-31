@@ -92,15 +92,24 @@ class Measurer:
         self.n_x_vals = len(x_values)
         self.dx = x_values[1] - x_values[0]
         m_p = np.asarray(measurement_points, dtype=np.float)
-        self.left_limits = np.searchsorted(x_values,
-                                           m_p - measurement_interval / 2,
-                                           side='left')
-        self.right_limits = np.searchsorted(x_values,
-                                            m_p + measurement_interval / 2,
-                                            side='left')
+        left_boundaries = m_p - measurement_interval / 2
+        right_boundaries = m_p + measurement_interval / 2
+        self.left_interior_idx = np.searchsorted(x_values,
+                                                 left_boundaries,
+                                                 side='left')
+        self.right_interior_idx = np.searchsorted(x_values,
+                                                  right_boundaries,
+                                                  side='left')
+
+        # the measurement interval might not align with gridpoints,
+        # compute the fractional cells to the left and right
+        self.left_cell_fraction = (
+            x_values[self.left_interior_idx] - left_boundaries)
+        self.right_cell_fraction = (
+            right_boundaries - x_values[self.right_interior_idx])
 
         if weights is None:
-            self.weights = np.ones_like(measurement_points)
+            self.weights = np.ones_like(m_p)
         else:
             assert len(weights) == len(measurement_points), ""
             self.weights = weights
@@ -108,11 +117,18 @@ class Measurer:
     def __call__(self, values):
         assert len(values) == self.n_x_vals, "Provided values don't match x_vals"
 
-        m = np.empty_like(self.left_limits, dtype=np.float)
+        m = np.empty_like(self.left_interior_idx, dtype=np.float)
         for i in range(self.n_meas):
-            left = self.left_limits[i]
-            right = self.right_limits[i]
-            m[i] = self.weights[i] * 10 * np.trapz(values[left:right], dx=self.dx)
+            l = self.left_interior_idx[i]
+            r = self.right_interior_idx[i]
+
+            # interior cells
+            m[i] = sum(values[l:r] * self.dx)
+            # edge cells
+            m[i] += values[l-1] * self.left_cell_fraction[i]
+            m[i] += values[r] * self.right_cell_fraction[i]
+
+            m[i] *= self.weights[i] * 10
 
         return m
 
