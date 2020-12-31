@@ -206,7 +206,7 @@ def create_mcmc_sampler():
 
     # compute the ground truth on a very fine grid
     old_N_gridpoints = Settings.Simulation.N_gridpoints
-    Settings.Simulation.N_gridpoints = 4096
+    Settings.Simulation.N_gridpoints = 1024
     ground_truth = create_measurer()(create_integrator()(IC_true))
     Settings.Simulation.N_gridpoints = old_N_gridpoints
 
@@ -489,8 +489,8 @@ def wasserstein_convergence_chainlength():
 
 
 def wasserstein_convergence_grid():
-    ensemble_size = 50
-    grid_sizes = [32, 64, 128, 256, 512]
+    ensemble_size = 30
+    grid_sizes = [16, 32, 64, 128, 256, 512]
     ensembles = create_data(ensemble_size,
                             grid_N_change,
                             grid_N_get,
