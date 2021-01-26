@@ -84,8 +84,7 @@ class Measurer:
     """
     Measure around points
     """
-    def __init__(self, measurement_points, measurement_interval, x_values,
-                 weights=None):
+    def __init__(self, measurement_points, measurement_interval, x_values):
         # x_values: evenly spaced points where the given values are located
         # -> cell centers from FVM
         self.n_meas = len(measurement_points)
@@ -93,6 +92,7 @@ class Measurer:
         self.n_x_vals = len(x_values)
         self.dx = x_values[1] - x_values[0]
         m_p = np.asarray(measurement_points, dtype=np.float)
+
         self.m_p_left = np.asarray(m_p - measurement_interval / 2)
         self.m_p_right = np.asarray(m_p + measurement_interval / 2)
 
