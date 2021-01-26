@@ -84,7 +84,8 @@ class Measurer:
     """
     Measure around points
     """
-    def __init__(self, measurement_points, measurement_interval, x_values):
+    def __init__(self, measurement_points, measurement_interval, x_values,
+                 weights=None):
         # x_values: evenly spaced points where the given values are located
         # -> cell centers from FVM
         self.n_meas = len(measurement_points)
