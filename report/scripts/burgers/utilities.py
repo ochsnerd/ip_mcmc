@@ -87,26 +87,30 @@ class Measurer:
     def __init__(self, measurement_points, measurement_interval, x_values,
                  weights=None):
         # x_values: evenly spaced points where the given values are located
+        # -> cell centers from FVM
         self.n_meas = len(measurement_points)
 
         self.n_x_vals = len(x_values)
         self.dx = x_values[1] - x_values[0]
         m_p = np.asarray(measurement_points, dtype=np.float)
-        left_boundaries = m_p - measurement_interval / 2
-        right_boundaries = m_p + measurement_interval / 2
-        self.left_interior_idx = np.searchsorted(x_values,
-                                                 left_boundaries,
-                                                 side='left')
-        self.right_interior_idx = np.searchsorted(x_values,
-                                                  right_boundaries,
-                                                  side='left')
+        self.m_p_left = np.asarray(m_p - measurement_interval / 2)
+        self.m_p_right = np.asarray(m_p + measurement_interval / 2)
 
-        # the measurement interval might not align with gridpoints,
-        # compute the fractional cells to the left and right
-        self.left_cell_fraction = (
-            x_values[self.left_interior_idx] - left_boundaries)
-        self.right_cell_fraction = (
-            right_boundaries - x_values[self.right_interior_idx])
+        self.x_cell_limits = np.append(np.asarray(x_values-self.dx/2),
+                                       x_values[-1] + self.dx/2)
+
+        # make sure the measurement intervals are contained in the x_values
+        assert (all(self.m_p_left > self.x_cell_limits[0]) and
+                all(self.m_p_right < self.x_cell_limits[-1])), (
+                    "Measurement intervals are not contained in x_values")
+
+        self.left_limits = np.searchsorted(self.x_cell_limits,
+                                           m_p - measurement_interval / 2,
+                                           side='left')
+
+        self.right_limits = np.searchsorted(self.x_cell_limits,
+                                            m_p + measurement_interval / 2,
+                                            side='left')
 
         if weights is None:
             self.weights = np.ones_like(m_p)
@@ -117,18 +121,16 @@ class Measurer:
     def __call__(self, values):
         assert len(values) == self.n_x_vals, "Provided values don't match x_vals"
 
-        m = np.empty_like(self.left_interior_idx, dtype=np.float)
+        m = np.empty_like(self.left_limits, dtype=np.float)
         for i in range(self.n_meas):
-            l = self.left_interior_idx[i]
-            r = self.right_interior_idx[i]
+            left = self.left_limits[i]
+            right = self.right_limits[i] - 1
 
-            # interior cells
-            m[i] = sum(values[l:r] * self.dx)
-            # edge cells
-            m[i] += values[l-1] * self.left_cell_fraction[i]
-            m[i] += values[r] * self.right_cell_fraction[i]
+            left_box = (self.x_cell_limits[left] - self.m_p_left[i]) * values[left-1]
+            right_box = (self.m_p_right[i] - self.x_cell_limits[right]) * values[right]
 
-            m[i] *= self.weights[i] * 10
+            m[i] = (np.sum(values[left:right])*self.dx + left_box + right_box)
+            m[i] *= 10 * self.weights[i]
 
         return m
 
