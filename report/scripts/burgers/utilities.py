@@ -87,60 +87,26 @@ class Measurer:
     def __init__(self, measurement_points, measurement_interval, x_values,
                  weights=None):
         # x_values: evenly spaced points where the given values are located
-        # -> cell centers from FVM
-        self.dx = x_values[1] - x_values[0]
-
         self.n_meas = len(measurement_points)
-        self.n_x_vals = len(x_values)
 
+        self.n_x_vals = len(x_values)
+        self.dx = x_values[1] - x_values[0]
         m_p = np.asarray(measurement_points, dtype=np.float)
         left_boundaries = m_p - measurement_interval / 2
         right_boundaries = m_p + measurement_interval / 2
-
         self.left_interior_idx = np.searchsorted(x_values,
                                                  left_boundaries,
                                                  side='left')
-        self.right_interior_idx = (np.searchsorted(x_values,
-                                                   right_boundaries,
-                                                   side='left') - 1)
-
-        # shift to get cell boundaries
-        cell_limits = np.asarray(x_values) - self.dx / 2
-        cell_limits = np.append(cell_limits, x_values[-1] + self.dx / 2)
-
-        # make sure the measurement intervals are contained in the x_values
-        assert (all(left_boundaries > cell_limits[0]) and
-                all(right_boundaries < cell_limits[-1])), (
-                    "Measurement intervals are not contained in x_values")
+        self.right_interior_idx = np.searchsorted(x_values,
+                                                  right_boundaries,
+                                                  side='left')
 
         # the measurement interval might not align with gridpoints,
-        # compute the fractional cells to the left and right.
-        # these fractional cells can be positive or negative and indicate
-        # the error made when computing the integral by
-        # sum(values[left_interior_idx:right_interior_idx+1])
-
-        # negative fractional cell: need to subtract value from i+1
-        #  i  i+1
-        #    |XXX|
-        # XXX|XXX|
-        # XXX|XXX|
-        #  .   .   <- cell centers (x_values)
-        #     |--- <- measurement interval
-
-        # postive fractional cell: need to add value from i
-        #  i  i+1
-        #    |XXX|
-        # XXX|XXX|
-        # XXX|XXX|
-        #  .   .   <- cell centers (x_values)
-        #   |----- <- measurement interval
-
+        # compute the fractional cells to the left and right
         self.left_cell_fraction = (
-            cell_limits[self.left_interior_idx] - left_boundaries)
+            x_values[self.left_interior_idx] - left_boundaries)
         self.right_cell_fraction = (
-            # right_interior_idx was found in x_values, so the
-            # index has to be shifted when indexing cell_limits
-            right_boundaries - cell_limits[self.right_interior_idx + 1])
+            right_boundaries - x_values[self.right_interior_idx])
 
         if weights is None:
             self.weights = np.ones_like(m_p)
@@ -157,12 +123,10 @@ class Measurer:
             r = self.right_interior_idx[i]
 
             # interior cells
-            m[i] = sum(values[l:r+1]) * self.dx
+            m[i] = sum(values[l:r] * self.dx)
             # edge cells
-            l_f = self.left_cell_fraction[i]
-            m[i] += values[l - (l_f > 0)] * l_f
-            r_f = self.right_cell_fraction[i]
-            m[i] += values[r + (r_f > 0)] * r_f
+            m[i] += values[l-1] * self.left_cell_fraction[i]
+            m[i] += values[r] * self.right_cell_fraction[i]
 
             m[i] *= self.weights[i] * 10
 
