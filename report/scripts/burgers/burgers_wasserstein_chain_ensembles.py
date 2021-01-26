@@ -135,6 +135,7 @@ class Settings:
 
     class Measurement:
         points = [-0.5, -0.25, 0.25, 0.5, 0.75]
+        weights = [1, 1, 1, 1, 1]
         interval = 0.1
 
     class Noise:
@@ -169,7 +170,7 @@ class Settings:
 
     @staticmethod
     def filename():
-        return f"burgers_CA_n={Settings.Sampling.N}_h={Settings.Simulation.N_gridpoints}"
+        return f"burgers_CA2_n={Settings.Sampling.N}_h={Settings.Simulation.N_gridpoints}"
 
 
 def create_integrator():
@@ -183,7 +184,8 @@ def create_integrator():
 def create_measurer():
     return Measurer(Settings.Measurement.points,
                     Settings.Measurement.interval,
-                    Settings.Simulation.get_xvals())
+                    Settings.Simulation.get_xvals(),
+                    Settings.Measurement.weights)
 
 
 def create_mcmc_sampler():
@@ -204,7 +206,7 @@ def create_mcmc_sampler():
 
     # compute the ground truth on a very fine grid
     old_N_gridpoints = Settings.Simulation.N_gridpoints
-    Settings.Simulation.N_gridpoints = 4096
+    Settings.Simulation.N_gridpoints = 1024
     ground_truth = create_measurer()(create_integrator()(IC_true))
     Settings.Simulation.N_gridpoints = old_N_gridpoints
 
@@ -487,8 +489,8 @@ def wasserstein_convergence_chainlength():
 
 
 def wasserstein_convergence_grid():
-    ensemble_size = 50
-    grid_sizes = [32, 64, 128, 256, 512]
+    ensemble_size = 30
+    grid_sizes = [16, 32, 64, 128, 256, 512]
     ensembles = create_data(ensemble_size,
                             grid_N_change,
                             grid_N_get,
